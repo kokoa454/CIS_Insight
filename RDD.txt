@@ -31,8 +31,9 @@ CIS諸国ニュース対訳Webアプリ「CIS Insight」 要件定義書
 4.1 インフラ・技術構成
 ・サーバー: OCI Compute (Always Free AMD Instance / Memory 1GB)
 ・言語: Python 3.10+
-・データベース: SQLite 3 (ファイルベースで1GBメモリに最適化)
-・UIフレームワーク: Streamlit (Pythonのみでフロントエンドを構築)
+・データベース: SQLite 3
+・バックエンドフレームワーク: Django
+・フロントエンドフレームワーク: TailwindCSS
 ・AI API: Gemini 1.5 Flash (タイトル翻訳・分類), DeepL API Free (本文翻訳)
 
 4.2 データベース設計（インデックス戦略）
@@ -40,18 +41,33 @@ CIS諸国ニュース対訳Webアプリ「CIS Insight」 要件定義書
 ・整合性: news_linkおよびrss_linkにユニークインデックスを貼り、重複データを防止する。
 
 4.3 ディレクトリ構造
-cis_insight/
-├── .env                # APIキーやDBパス等の機密情報（ルートがおすすめ）
-├── requirements.txt    # 必要なライブラリ
-├── app.py              # UI (Streamlit)
-├── data/
-│   └── cis_insight.db  # データベース
-├── config/
-│   └── config.py       # .envを読み込んで各モジュールに渡す担当
-└── modules/
-    ├── database.py     # DB接続・テーブル作成
-    ├── crawler.py      # RSS取得・パース
-    └── ai.py           # 翻訳・分類ロジック
+cis_insight/                  # プロジェクト全体のルート
+├── .env                      # 環境変数定義
+├── manage.py                 # Djangoのコマンド実行ツール
+├── core/                     # プロジェクト全体の設定
+│   ├── config.py             # 環境変数をPython変数として読み込む設定
+│   ├── settings.py           # 全体の設定（DB設定やアプリ登録）
+│   ├── urls.py               # メインのルーティング（URLの交通整理）
+│   └── wsgi.py / asgi.py     # Webサーバーとの接続
+│
+├── users/                    # ユーザー認証担当のアプリ（ログイン・登録）
+│   ├── models.py             # ユーザー情報の定義
+│   ├── views.py              # ログイン・登録のロジック
+│   ├── urls.py               # ユーザー関連のURL
+│   └── templates/users/      # ログイン画面などのHTML
+│
+├── news/                     # ニュース記事担当のアプリ
+│   ├── models.py             # 記事データの定義
+│   ├── views.py              # 記事表示のロジック
+│   └── templates/news/       # ホーム画面（LP）などのHTML
+│
+├── static/                   # CSS, JS, 画像（logo.webpなど）
+│   ├── css/
+│   ├── js/
+│   └── img/
+│
+└── templates/                # 全ページ共通のベースHTML
+    └── base.html             
 
 5. 画面設計イメージ
 ・ログイン画面: ユーザー名とパスワードによる認証。
