@@ -1,431 +1,446 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0" version="29.3.6">
-  <diagram name="Page-1" id="e2Yb44B3FTRWfYq2OpMF">
-    <mxGraphModel dx="1783" dy="1130" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="User" vertex="1">
-          <mxGeometry height="40" width="440" x="40" y="40" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="一つのUserデータを一元管理する一意なID" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="user_id" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;PK&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="user_name" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;一意なユーザネーム&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;user_display_name&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ユーザの画面表示名" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="user_password" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;ユーザのパスワード&lt;/div&gt;&lt;div&gt;（ハッシュ化）&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;user_news_count&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ユーザが読んだニュースの数" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGINED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-22" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-24" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="VARCHAR(16)" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="VARCHAR(16)" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-26" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;VARCHAR(255)&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-28" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="user_icon" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-29" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;VARCHAR(128)&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-30" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;ユーザの&lt;/div&gt;&lt;div&gt;アイコンファイルパス&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGNED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="News" vertex="1">
-          <mxGeometry height="40" width="440" x="640" y="40" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="一つのNewsデータを一元管理する一意なID" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-35" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_id" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;PK&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-37" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-38" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_title" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-39" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;ニュースタイトル&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-40" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_date" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-41" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュース日時" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-42" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-43" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_content_ru&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-44" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-45" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュース本文" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-46" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_read_count&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-47" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュースを読んだユーザ数" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-48" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-49" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGINED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-50" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-51" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-52" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-53" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-54" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-56" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DATETIME" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-57" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-58" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-59" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_link" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-60" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-61" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;unique index&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-62" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュースへのリンク" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-63" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGNED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-64" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;user_news_&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;preferred_country&lt;/font&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-65" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ユーザの好みの国" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-66" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-67" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-68" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="JSON" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-69" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;user_news_&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;preferred_topic&lt;/font&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-70" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ユーザの好みのトピック" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-71" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-72" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-73" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="JSON" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-84" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-85" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_country" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-86" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="VARCHAR(16)" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-87" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;index&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-88" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュースの国" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-89" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-90" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="news_topic" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-91" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="JSON" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-92" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-93" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュースのトピック" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="360" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-94" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_content_ja&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-95" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-96" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ニュース本文の対訳" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-97" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-98" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-186" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="News_RSS" vertex="1">
-          <mxGeometry height="40" width="440" x="1240" y="40" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-187" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;一つのNews_RSSデータを&lt;/div&gt;&lt;div&gt;一元管理する一意なID&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-188" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_id" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-189" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;PK&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-190" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-191" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_company" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-192" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSS発行のメディアネーム" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-193" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_link" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-194" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSSのリンク" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-195" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-196" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_create_date" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-197" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-198" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSSの追加日" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-199" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;rss_read_count&lt;/font&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-200" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSS発行のメディアを読んだユーザ数" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-201" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-202" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGINED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-203" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-204" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="80" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-205" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;unique index&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-206" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-207" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-208" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="120" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-209" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="TEXT" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="160" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-210" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DATETIME" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="200" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-216" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGNED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-217" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-218" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_country" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-219" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="VARCHAR(16)" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-220" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-221" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSSの国" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="280" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-227" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_update_date" vertex="1">
-          <mxGeometry height="40" width="80" x="1280" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-228" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="1240" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-229" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="RSSの更新日" vertex="1">
-          <mxGeometry height="40" width="160" x="1520" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-230" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="1440" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-231" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DATETIME" vertex="1">
-          <mxGeometry height="40" width="80" x="1360" y="240" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-232" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="user_admin" vertex="1">
-          <mxGeometry height="40" width="80" x="80" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-233" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="管理者権限の有無" vertex="1">
-          <mxGeometry height="40" width="160" x="320" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-234" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="40" width="40" x="40" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-235" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="non-nullable" vertex="1">
-          <mxGeometry height="40" width="80" x="240" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-236" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="BOOLEAN" vertex="1">
-          <mxGeometry height="40" width="80" x="160" y="400" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-237" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;ニュースのRSSID&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="160" x="920" y="440" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-238" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="rss_id" vertex="1">
-          <mxGeometry height="40" width="80" x="680" y="440" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-239" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="FK" vertex="1">
-          <mxGeometry height="40" width="40" x="640" y="440" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-240" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="UNSIGINED INT" vertex="1">
-          <mxGeometry height="40" width="80" x="760" y="440" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-241" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="80" x="840" y="440" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-242" edge="1" parent="1" source="dHz7YKarEHBjYfN8GyHP-186" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="dHz7YKarEHBjYfN8GyHP-33" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="790" y="360" as="sourcePoint" />
-            <mxPoint x="840" y="310" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-243" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="1" vertex="1">
-          <mxGeometry height="30" width="60" x="1180" y="30" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-244" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="*" vertex="1">
-          <mxGeometry height="30" width="60" x="1080" y="30" as="geometry" />
-        </mxCell>
-        <mxCell id="dHz7YKarEHBjYfN8GyHP-245" edge="1" parent="1" source="dHz7YKarEHBjYfN8GyHP-189" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <Array as="points">
-              <mxPoint x="1160" y="100" />
-              <mxPoint x="1160" y="460" />
-            </Array>
-            <mxPoint x="1240" y="459.58" as="sourcePoint" />
-            <mxPoint x="1080" y="459.58" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram name="Page-1" id="e2Yb44B3FTRWfYq2OpMF">
+        <mxGraphModel dx="1323" dy="665" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-1" value="User" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="440" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-2" value="一つのUserデータを一元管理する一意なID" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="80" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-3" value="user_id" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-4" value="&lt;div&gt;PK&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="80" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-5" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-6" value="user_name" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-7" value="&lt;div&gt;一意なユーザネーム&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="120" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-8" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;user_display_name&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-9" value="ユーザの画面表示名" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="160" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-10" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="160" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-11" value="user_password" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-12" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="200" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-13" value="&lt;div&gt;ユーザのパスワード&lt;/div&gt;&lt;div&gt;（ハッシュ化）&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="200" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-14" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;user_news_count&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-15" value="ユーザが読んだニュースの数" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="280" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-16" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="280" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-17" value="UNSIGINED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-19" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-20" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-21" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-22" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-23" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-24" value="VARCHAR(16)" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-25" value="VARCHAR(16)" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-26" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;VARCHAR(255)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-27" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="240" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-28" value="user_icon" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-29" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;VARCHAR(128)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-30" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-31" value="&lt;div&gt;ユーザの&lt;/div&gt;&lt;div&gt;アイコンファイルパス&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="240" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-32" value="UNSIGNED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-33" value="News" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="40" width="440" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-34" value="一つのNewsデータを一元管理する一意なID" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="80" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-35" value="news_id" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-36" value="&lt;div&gt;PK&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="80" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-37" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="120" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-38" value="news_title" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-39" value="&lt;div&gt;ニュースタイトル&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="120" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-40" value="news_date" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-41" value="ニュース日時" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="160" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-42" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="160" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-43" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_content_ru&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-44" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="200" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-45" value="ニュース本文" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="200" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-46" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_read_count&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="440" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-47" value="ニュースを読んだユーザ数" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="440" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-48" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="440" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-49" value="UNSIGINED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-50" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-51" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-52" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-53" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-54" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="440" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-55" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-56" value="DATETIME" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-57" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-58" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="280" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-59" value="news_link" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-60" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-61" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;unique index&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-62" value="ニュースへのリンク" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="280" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-63" value="UNSIGNED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="440" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-64" value="&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;user_news_&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;preferred_country&lt;/font&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-65" value="ユーザの好みの国" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="320" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-66" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="320" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-67" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-68" value="JSON" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-69" value="&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;user_news_&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;preferred_topic&lt;/font&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-70" value="ユーザの好みのトピック" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="360" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-71" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="360" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-72" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-73" value="JSON" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-84" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="320" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-85" value="news_country" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-86" value="VARCHAR(16)" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-87" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;index&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-88" value="ニュースの国" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="320" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-89" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="360" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-90" value="news_topic" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-91" value="JSON" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-92" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-93" value="ニュースのトピック" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="360" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-94" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;news_content_ja&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-95" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="240" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-96" value="ニュース本文の対訳" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="240" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-97" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-98" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-186" value="News_RSS" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="40" width="440" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-187" value="&lt;div&gt;一つのNews_RSSデータを&lt;/div&gt;&lt;div&gt;一元管理する一意なID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="80" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-188" value="rss_id" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-189" value="&lt;div&gt;PK&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="80" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-190" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="120" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-191" value="rss_company" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-192" value="RSS発行のメディアネーム" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="120" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-193" value="rss_link" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-194" value="RSSのリンク" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="160" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-195" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="160" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-196" value="rss_create_date" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-197" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="200" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-198" value="RSSの追加日" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="200" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-199" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;rss_read_count&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-200" value="RSS発行のメディアを読んだユーザ数" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="320" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-201" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="320" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-202" value="UNSIGINED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-203" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-204" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="80" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-205" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;unique index&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-206" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-207" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-208" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="120" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-209" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-210" value="DATETIME" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="200" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-216" value="UNSIGNED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="320" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-217" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="280" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-218" value="rss_country" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-219" value="VARCHAR(16)" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-220" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-221" value="RSSの国" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="280" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-227" value="rss_update_date" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-228" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1240" y="240" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-229" value="RSSの更新日" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1520" y="240" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-230" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-231" value="DATETIME" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1360" y="240" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-232" value="user_admin" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-233" value="管理者権限の有無" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="400" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-234" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="400" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-235" value="non-nullable" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-236" value="BOOLEAN" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-237" value="&lt;div&gt;ニュースのRSSID&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="480" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-238" value="rss_id" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="480" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-239" value="FK" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="480" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-240" value="UNSIGINED INT" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="480" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-241" value="&lt;div&gt;non-nullable,&lt;/div&gt;&lt;div&gt;auto_increment&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="480" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-242" value="" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="dHz7YKarEHBjYfN8GyHP-186" target="dHz7YKarEHBjYfN8GyHP-33" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="790" y="360" as="sourcePoint"/>
+                        <mxPoint x="840" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-243" value="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="30" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-244" value="*" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="1080" y="30" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="dHz7YKarEHBjYfN8GyHP-245" value="" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="dHz7YKarEHBjYfN8GyHP-189" edge="1" target="dHz7YKarEHBjYfN8GyHP-237">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1160" y="100"/>
+                            <mxPoint x="1160" y="500"/>
+                        </Array>
+                        <mxPoint x="1240" y="459.58" as="sourcePoint"/>
+                        <mxPoint x="1080" y="459.58" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="640" y="400" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="news_photo" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="680" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="TEXT" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="760" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="nullable" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="840" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="ニュースの見出し写真" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="400" width="160" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>
