@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -122,5 +122,5 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 IMG_URL = 'img/'
-LOGO_PATH = IMG_URL + 'logo.svg'
-ICON_PATH = IMG_URL + 'icon.svg'
+LOGO_PATH = IMG_URL + 'logo.png'
+ICON_PATH = IMG_URL + 'icon.png'
