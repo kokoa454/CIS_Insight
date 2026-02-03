@@ -19,6 +19,6 @@ html, body {
 /* 地図のホバー効果をモバイルでは無効化（または調整） */
 @media (max-width: 1024px) {
     .country-path {
-        stroke-width: 0.8; /* スマホでは境界線を少し太く */
+        stroke-width: 0.8;
     }
 }

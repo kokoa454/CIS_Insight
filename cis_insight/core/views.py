@@ -1,7 +1,14 @@
 from django.shortcuts import render
-from .settings import LOGO_PATH
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+import json
+import secrets
 
-# landing.html
+from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER)
+from users.models import (PreUser, PreUserManager, User)
+
+# ランディングページ関連
 def render_landing_page(request):
     COUNTRIES = [
         {
@@ -154,3 +161,32 @@ def render_landing_page(request):
         'countries': COUNTRIES,
         'cis_countries': CIS_COUNTRIES
     })
+
+# ユーザー登録前の仮登録関連
+@csrf_exempt
+def pre_signup(request):
+    try:
+        data = json.loads(request.body)
+        email = data.get('email')
+
+        if PreUser.objects.filter(pre_user_email=email).exists():
+            return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに仮登録されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
+
+        if User.objects.filter(user_email=email).exists():
+            return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに本登録されています。'})
+
+        verification_code = generate_valification_code()
+        PreUser.objects.create_pre_user(email, verification_code)
+        send_verification_email(email, verification_code)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
+
+def generate_valification_code():
+    return secrets.token_hex(32)
+
+def send_verification_email(email, verification_code):
+    subject = "CIS Insight - アカウント登録用リンク"
+    message = f"以下のリンクでアカウント登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n{SITE_URL}/signup/{verification_code}"
+    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+    return True

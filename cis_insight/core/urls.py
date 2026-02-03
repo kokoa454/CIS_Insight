@@ -21,4 +21,5 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.render_landing_page, name='landing_page'),
+    path('api/pre_signup/', views.pre_signup, name='pre_signup'),
 ]
