@@ -1,14 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CIS Insight{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,7 +17,7 @@
                 extend: {
                     fontFamily: {
                         ru: ['"Times New Roman"', 'Times', 'serif'],
-                        ja: ['"Noto Sans JP"', 'Yu Gothic', 'Meiryo', 'sans-serif'],
+                        ja: ['"Noto Sans JP"', '"Hiragino Kaku Gothic ProN"', '"Meiryo"', 'sans-serif'],
                         en: ['"Inter"', 'sans-serif'],
                         cis_insight: ['"Times New Roman"', 'Times', 'serif']
                     },
@@ -24,39 +25,78 @@
             }
         }
     </script>
+
     <style type="text/tailwindcss">
         @layer components {
-            /* メイン見出し (H1など) */
-            .text-display {
-                @apply text-3xl md:text-5xl lg:text-6xl font-black tracking-tight;
+            /* 1. Typography */
+            .text-display { @apply text-4xl md:text-5xl lg:text-7xl font-black tracking-tight; }
+            .text-section-title { @apply text-2xl md:text-3xl lg:text-4xl font-bold; }
+            .text-subtitle { @apply text-lg md:text-xl lg:text-2xl font-bold; }
+            .text-standard { @apply text-sm md:text-base lg:text-lg leading-relaxed; }
+            .text-tiny { @apply text-xs md:text-xs lg:text-sm; }
+
+            /* 2. Layout & Spacing */
+            .section { @apply px-4 py-12 md:px-6 md:py-16 lg:py-24; }
+            .stack { @apply space-y-4 md:space-y-6 lg:space-y-8; }
+            .stack-lg { @apply space-y-8 md:space-y-12 lg:space-y-16; }
+            
+            .container-main { @apply max-w-7xl mx-auto; }
+            .container-narrow { @apply max-w-4xl mx-auto; }
+            .container-prose { @apply max-w-prose mx-auto; }
+
+            .grid-2 { @apply grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10; }
+            .grid-3 { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8; }
+
+            /* 3. UI Elements */
+            .card { @apply bg-white border border-slate-200 rounded-2xl shadow-sm p-4 md:p-6; }
+            
+            .btn-primary {
+                @apply bg-slate-900 text-white px-6 py-3 rounded-full font-bold transition-all hover:bg-slate-800 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; 
+            }
+            .btn-secondary { 
+                @apply bg-white text-slate-600 border border-slate-200 px-6 py-3 rounded-full font-bold transition-all hover:bg-slate-50 active:scale-95; 
             }
 
-            /* セクション見出し (H2) */
-            .text-section-title {
-                @apply text-2xl md:text-3xl lg:text-4xl font-bold;
-            }
+            .input-base { @apply w-full px-4 py-3 border border-slate-200 rounded-xl focus-ring; }
+            .input-error { @apply border-red-300 bg-red-50 focus-ring; }
 
-            /* 小見出し (H3 / カードタイトル) */
-            .text-subtitle {
-                @apply text-lg md:text-xl lg:text-2xl font-bold;
-            }
+            /* 4. Interaction & Feedback */
+            .focus-ring { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500; }
+            .tap-target { @apply min-h-[44px] min-w-[44px] flex items-center justify-center; }
+            
+            .status-success { @apply text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium; }
+            .status-warning { @apply text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium; }
+            .status-error { @apply text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium; }
 
-            /* 標準テキスト (P / リスト) */
-            .text-standard {
-                @apply text-sm md:text-base lg:text-lg leading-relaxed;
-            }
+            .link-primary { @apply text-blue-600 hover:text-blue-700 hover:underline transition-colors; }
+            .link-muted { @apply text-slate-500 hover:text-slate-600 hover:underline transition-colors; }
 
-            /* 極小テキスト (注釈 / ラベル) */
-            .text-tiny {
-                @apply text-[10px] md:text-xs lg:text-sm;
+            /* 5. Overlays & Loaders */
+            .modal-overlay { @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50; }
+            .modal-content { @apply bg-white rounded-2xl shadow-2xl p-6 max-w-md w-[90%] animate-slide-up; }
+            
+            .loading-overlay { @apply fixed inset-0 bg-white/80 flex items-center justify-center z-[60]; }
+            .spinner { @apply animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-blue-500; }
+
+            /* 6. Animations */
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideUp { 
+                from { transform: translateY(20px); opacity: 0; } 
+                to { transform: translateY(0); opacity: 1; } 
             }
+            .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+            .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
         }
+
+        /* 言語に応じたデフォルトフォントの切り替え */
+        :lang(ja) { font-family: theme('fontFamily.ja'); }
+        :lang(ru) { font-family: theme('fontFamily.ru'); }
+        :lang(en) { font-family: theme('fontFamily.en'); }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="bg-slate-50">
+<body class="bg-slate-50 text-slate-900 antialiased font-en">
     {% block main %}{% endblock %}
 </body>
-
 </html>
