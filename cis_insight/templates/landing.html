@@ -6,27 +6,29 @@
 {% endblock %}
 
 {% block main %}
-<div class="min-h-screen bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] bg-white overflow-x-hidden">
+<div class="min-h-screen bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] bg-slate-50/30 overflow-x-hidden">
 
     <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2 sm:gap-3.5 group cursor-pointer">
+        <div class="container-main px-4 h-16 sm:h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 group cursor-pointer">
                 <div class="p-1 bg-slate-50 rounded-lg group-hover:scale-105 transition-transform">
-                    <img src="{% static logo_path %}" class="w-8 h-8 sm:w-12 sm:h-12 object-contain">
+                    <img src="{% static logo_path %}" class="w-8 h-8 sm:w-12 sm:h-12 object-contain" alt="Logo">
                 </div>
-                <span class="text-subtitle tracking-tighter text-slate-900 font-cis_insight">CIS <span class="text-red-600">Insight</span></span>
+                <span class="text-subtitle tracking-tighter text-slate-900 font-cis_insight">
+                    CIS <span class="text-red-600">Insight</span>
+                </span>
             </div>
 
             <div class="flex items-center gap-4 sm:gap-8">
                 <a href="/signin" class="text-tiny font-semibold text-slate-600 hover:text-slate-900 transition-colors font-en">Sign In</a>
-                <a href="/signup" class="bg-slate-900 text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-tiny font-bold shadow-lg hover:bg-blue-600 transition-all active:scale-95 font-en">Get Started</a>
+                <a href="/signup" class="btn-primary py-2 sm:py-2.5 text-tiny shadow-lg hover:bg-blue-600">Get Started</a>
             </div>
         </div>
     </header>
 
-    <section class="relative pt-16 pb-12 sm:pt-32 sm:pb-20 px-4 sm:px-6">
-        <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-tiny font-bold mb-6 sm:mb-8 border border-blue-100 font-en">
+    <section class="section relative pt-16 sm:pt-32">
+        <div class="container-narrow text-center">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-tiny font-bold mb-8 border border-blue-100 font-en">
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -34,25 +36,27 @@
                 AI-Powered Eurasian Intelligence
             </span>
 
-            <h1 class="text-display text-slate-900 mb-6 sm:mb-8 font-ja">
-                ユーラシアの今を、<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-indigo-500 font-ja">AIの視点で。</span>
+            <h1 class="text-display text-slate-900 mb-8 font-ja">
+                ユーラシアの今を、<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-indigo-500 font-ja">AIの視点で。</span>
             </h1>
 
-            <p class="text-standard text-slate-500 max-w-2xl mx-auto mb-8 sm:mb-12 font-ja">
-                膨大なCIS諸国の情報をAIが瞬時に解析。 <br class="hidden md:block">言語の壁を越え、真実のインサイトをビジネスと研究へ提供します。
+            <p class="text-standard text-slate-500 max-w-2xl mx-auto mb-12 font-ja">
+                膨大なCIS諸国の情報をAIが瞬時に解析。<br class="hidden md:block">
+                言語の壁を越え、真実のインサイトをビジネスと研究へ提供します。
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button class="bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-subtitle shadow-xl hover:bg-slate-800 transition-all w-full sm:w-auto font-ja" onclick="window.location.href='/signup'">無料で始める</button>
-                <button class="bg-white text-slate-600 border border-slate-200 px-8 py-4 rounded-xl font-bold text-subtitle hover:bg-slate-50 transition-all w-full sm:w-auto font-ja" onclick="document.getElementById('features').scrollIntoView({ behavior: 'smooth' });">詳しい内容を見る</button>
+                <button class="btn-primary px-8 py-4 text-subtitle shadow-xl w-full sm:w-auto font-ja" onclick="window.location.href='/signup'">無料で始める</button>
+                <button class="btn-secondary px-8 py-4 text-subtitle w-full sm:w-auto font-ja" onclick="document.getElementById('features').scrollIntoView({ behavior: 'smooth' });">詳しい内容を見る</button>
             </div>
         </div>
     </section>
 
-    <section id="features" class="py-16 sm:py-24 bg-slate-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
-            <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-                <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 order-2 lg:order-1">
+    <section id="features" class="section bg-slate-100/50">
+        <div class="container-main">
+            <div class="grid-2 items-center">
+                <div class="card p-0 overflow-hidden transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 order-2 lg:order-1 border-slate-200 shadow-2xl">
                     <div class="bg-slate-800 px-4 py-2 flex gap-2">
                         <div class="w-3 h-3 rounded-full bg-red-400"></div>
                         <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
@@ -68,15 +72,15 @@
                             <p class="text-slate-800 leading-relaxed font-bold font-ja">「カザフスタン大統領、ITセクター発展に関する新たな大統領令に署名...」</p>
                         </div>
                     </div>
-                    <div class="p-4 border-t border-slate-50 bg-slate-50/50 flex gap-2">
-                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-tiny font-bold font-en">#Kazakhstan</span>
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-tiny font-bold font-en">#Technology</span>
+                    <div class="p-4 border-t border-slate-50 bg-slate-50 flex gap-2">
+                        <span class="status-success bg-blue-100 text-blue-700">#Kazakhstan</span>
+                        <span class="status-success bg-green-100 text-green-700">#Technology</span>
                     </div>
                 </div>
 
-                <div class="order-1 lg:order-2">
-                    <h2 class="text-section-title text-slate-900 mb-6 font-ja">一次情報への、最短ルート。</h2>
-                    <p class="text-standard text-slate-600 mb-8 font-ja">主要メディアが報じない現地の詳細な動向を、GeminiとDeepLのハイブリッドAIが解析。原文のニュアンスを保ったまま、あなたの言語で理解できます。</p>
+                <div class="order-1 lg:order-2 stack">
+                    <h2 class="text-section-title text-slate-900 font-ja">一次情報への、最短ルート。</h2>
+                    <p class="text-standard text-slate-600 font-ja">主要メディアが報じない現地の詳細な動向を、GeminiとDeepLのハイブリッドAIが解析。原文のニュアンスを保ったまま、あなたの言語で理解できます。</p>
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3 text-slate-700 font-medium font-ja text-standard">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z" /></svg>
@@ -92,61 +96,65 @@
         </div>
     </section>
 
-    <section class="py-16 sm:py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-            <h2 class="text-section-title text-slate-900 mb-8 sm:mb-12 font-ja">関心にパーソナライズ。</h2>
+    <section class="section bg-white">
+        <div class="container-main text-center stack">
+            <h2 class="text-section-title text-slate-900 font-ja">関心にパーソナライズ。</h2>
             <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
-                <div class="px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 border-red-500 bg-red-50 text-red-700 font-bold cursor-default text-tiny font-en flex items-center gap-2">
+                <div class="px-5 py-2.5 rounded-full border-2 border-red-500 bg-red-50 text-red-700 font-bold text-tiny font-en flex items-center gap-2">
                     <span class="fi fi-ru"></span> Russia
                 </div>
-                <div class="px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors text-tiny font-en flex items-center gap-2">
+                <div class="px-5 py-2.5 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors cursor-pointer text-tiny font-en flex items-center gap-2">
                     <span class="fi fi-kg"></span> Kyrgyzstan
                 </div>
-                <div class="px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 border-red-500 bg-red-50 text-red-700 font-bold cursor-default text-tiny font-en">💻 IT / Tech</div>
-                <div class="px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors text-tiny font-en">💡 Energy</div>
-                <div class="px-4 py-2 sm:px-6 sm:py-3 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors text-tiny font-en">🏛️ Politics</div>
+                <div class="px-5 py-2.5 rounded-full border-2 border-red-500 bg-red-50 text-red-700 font-bold text-tiny font-en">💻 IT / Tech</div>
+                <div class="px-5 py-2.5 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors cursor-pointer text-tiny font-en">💡 Energy</div>
+                <div class="px-5 py-2.5 rounded-full border-2 border-slate-200 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-500 transition-colors cursor-pointer text-tiny font-en">🏛️ Politics</div>
             </div>
-            <p class="mt-8 sm:mt-12 text-slate-500 text-standard max-w-xl mx-auto font-ja px-4">「好みの国」と「トピック」を登録するだけで、AIがあなたに最適化されたタイムラインを生成します。</p>
+            <p class="text-slate-500 text-standard max-w-xl mx-auto font-ja">
+                「好みの国」と「トピック」を登録するだけで、AIがあなたに最適化されたタイムラインを生成します。
+            </p>
         </div>
     </section>
 
-    <section class="py-16 sm:py-20 bg-slate-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-            <h2 class="text-section-title mb-10 sm:mb-12 font-ja">信頼できる一次情報源から。</h2>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 opacity-70">
-                <div class="flex flex-col items-center">
+    <section class="section bg-slate-900 text-white">
+        <div class="container-main text-center stack-lg">
+            <h2 class="text-section-title font-ja">信頼できる一次情報源から。</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 opacity-80">
+                <div class="stack-small">
                     <span class="text-subtitle font-en">Telegram</span>
-                    <p class="text-tiny text-slate-400 mt-2 font-ja">現地速報チャンネル</p>
+                    <p class="text-tiny text-slate-400 font-ja">現地速報チャンネル</p>
                 </div>
-                <div class="flex flex-col items-center">
+                <div class="stack-small">
                     <span class="text-subtitle font-en">RSS Feeds</span>
-                    <p class="text-tiny text-slate-400 mt-2 font-ja">主要新聞・通信社</p>
+                    <p class="text-tiny text-slate-400 font-ja">主要新聞・通信社</p>
                 </div>
-                <div class="flex flex-col items-center">
+                <div class="stack-small">
                     <span class="text-subtitle font-en">Official</span>
-                    <p class="text-tiny text-slate-400 mt-2 font-ja">政府機関リリース</p>
+                    <p class="text-tiny text-slate-400 font-ja">政府機関リリース</p>
                 </div>
-                <div class="flex flex-col items-center">
+                <div class="stack-small">
                     <span class="text-subtitle font-en">Gemini / DeepL</span>
-                    <p class="text-tiny text-slate-400 mt-2 font-ja">整合性チェック</p>
+                    <p class="text-tiny text-slate-400 font-ja">整合性チェック</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-16 sm:py-24 bg-white overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <h2 class="text-section-title text-slate-900 mb-4 text-center font-ja">ユーラシアを可視化する。</h2>
-            <p class="text-slate-500 mb-8 sm:mb-12 text-center max-w-xl mx-auto font-ja text-standard">すべてのCIS加盟国のニュースが対象。</p>
+    <section class="section bg-white">
+        <div class="container-main stack">
+            <div class="text-center stack-small">
+                <h2 class="text-section-title text-slate-900 font-ja">ユーラシアを可視化する。</h2>
+                <p class="text-slate-500 font-ja text-standard">すべてのCIS加盟国のニュースが対象。</p>
+            </div>
 
             <div class="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
-                <div class="lg:col-span-2 bg-slate-50 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-100 shadow-inner relative overflow-hidden group/map">
-                    <div id="country-tooltip" class="absolute pointer-events-none opacity-0 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-tiny font-bold transition-all duration-200 z-50 shadow-xl border border-white/10">Country Name</div>
+                <div class="lg:col-span-2 bg-slate-50 rounded-3xl p-4 sm:p-8 border border-slate-100 shadow-inner relative overflow-hidden">
+                    <div id="country-tooltip" class="absolute pointer-events-none opacity-0 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-tiny font-bold z-50 shadow-xl border border-white/10">Country Name</div>
 
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="1000 -30 800 400" class="w-full h-auto drop-shadow-2xl">
                         <g id="map-layer">
                             {% for country in countries %}
-                            <path id="map-{{ country.id }}" data-name="{{ country.name }}" d="{{ country.path }}" fill="#ffffff" stroke="#000000" stroke-width="0.5"
+                            <path id="map-{{ country.id }}" data-name="{{ country.name }}" d="{{ country.path }}" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5"
                                 class="country-path transition-all duration-300 cursor-pointer hover:fill-red-500 hover:stroke-red-700 origin-center"
                                 style="vector-effect: non-scaling-stroke; transform-box: fill-box;" />
                             {% endfor %}
@@ -155,12 +163,12 @@
                     <p class="text-slate-400 mt-4 text-center text-tiny font-ja">CIS加盟国と周辺国</p>
                 </div>
 
-                <div class="space-y-2 max-h-[400px] lg:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar border-t lg:border-t-0 pt-6 lg:pt-0">
-                    <h3 class="text-tiny font-bold text-slate-400 uppercase tracking-widest mb-4 font-en">Target Countries</h3>
-                    <div class="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                <div class="space-y-4">
+                    <h3 class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Target Countries</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-1 gap-2 max-h-[400px] lg:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {% for country in cis_countries %}
                         <button id="btn-{{ country.id }}"
-                            class="country-btn flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-slate-200 hover:border-red-500 hover:bg-red-50 group transition-all">
+                            class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-red-500 hover:bg-red-50 group transition-all">
                             <span class="font-bold text-slate-700 group-hover:text-red-700 font-en text-tiny">{{ country.name }}</span>
                             <span class="text-tiny font-bold text-slate-400 group-hover:text-red-400">{{ country.id }}</span>
                         </button>
@@ -171,13 +179,20 @@
         </div>
     </section>
 
-    <section class="py-16 sm:py-24 bg-white">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6">
-            <div class="bg-slate-50 rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-100 relative overflow-hidden shadow-sm">
-                <div class="absolute top-0 right-0 bg-red-600 text-white px-3 py-1 sm:px-4 sm:py-1 text-tiny font-bold uppercase tracking-widest">Free Plan</div>
+    <!-- <section class="section bg-white">
+        <div class="container-narrow">
+            <div class="card bg-slate-50 p-6 sm:p-10 relative overflow-hidden border-slate-100">
+                <div class="absolute top-0 right-0 bg-red-600 text-white px-4 py-1 text-tiny font-bold uppercase tracking-widest">Free Plan</div>
                 <h3 class="text-subtitle mb-4 font-ja">今すぐ無料で体験。</h3>
                 <p class="text-standard text-slate-600 mb-8 font-ja">登録するだけで、すべての記事のタイトル翻訳と、月間一定数の詳細対訳が無料で利用可能です。</p>
-                <div class="space-y-4 mb-2">
+                
+                <div class="space-y-4">
+                    {% for step, text in steps %}
+                    <div class="flex items-start gap-3 text-standard">
+                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">{{ forloop.counter }}</div>
+                        <span class="text-slate-700 font-ja">{{ text }}</span>
+                    </div>
+                    {% endfor %}
                     <div class="flex items-start gap-3 text-standard">
                         <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">1</div>
                         <span class="text-slate-700 font-ja">アカウントを作成（30秒）</span>
@@ -193,10 +208,11 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
 
-    <footer class="py-8 sm:py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-4 leading-relaxed">
-        &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> AI-Powered Eurasian Intelligence Platform.
+    <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-4 leading-relaxed">
+        &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> 
+        AI-Powered Eurasian Intelligence Platform.
     </footer>
 </div>
 <script src="{% static 'js/landing.js' %}"></script>
