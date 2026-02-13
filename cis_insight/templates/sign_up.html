@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}アカウント作成 | CIS Insight{% endblock %}
+{% block title %}アカウント登録 | CIS Insight{% endblock %}
 
 {% block main %}
 <div class="min-h-screen bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] bg-white flex flex-col">
@@ -24,7 +24,7 @@
                 <div class="stack mb-10 text-center">
                     <h1 class="text-2xl sm:text-section-title font-ja text-slate-900 font-bold">本登録を完了する</h1>
                     <p class="text-standard text-slate-500 font-ja mt-2">
-                        インテリジェンス・フィードの構築を開始しましょう。
+                        インテリジェンス・フィードの構築を<br>開始しましょう。
                     </p>
                 </div>
 
@@ -46,7 +46,6 @@
 
                     <div class="space-y-2">
                         <label for="username" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">User Name</label>
-                        <p id="username-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="text" id="username" name="username" required placeholder="example_user"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
                         <p class="text-tiny text-slate-400 font-ja">※ 半角英数字16文字以内（小文字英数字またはアンダースコアのみ）</p>
@@ -54,7 +53,6 @@
 
                     <div class="space-y-2">
                         <label for="display_name" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Display Name</label>
-                        <p id="display_name-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="text" id="display_name" name="display_name" required placeholder="いなり ごろう"
                             class="input-base w-full font-ja focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
                         <p class="text-tiny text-slate-400 font-ja">※ 16文字以内</p>
@@ -62,7 +60,6 @@
 
                     <div class="space-y-2">
                         <label for="password" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Password</label>
-                        <p id="password-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="password" id="password" name="password" required placeholder="••••••••"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
                         <p class="text-tiny text-slate-400 font-ja">※ 8文字以上の英数字</p>
@@ -70,7 +67,6 @@
 
                     <div class="space-y-2">
                         <label for="password-confirm" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Password Confirm</label>
-                        <p id="password-confirm-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="password" id="password-confirm" name="password-confirm" required placeholder="••••••••"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
                     </div>
