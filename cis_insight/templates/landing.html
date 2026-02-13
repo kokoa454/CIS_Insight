@@ -12,12 +12,12 @@
         <div class="modal-content relative !max-w-md !p-0 overflow-hidden">
             <div class="p-8">
                 <h3 class="text-subtitle font-ja text-slate-900 mb-2">まずはメールアドレスを登録</h3>
-                <p class="text-tiny text-slate-500 font-ja mb-6">ご入力いただいたアドレスに、アカウント作成用リンクをお送りします。</p>
+                <p class="text-tiny text-slate-500 font-ja mb-6">ご入力いただいたアドレスに、アカウント仮登録用リンクをお送りします。仮登録後、本登録に移行することができます。</p>
                 <form id="sign-up-form" class="space-y-4">
                     <div>
                         <input type="email" id="user-email" required placeholder="example@mail.com" class="input-base font-en">
                     </div>
-                    <button type="submit" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200">登録用リンクを送信する</button>
+                    <button type="submit" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">仮登録用リンクを送信する</button>
                 </form>
                 <button onclick="closeModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">キャンセル</button>
             </div>
@@ -100,8 +100,8 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button class="btn-primary px-8 py-4 text-subtitle shadow-xl w-full sm:w-auto font-ja" onclick="openModal()">無料で始める</button>
-                <button class="btn-secondary px-8 py-4 text-subtitle w-full sm:w-auto font-ja" onclick="document.getElementById('features').scrollIntoView({ behavior: 'smooth' });">詳しい内容を見る</button>
+                <button class="btn-primary px-8 py-4 text-subtitle shadow-xl w-full sm:w-auto font-ja transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95" onclick="openModal()">無料で始める</button>
+                <button class="btn-secondary px-8 py-4 text-subtitle w-full sm:w-auto font-ja transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-slate-100 active:scale-95" onclick="document.getElementById('features').scrollIntoView({ behavior: 'smooth' });">詳しい内容を見る</button>
             </div>
         </div>
     </section>
