@@ -105,7 +105,7 @@ document.getElementById('final-signup-form').addEventListener('submit', async (e
     btnIcon.classList.add('hidden');
     errorMsg.classList.add('hidden');
 
-    fetch(form.action, {
+    const response = await fetch(form.action, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -113,22 +113,14 @@ document.getElementById('final-signup-form').addEventListener('submit', async (e
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status == "success") {
-            window.location.href = '/dashboard/';
-        } else {
-            errorMsg.innerText = data.message;
-            errorMsg.classList.remove('hidden');
-            resetButton();
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        errorMsg.innerText = "通信エラーが発生しました。";
+    const data = await response.json();
+    if (data.status == "success") {
+        window.location.href = '/dashboard/';
+    } else {
+        errorMsg.innerText = data.message;
         errorMsg.classList.remove('hidden');
         resetButton();
-    });
+    }
 
     function resetButton() {
         submitBtn.disabled = false;

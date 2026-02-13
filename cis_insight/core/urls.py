@@ -18,12 +18,16 @@ from django.contrib import admin
 from django.urls import path
 from . import views
 from users import views as users_views
+from news import views as news_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.render_landing_page, name='landing_page'),
     path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'),
+    path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
+    path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
     path('error/', views.render_error_page, name='error'),
     path('api/pre_sign_up/', views.pre_sign_up, name='pre_sign_up'),
     path('api/sign_up/', users_views.sign_up, name='sign_up'),
+    path('api/sign_in/', users_views.sign_in, name='sign_in'),
 ]

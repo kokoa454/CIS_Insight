@@ -75,6 +75,7 @@ class UserManager(BaseUserManager):
             user_name = user_name,
             user_email = user_email,
             user_display_name = user_display_name,
+            **extra_fields
         )
         
         user.set_password(password)
@@ -99,10 +100,10 @@ class UserManager(BaseUserManager):
         except Exception as e:
             return False
 
-    def create_superuser(self, user_name, user_email, password=None, **extra_fields):
+    def create_superuser(self, user_name, user_email, user_display_name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(user_name, user_email, password, **extra_fields)
+        return self.create_user(user_name, user_email, user_display_name, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(
@@ -171,8 +172,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'user_email'
-    REQUIRED_FIELDS = ['user_name']
+    USERNAME_FIELD = 'user_name'
+    REQUIRED_FIELDS = ['user_email', 'user_display_name']
 
     def __str__(self):
         return self.user_name

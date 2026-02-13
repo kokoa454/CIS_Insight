@@ -2,12 +2,13 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login
 
 from .models import PreUser
 from .models import User
 from core.settings import (SITE_URL, EMAIL_HOST_USER)
 
-# ユーザー登録ページ関連
+# ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
     try:
         pre_user = PreUser.objects.get_pre_user(verification_code)
@@ -19,7 +20,7 @@ def render_sign_up_page(request, verification_code):
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
     return render(request, 'error.html')
 
-# ユーザー登録関連
+# ユーザ登録関連
 @csrf_exempt
 def sign_up(request):
     try:
@@ -48,3 +49,29 @@ def send_sign_up_email(email, user_name, user_display_name):
     message = f"CIS Insightへの本登録が完了しました。\nアカウント登録内容は以下のとおりです。\n\nユーザー名: {user_name}\n表示名: {user_display_name}\nメールアドレス: {email}\n\n{SITE_URL}"
     send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
     return True
+
+# ログインページ関連
+def render_sign_in_page(request):
+    return render(request, 'sign_in.html')
+
+# ログイン関連
+def sign_in(request):
+    try:
+        user_name = request.POST.get('username')
+        password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me')
+
+        user = authenticate(request, username = user_name, password = password)
+        
+        if user is None:
+            return JsonResponse({'status': "error", "message" : "ユーザー名またはパスワードが正しくありません。"})
+        
+        if remember_me == "on":
+            request.session.set_expiry(1209600) # 2週間保持
+        else:
+            request.session.set_expiry(0)
+
+        login(request, user)
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})

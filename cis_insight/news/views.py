@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+# ダッシュボードページ関連
+def render_dashboard_page(request):
+    return render(request, 'dashboard.html')
