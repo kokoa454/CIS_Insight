@@ -34,34 +34,45 @@
                     <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm"></div>
 
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-en">Email Address</label>
+                        <label class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Email Address</label>
                         <div class="relative">
                             <input type="email" name="email" value="{{ user_email }}" readonly 
                                 class="input-base w-full bg-slate-50 text-slate-500 cursor-not-allowed border-dashed font-en py-3 px-4 rounded-lg border border-slate-200">
                             <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                                <span class="status-success bg-green-100 text-green-700 py-1 px-2 rounded text-[10px] uppercase font-bold tracking-tighter">Verified</span>
+                                <span class="status-success bg-green-100 text-green-700 py-1 px-2 rounded text-tiny uppercase font-bold tracking-tighter">Verified</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="space-y-2">
-                        <label for="username" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-en">User Name</label>
+                        <label for="username" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">User Name</label>
+                        <p id="username-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="text" id="username" name="username" required placeholder="example_user"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
-                        <p class="text-[10px] text-slate-400 font-ja">※ 半角英数字16文字以内（ログインに使用）</p>
+                        <p class="text-tiny text-slate-400 font-ja">※ 半角英数字16文字以内（小文字英数字またはアンダースコアのみ）</p>
                     </div>
 
                     <div class="space-y-2">
-                        <label for="display_name" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-en">Display Name</label>
+                        <label for="display_name" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Display Name</label>
+                        <p id="display_name-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="text" id="display_name" name="display_name" required placeholder="いなり ごろう"
                             class="input-base w-full font-ja focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
+                        <p class="text-tiny text-slate-400 font-ja">※ 16文字以内</p>
                     </div>
 
                     <div class="space-y-2">
-                        <label for="password" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-en">Password</label>
+                        <label for="password" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Password</label>
+                        <p id="password-status" class="text-tiny font-bold mt-1" hidden></p>
                         <input type="password" id="password" name="password" required placeholder="••••••••"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
-                        <p class="text-[10px] text-slate-400 font-ja">※ 8文字以上の英数字を推奨</p>
+                        <p class="text-tiny text-slate-400 font-ja">※ 8文字以上の英数字</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="password-confirm" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Password Confirm</label>
+                        <p id="password-confirm-status" class="text-tiny font-bold mt-1" hidden></p>
+                        <input type="password" id="password-confirm" name="password-confirm" required placeholder="••••••••"
+                            class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">
                     </div>
 
                     <div class="pt-4">
@@ -76,14 +87,14 @@
                     <input type="hidden" name="verification_code" value="{{ verification_code }}">
                 </form>
 
-                <p class="mt-8 text-center text-[10px] text-slate-400 font-ja leading-relaxed">
+                <p class="mt-8 text-center text-tiny text-slate-400 font-ja leading-relaxed">
                     登録を継続することで、<a href="#" class="text-slate-600 underline">利用規約</a>と<a href="#" class="text-slate-600 underline">プライバシーポリシー</a>に同意したことになります。
                 </p>
             </div>
         </div>
     </main>
 
-    <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-[10px] font-en px-6 leading-relaxed">
+    <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-6 leading-relaxed">
         &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> 
         AI-Powered Eurasian Intelligence Platform.
     </footer>
