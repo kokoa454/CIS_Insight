@@ -14,6 +14,26 @@ class PreUserManager(models.Manager):
         pre_user.save(using=self._db)
         return pre_user
 
+    def get_pre_user(self, verification_code):
+        try:
+            pre_user = self.get(verification_code = verification_code)
+            return pre_user
+        except Exception as e:
+            return None
+
+    def verify_pre_user(self, verification_code):
+        try:
+            pre_user = self.get(verification_code = verification_code)
+
+            if verification_code == pre_user.verification_code:
+                pre_user.is_verified = True
+                pre_user.save(using=self._db)
+                return pre_user
+            else:
+                return None
+        except Exception as e:
+            return None
+
 class PreUser(models.Model):
     pre_user_id = models.AutoField(
         primary_key = True,
@@ -45,7 +65,7 @@ class PreUser(models.Model):
 
 # 本登録用
 class UserManager(BaseUserManager):
-    def create_user(self, user_name, user_email, password=None, **extra_fields):
+    def create_user(self, user_name, user_email, user_display_name, password=None, **extra_fields):
         if not user_name:
             raise ValueError('Users must have a username')
         if not user_email:
@@ -54,11 +74,30 @@ class UserManager(BaseUserManager):
         user = self.model(
             user_name = user_name,
             user_email = user_email,
+            user_display_name = user_display_name,
         )
         
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    def is_user_email_duplicate(self, user_email):
+        try:
+            if self.filter(user_email = user_email).exists():
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
+
+    def is_user_name_duplicate(self, user_name):
+        try:
+            if self.filter(user_name = user_name).exists():
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
 
     def create_superuser(self, user_name, user_email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)

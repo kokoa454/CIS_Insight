@@ -164,7 +164,7 @@ def render_landing_page(request):
 
 # ユーザー登録前の仮登録関連
 @csrf_exempt
-def pre_signup(request):
+def pre_sign_up(request):
     try:
         data = json.loads(request.body)
         email = data.get('email')
@@ -175,18 +175,22 @@ def pre_signup(request):
         if User.objects.filter(user_email=email).exists():
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに本登録されています。'})
 
-        verification_code = generate_valification_code()
+        verification_code = generate_verification_code()
         PreUser.objects.create_pre_user(email, verification_code)
         send_verification_email(email, verification_code)
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
 
-def generate_valification_code():
+def generate_verification_code():
     return secrets.token_hex(32)
 
 def send_verification_email(email, verification_code):
     subject = "CIS Insight - アカウント登録用リンク"
-    message = f"以下のリンクでアカウント登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n{SITE_URL}/signup/{verification_code}"
+    message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
     send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
     return True
+
+# エラーページ関連
+def render_error_page(request):
+    return render(request, 'error.html')

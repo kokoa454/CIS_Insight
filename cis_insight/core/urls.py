@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
+from users import views as users_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.render_landing_page, name='landing_page'),
-    path('api/pre_signup/', views.pre_signup, name='pre_signup'),
+    path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'),
+    path('error/', views.render_error_page, name='error'),
+    path('api/pre_sign_up/', views.pre_sign_up, name='pre_sign_up'),
+    path('api/sign_up/', users_views.sign_up, name='sign_up'),
 ]

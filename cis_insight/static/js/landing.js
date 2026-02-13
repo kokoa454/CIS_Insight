@@ -104,14 +104,14 @@ function hideError() {
 }
 
 // フォーム送信
-document.getElementById('signup-form').addEventListener('submit', function(e) {
+document.getElementById('sign-up-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const csrfToken = document.cookie.split('; ')
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1];
     const email = document.getElementById('user-email').value;
 
-    fetch('api/pre_signup/', {
+    fetch('api/pre_sign_up/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
