@@ -15,7 +15,7 @@
             <div class="p-8">
                 <h3 class="text-subtitle font-ja text-slate-900 mb-2">まずはメールアドレスを登録</h3>
                 <p class="text-tiny text-slate-500 font-ja mb-6">ご入力いただいたアドレスに、アカウント仮登録用リンクをお送りします。仮登録後、本登録に移行することができます。</p>
-                <form id="sign-up-form" action="{% url 'api_pre_sign_up' %}" class="space-y-4">
+                <form id="pre-sign-up-form" action="{% url 'api_pre_sign_up' %}" class="space-y-4">
                     {% csrf_token %}
                     <div>
                         <input type="email" id="user-email" required placeholder="example@mail.com" class="input-base font-en">
@@ -296,5 +296,6 @@
         AI-Powered Eurasian Intelligence Platform.
     </footer>
 </div>
+
 <script src="{% static 'js/landing.js' %}"></script>
 {% endblock %}

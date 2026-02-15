@@ -16,7 +16,7 @@
         <div class="relative">
             <button onclick="toggleMobileUserMenu()" class="focus:outline-none block">
                 {% if user.user_icon %}
-                <img src="{{ user.user_icon }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
+                <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
                 {% else %}
                 <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white border-2 border-slate-800">
                     {{ user.user_name|slice:":1"|upper }}
@@ -89,7 +89,7 @@
             <div class="bg-slate-800/40 rounded-2xl p-4">
                 <div class="flex items-center gap-3 mb-3">
                     {% if user.user_icon %}
-                    <img src="{{ user.user_icon }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
+                    <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
                     {% else %}
                     <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
                         {{ user.user_name|slice:":1"|upper }}

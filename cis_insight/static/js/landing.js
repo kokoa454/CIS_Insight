@@ -104,8 +104,10 @@ function hideError() {
 }
 
 // フォーム送信
-document.getElementById('sign-up-form').addEventListener('submit', async function(e) {
+document.getElementById('pre-sign-up-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    const form = e.target;
     const csrfToken = document.cookie.split('; ')
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1];

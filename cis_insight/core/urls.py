@@ -19,6 +19,8 @@ from django.urls import path
 from . import views
 from users import views as users_views
 from news import views as news_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,10 +32,17 @@ urlpatterns = [
     path('news_settings/', users_views.render_news_settings_page, name='news_settings'),
     path('display_settings/', users_views.render_display_settings_page, name='display_settings'),
     path('account_settings/', users_views.render_account_settings_page, name='account_settings'),
+    path('password_change/', users_views.render_password_change_page, name='password_change'),
     path('error/', views.render_error_page, name='error'),
     path('admin/', users_views.render_admin_page, name='admin'),
     path('api/pre_sign_up/', views.pre_sign_up, name='api_pre_sign_up'),
     path('api/sign_up/', users_views.sign_up, name='api_sign_up'),
     path('api/sign_in/', users_views.sign_in, name='api_sign_in'),
     path('api/news_settings/', users_views.news_settings, name='api_news_settings'),
+    path('api/account_settings/', users_views.account_settings, name='api_account_settings'),
+    path('api/password_change/', users_views.password_change, name='api_password_change'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

@@ -6,6 +6,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 import re
+import random
+import string
 
 from .models import PreUser
 from .models import User
@@ -123,9 +125,63 @@ def news_settings(request):
 def render_display_settings_page(request):
     return render(request, 'display_settings.html')
 
+# アカウント設定ページ関連
 @login_required
 def render_account_settings_page(request):
-    return render(request, 'account_settings.html')
+    user = get_user_model().objects.get(pk=request.user.pk)
+    return render(request, 'account_settings.html', {'user': user})
+
+@csrf_exempt
+def account_settings(request):
+    try:
+        user = get_user_model().objects.get(pk=request.user.pk)
+        user_name = request.POST.get('user_name')
+        user_display_name = request.POST.get('display_name')
+        user_icon = request.FILES.get('icon')
+        user_email = request.POST.get('email')
+
+        if user_icon:
+            if user.user_icon:
+                user.user_icon.delete(save = False)
+
+            new_user_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+            user.user_icon.save(new_user_icon_name, user_icon, save = False)
+
+        if user_name != user.user_name:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+
+        if len(user_display_name) > 16:
+            return JsonResponse({'status': "error", "message" : "表示名は16文字以内で入力してください。"})
+
+        if user_email != user.user_email:
+            if User.objects.is_user_email_duplicate(user_email):
+                return JsonResponse({'status': "error", "message" : "既に別のアカウントで登録されているメールアドレスです。"})
+            # else: TODO 新規メアドの認証後、DB更新するようにする
+            #     send_account_settings_email(user_email, user_name, user_display_name)
+
+        user.user_display_name = user_display_name
+        user.user_email = user_email
+        user.save()
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
+
+# パスワード変更ページ関連
+@login_required
+def render_password_change_page(request):
+    return render(request, 'password_change.html')
+
+# パスワード変更関連
+@csrf_exempt
+def password_change(request):
+    try:
+        user = get_user_model().objects.get(pk=request.user.pk)
+        password = request.POST.get('password')
+        user.set_password(password)
+        user.save()
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "パスワード変更に失敗しました。", "error_message": str(e)})
 
 # 管理者ページ関連
 @login_required

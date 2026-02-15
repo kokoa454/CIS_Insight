@@ -16,7 +16,7 @@
         <div class="relative">
             <button onclick="toggleMobileUserMenu()" class="focus:outline-none block">
                 {% if user.user_icon %}
-                <img src="{{ user.user_icon }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
+                <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
                 {% else %}
                 <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white border-2 border-slate-800">
                     {{ user.user_name|slice:":1"|upper }}
@@ -89,7 +89,7 @@
             <div class="bg-slate-800/40 rounded-2xl p-4">
                 <div class="flex items-center gap-3 mb-3">
                     {% if user.user_icon %}
-                    <img src="{{ user.user_icon }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
+                    <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
                     {% else %}
                     <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
                         {{ user.user_name|slice:":1"|upper }}
@@ -118,15 +118,15 @@
         <div class="max-w-4xl mx-auto">
             <header class="mb-10">
                 <h1 class="text-2xl font-black text-slate-900 font-en uppercase tracking-tight">News Settings</h1>
-                <p class="text-slate-500 text-sm mt-2 font-ja">購読する地域とトピックをカスタマイズして、あなた専用のインテリジェンス・フィードを構築します。</p>
+                <p class="text-slate-500 text-sm mt-2 font-ja">購読する地域とトピックをカスタマイズします。</p>
             </header>
 
-            <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm"></div>
+            <div id="form-error" class="hidden text-center py-3 mb-6 rounded-xl bg-red-50 text-red-600 text-sm font-bold animate-fade-in"></div>
 
-            <form id="news-settings-form" method="post" action="{% url 'api_news_settings' %}" class="space-y-10">
+            <form id="news-settings-form" method="post" action="{% url 'api_news_settings' %}" class="space-y-8">
                 {% csrf_token %}
                 
-                <section class="space-y-4">
+                <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
                     <div class="flex items-center gap-3 border-l-4 border-red-600 pl-4">
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">Select Regions</h2>
                     </div>
@@ -135,7 +135,7 @@
                         <label class="relative group cursor-pointer">
                             <input type="checkbox" name="countries" value="{{ country.id }}" class="peer hidden" 
                                 {% if country.id in user.user_news_referred_country %}checked{% endif %}>
-                            <div class="p-4 bg-white border border-slate-200 rounded-2xl transition-all peer-checked:border-red-500 peer-checked:bg-red-50 group-hover:border-slate-300">
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl transition-all peer-checked:border-red-500 peer-checked:bg-red-50 group-hover:border-slate-300">
                                 <div class="flex flex-col items-center gap-2">
                                     <span class="text-5xl fi {{ country.emoji }}"></span>
                                     <span class="text-tiny font-bold text-slate-700 peer-checked:text-red-600 transition-colors">{{ country.name }}</span>
@@ -146,7 +146,7 @@
                     </div>
                 </section>
 
-                <section class="space-y-4">
+                <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
                     <div class="flex items-center gap-3 border-l-4 border-red-600 pl-4">
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">Select Topics</h2>
                     </div>
@@ -155,7 +155,7 @@
                         <label class="cursor-pointer">
                             <input type="checkbox" name="topics" value="{{ topic.id }}" class="peer hidden" 
                                 {% if topic.id in user.user_news_referred_topic %}checked{% endif %}>
-                            <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-tiny font-bold text-slate-700 transition-all peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-500 peer-checked:font-black hover:border-slate-300 inline-block font-ja">
+                            <span class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-tiny font-bold text-slate-700 transition-all peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-500 peer-checked:font-black hover:border-slate-300 inline-block font-ja">
                                 # {{ topic.emoji }} {{ topic.name }}
                             </span>
                         </label>
@@ -163,8 +163,8 @@
                     </div>
                 </section>
 
-                <button type="submit" id="submit-btn" class="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
-                    <span id="btn-text">設定保存</span>
+                <button type="submit" id="submit-btn" class="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95">
+                    <span id="btn-text">設定を保存する</span>
                     <div id="btn-spinner" class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                     <svg id="btn-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
