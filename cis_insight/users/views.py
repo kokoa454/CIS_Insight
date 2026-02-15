@@ -3,6 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+import re
 
 from .models import PreUser
 from .models import User
@@ -35,13 +37,29 @@ def sign_up(request):
         
         if User.objects.is_user_name_duplicate(user_name):
             return JsonResponse({'status': "error", "message" : "ユーザー名が重複しています。"})
+
+        registered_user_email = PreUser.objects.get_pre_user(verification_code).pre_user_email
+        if registered_user_email != user_email:
+            return JsonResponse({'status': "error", "message" : "登録済みのメールアドレスと一致しません。"})
+
+        if len(user_name) > 16 or not re.match(r'^[a-zA-Z0-9_]+$', user_name):
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
         
-        User.objects.create_user(user_name, user_email, user_display_name, password)
+        if len(user_display_name) > 16:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        
+        if len(password) < 8:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+
+        user = User.objects.create_user(user_name, user_email, user_display_name, password)
         PreUser.objects.verify_pre_user(verification_code)
+
+        login(request, user)
         
         send_sign_up_email(user_email, user_name, user_display_name)
         return JsonResponse({'status': "success"})
     except Exception as e:
+        print(e)
         return JsonResponse({'status': "error", "message" : "登録に失敗しました。", "error_message": str(e)})
 
 def send_sign_up_email(email, user_name, user_display_name):
@@ -75,3 +93,28 @@ def sign_in(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})
+
+# ログアウト関連
+@login_required
+def render_logout_page(request):
+    return render(request, 'logout.html')
+
+# 設定ページ関連
+@login_required
+def render_news_settings_page(request):
+    return render(request, 'news_settings.html')
+
+@login_required
+def render_display_settings_page(request):
+    return render(request, 'display_settings.html')
+
+@login_required
+def render_account_settings_page(request):
+    return render(request, 'account_settings.html')
+
+# 管理者ページ関連
+@login_required
+def render_admin_page(request):
+    if not request.user.is_staff:
+        return render(request, 'error.html')
+    return render(request, 'admin.html')

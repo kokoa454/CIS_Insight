@@ -142,3 +142,7 @@ EMAIL_USE_TLS = True
 
 # Site settings
 SITE_URL = os.getenv('SITE_URL')
+
+# Login settings
+LOGIN_URL = 'sign_in'
+LOGIN_REDIRECT_URL = 'dashboard'
