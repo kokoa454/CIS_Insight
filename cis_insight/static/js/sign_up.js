@@ -74,7 +74,7 @@ document.getElementById('final-signup-form').addEventListener('submit', async (e
 
     function resetButton() {
         submitBtn.disabled = false;
-        btnText.innerText = "登録を完了してダッシュボードへ";
+        btnText.innerText = "登録完了";
         btnSpinner.classList.add('hidden');
         btnIcon.classList.remove('hidden');
     }
