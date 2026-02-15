@@ -8,10 +8,16 @@ from django.contrib.auth import get_user_model
 import re
 import random
 import string
+import secrets
 
 from .models import PreUser
 from .models import User
+from .models import PasswordChange
 from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS)
+
+# 共通
+def generate_verification_code():
+    return secrets.token_hex(32)
 
 # ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
@@ -25,7 +31,6 @@ def render_sign_up_page(request, verification_code):
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
     return render(request, 'error.html')
 
-# ユーザ登録関連
 @csrf_exempt
 def sign_up(request):
     try:
@@ -55,14 +60,11 @@ def sign_up(request):
             return JsonResponse({'status': "error", "message" : "不正な入力です。"})
 
         user = User.objects.create_user(user_name, user_email, user_display_name, password)
-        PreUser.objects.verify_pre_user(verification_code)
-
         login(request, user)
-        
         send_sign_up_email(user_email, user_name, user_display_name)
+        PreUser.objects.verify_pre_user(verification_code)
         return JsonResponse({'status': "success"})
     except Exception as e:
-        print(e)
         return JsonResponse({'status': "error", "message" : "登録に失敗しました。", "error_message": str(e)})
 
 def send_sign_up_email(email, user_name, user_display_name):
@@ -75,7 +77,6 @@ def send_sign_up_email(email, user_name, user_display_name):
 def render_sign_in_page(request):
     return render(request, 'sign_in.html')
 
-# ログイン関連
 def sign_in(request):
     try:
         user_name = request.POST.get('username')
@@ -97,7 +98,7 @@ def sign_in(request):
     except Exception as e:
         return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})
 
-# ログアウト関連
+# ログアウトページ関連
 @login_required
 def render_logout_page(request):
     return render(request, 'logout.html')
@@ -121,6 +122,7 @@ def news_settings(request):
     except Exception as e:
         return JsonResponse({'status': "error", "message" : "ニュース設定に失敗しました。", "error_message": str(e)})
 
+# 表示設定ページ関連
 @login_required
 def render_display_settings_page(request):
     return render(request, 'display_settings.html')
@@ -168,20 +170,61 @@ def account_settings(request):
 
 # パスワード変更ページ関連
 @login_required
-def render_password_change_page(request):
-    return render(request, 'password_change.html')
-
-# パスワード変更関連
-@csrf_exempt
-def password_change(request):
+def pre_password_change(request):
     try:
-        user = get_user_model().objects.get(pk=request.user.pk)
-        password = request.POST.get('password')
-        user.set_password(password)
-        user.save()
+        user = get_user_model().objects.get(pk = request.user.pk)
+        verification_code = generate_verification_code()
+
+        if PasswordChange.objects.filter(user_id = user.pk).exists():
+            return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでにパスワード変更用リンクが送信されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
+        
+        PasswordChange.objects.create_password_change(user, verification_code)
+        send_password_change_email(user.user_email, verification_code)
         return JsonResponse({'status': "success"})
     except Exception as e:
-        return JsonResponse({'status': "error", "message" : "パスワード変更に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "パスワード変更用リンクの送信に失敗しました。", "error_message": str(e)})
+
+def send_password_change_email(email, verification_code):
+    subject = "CIS Insight - パスワード変更用リンク"
+    message = f"CIS Insightのパスワード変更用リンクです。\n\n以下のリンクでパスワードの変更を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/password_change/{verification_code}"
+    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+    return
+
+def render_password_change_page(request, verification_code):
+    try:
+        password_change = PasswordChange.objects.get(verification_code = verification_code)
+        return render(request, 'password_change.html', {'verification_code': verification_code})
+    except PasswordChange.DoesNotExist:
+        return render(request, 'error.html')
+
+@csrf_exempt
+def password_change(request, verification_code):
+    try:
+        password_change = PasswordChange.objects.get(verification_code = verification_code)
+        if not password_change:
+            return JsonResponse({'status': "error", "message" : "このパスワード変更用リンクは無効です。"})
+        
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        
+        if not password_change.user.check_password(old_password):
+            return JsonResponse({'status': "error", "message" : "現在のパスワードが正しくありません。"})
+        
+        if new_password == old_password:
+            return JsonResponse({'status': "error", "message" : "新しいパスワードは現在のパスワードと同じです。"})
+        
+        if len(new_password) < 8:
+            return JsonResponse({'status': "error", "message" : "新しいパスワードは8文字以上で入力してください。"})
+        
+        if not new_password.isalnum():
+            return JsonResponse({'status': "error", "message" : "新しいパスワードは英数字で入力してください。"})
+        
+        password_change.user.set_password(new_password)
+        password_change.user.save()
+        PasswordChange.objects.verify_password_change(verification_code)
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。", "error_message": str(e)})
 
 # 管理者ページ関連
 @login_required

@@ -97,3 +97,66 @@ document.getElementById('account-settings-form').addEventListener('submit', asyn
         btnIcon.classList.remove('hidden');
     }
 });
+
+// パスワード変更関連
+const passwordModal = document.getElementById('password-modal');
+const passwordBtn = document.getElementById('password_change');
+
+passwordBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    passwordModal.classList.remove('hidden');
+    passwordModal.classList.add('flex');
+});
+
+function closePasswordModal() {
+    passwordModal.classList.add('hidden');
+    passwordModal.classList.remove('flex');
+}
+
+document.getElementById('confirm-password-change').addEventListener('click', async function() {
+    const btn = this;
+    const originalText = btn.innerText;
+    
+    btn.disabled = true;
+    btn.innerText = '送信中...';
+
+    const csrfToken = document.cookie.split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+
+    const response = await fetch(this.dataset.url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showSuccess();
+        } else {
+            console.log(data.error_message);
+            showError(data.message);
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        showError('申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。');
+    });
+
+    btn.disabled = false;
+    btn.innerText = originalText;
+});
+
+function showSuccess() {
+    const toast = document.getElementById('success-toast');
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 5000);
+}
+
+function showError(msg) {
+    const toast = document.getElementById('error-toast');
+    document.getElementById('error-message').innerText = msg;
+    toast.classList.remove('hidden');
+}
