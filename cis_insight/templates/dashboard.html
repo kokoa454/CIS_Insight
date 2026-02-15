@@ -77,16 +77,16 @@
         <header class="bg-white border-b border-slate-200 flex flex-col flex-shrink-0 divide-y divide-slate-100">
             <div class="flex items-center px-8 py-3 gap-6 overflow-x-auto no-scrollbar">
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Region</h2>
+                    <h2 class="text-tiny font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Region</h2>
                     <div class="flex gap-2 items-center">
                         {% if user.user_news_referred_country %}
-                            {% for code, name in user.user_news_referred_country %}
-                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
-                                <span class="fi fi-{{ code|lower }}"></span> {{ name }}
+                            {% for country_id in user.user_news_referred_country %}
+                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-tiny font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
+                                <span class="fi {% for country in cis_countries %}{% if country.id == country_id %} {{country.emoji}}{% endif %}{% endfor %}"></span>
                             </button>
                             {% endfor %}
                         {% else %}
-                            <a href="{% url 'news_settings' %}" class="text-xs text-slate-400 hover:text-red-500 transition-colors italic">
+                            <a href="{% url 'news_settings' %}" class="text-tiny text-slate-400 hover:text-red-500 transition-colors italic">
                                 ニュース設定から購読する国を選択してください →
                             </a>
                         {% endif %}
@@ -96,16 +96,16 @@
             
             <div class="flex items-center px-8 py-3 gap-6 overflow-x-auto no-scrollbar">
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Topic</h2>
+                    <h2 class="text-tiny font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Topic</h2>
                     <div class="flex gap-2 items-center">
                         {% if user.user_news_referred_topic %}
-                            {% for topic_name in user.user_news_referred_topic %}
-                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
-                                # {{ topic_name }}
+                            {% for topic_id in user.user_news_referred_topic %}
+                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-tiny font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
+                                # {% for topic in topics %}{% if topic.id == topic_id %} {{topic.name}}{% endif %}{% endfor %}
                             </button>
                             {% endfor %}
                         {% else %}
-                            <a href="{% url 'news_settings' %}" class="text-xs text-slate-400 hover:text-red-500 transition-colors italic">
+                            <a href="{% url 'news_settings' %}" class="text-tiny text-slate-400 hover:text-red-500 transition-colors italic">
                                 ニュース設定から興味のあるトピックを選択してください →
                             </a>
                         {% endif %}

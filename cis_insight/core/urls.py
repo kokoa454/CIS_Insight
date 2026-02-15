@@ -32,7 +32,8 @@ urlpatterns = [
     path('account_settings/', users_views.render_account_settings_page, name='account_settings'),
     path('error/', views.render_error_page, name='error'),
     path('admin/', users_views.render_admin_page, name='admin'),
-    path('api/pre_sign_up/', views.pre_sign_up, name='pre_sign_up'),
-    path('api/sign_up/', users_views.sign_up, name='sign_up'),
-    path('api/sign_in/', users_views.sign_in, name='sign_in'),
+    path('api/pre_sign_up/', views.pre_sign_up, name='api_pre_sign_up'),
+    path('api/sign_up/', users_views.sign_up, name='api_sign_up'),
+    path('api/sign_in/', users_views.sign_in, name='api_sign_in'),
+    path('api/news_settings/', users_views.news_settings, name='api_news_settings'),
 ]

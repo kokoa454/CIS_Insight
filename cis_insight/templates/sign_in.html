@@ -30,7 +30,7 @@
                     </p>
                 </div>
 
-                <form id="sign-in-form" action="{% url 'sign_in' %}" class="space-y-6">
+                <form id="sign-in-form" action="{% url 'api_sign_in' %}" class="space-y-6">
                     {% csrf_token %}
                     
                     <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm"></div>

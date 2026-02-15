@@ -4,11 +4,12 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 import re
 
 from .models import PreUser
 from .models import User
-from core.settings import (SITE_URL, EMAIL_HOST_USER)
+from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS)
 
 # ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
@@ -99,10 +100,24 @@ def sign_in(request):
 def render_logout_page(request):
     return render(request, 'logout.html')
 
-# 設定ページ関連
+# ニュース設定ページ関連
 @login_required
 def render_news_settings_page(request):
-    return render(request, 'news_settings.html')
+    user = get_user_model().objects.get(pk=request.user.pk)
+    return render(request, 'news_settings.html', {'user': user, 'cis_countries': CIS_COUNTRIES, 'topics': TOPICS})
+
+@csrf_exempt
+def news_settings(request):
+    try:
+        user = get_user_model().objects.get(pk=request.user.pk)
+        countries = request.POST.getlist('countries')
+        topics = request.POST.getlist('topics')
+        user.user_news_referred_country = countries
+        user.user_news_referred_topic = topics
+        user.save()
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "ニュース設定に失敗しました。", "error_message": str(e)})
 
 @login_required
 def render_display_settings_page(request):
