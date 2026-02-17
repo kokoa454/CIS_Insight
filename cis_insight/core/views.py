@@ -7,7 +7,7 @@ from django_ratelimit.decorators import ratelimit
 import json
 import secrets
 import logging
-from celery import shared_task
+import threading
 
 from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES)
 from users.models import (PreUser, PreUserManager, User)
@@ -24,7 +24,6 @@ def render_landing_page(request):
 
 # ユーザー登録前の仮登録関連
 @ratelimit(key = 'ip', rate = '5/m', block = True)
-@shared_task
 def pre_sign_up(request):
     try:
         data = json.loads(request.body)
@@ -49,8 +48,10 @@ def pre_sign_up(request):
 
         verification_code = generate_verification_code()
         PreUser.objects.create_pre_user(email, verification_code)
-        send_verification_email(email, verification_code)
-        logger.info(f'Email sent to: {email}')
+
+        if not send_verification_email(email, verification_code):
+            return JsonResponse({'status': 'error', 'message': '申し訳ありません。メールの送信に失敗しました。時間を空けてから再度お試しください。'})
+
         return JsonResponse({'status': 'success'})
     except Exception as e:
         logger.error(f'Exception in pre_sign_up: {e}')
@@ -59,13 +60,16 @@ def pre_sign_up(request):
 def generate_verification_code():
     return secrets.token_hex(32)
 
-@shared_task
 def send_verification_email(email, verification_code):
-    subject = "CIS Insight - アカウント登録用リンク"
-    message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
-    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
-    logger.info(f'Email sent to: {email}')
-    return True
+    try:
+        subject = "CIS Insight - アカウント登録用リンク"
+        message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
+        send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+        logger.info(f'Email sent to: {email}')
+        return True
+    except Exception as e:
+        logger.error(f'Exception in send_verification_email: {e}')
+        return False
 
 # エラーページ関連
 def render_error_page(request):

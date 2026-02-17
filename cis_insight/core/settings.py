@@ -14,7 +14,6 @@ from pathlib import Path
 import os
 import dotenv
 from django.conf.urls.static import static
-from celery.schedules import crontab
 
 
 dotenv.load_dotenv()
@@ -217,23 +216,6 @@ LOGGING = {
             'level': 'ERROR',
         },
     }
-}
-
-
-# Celery settings
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-
-CELERY_BEAT_SCHEDULE = {
-    "delete-pre-user-every-minute": {
-        "task": "users.tasks.delete_pre_user",
-        "schedule": 60,
-    },
-    "delete-password-change-every-minute": {
-        "task": "users.tasks.delete_password_change",
-        "schedule": 60,
-    },
 }
 
 
