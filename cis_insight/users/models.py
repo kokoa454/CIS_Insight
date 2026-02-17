@@ -3,15 +3,15 @@ from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser, Permi
 from django.utils.translation import gettext_lazy as _
 import logging
 
-from core.settings import USER_ICON_URL
+from core.settings import (USER_ICON_URL, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH)
 
 logger = logging.getLogger(__name__)
 
 # 仮登録メール認証用
 class PreUserManager(models.Manager):
-    def create_pre_user(self, pre_user_email, verification_code):
+    def create_pre_user(self, email, verification_code):
         pre_user = self.model(
-            pre_user_email = pre_user_email,
+            email = email,
             verification_code = verification_code
         )
         pre_user.save(using=self._db)
@@ -27,60 +27,48 @@ class PreUserManager(models.Manager):
             logger.error(f'Exception in get_pre_user: {e}')
             return None
 
-    def verify_pre_user(self, verification_code):
-        try:
-            pre_user = self.get(verification_code = verification_code)
-
-            pre_user.is_verified = True
-            logger.info(f'PreUser verified: {pre_user}')
-            pre_user.save(using=self._db)
-            return pre_user
-        except Exception as e:
-            logger.error(f'Exception in verify_pre_user: {e}')
-            return None
-
 class PreUser(models.Model):
-    pre_user_id = models.AutoField(
+    id = models.AutoField(
         primary_key = True,
-        verbose_name = 'Pre User ID'
+        verbose_name = 'ID'
     )
 
-    pre_user_email = models.EmailField(
-        max_length = 255,
+    email = models.EmailField(
+        max_length = MAXIMUM_EMAIL_LENGTH,
         unique = True,
-        verbose_name = 'Pre User Email'
+        verbose_name = 'Email'
     )
     
     verification_code = models.CharField(
-        max_length = 255,
+        max_length = VALIDATION_CODE_LENGTH,
         unique = True,
         verbose_name = 'Verification Code'
     )
     
-    pre_user_created_at = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add = True,
-        verbose_name = 'Pre User Created At'
+        verbose_name = 'Created At'
     )
 
-    is_verified = models.BooleanField(
+    is_expired = models.BooleanField(
         default = False,
-        verbose_name = 'Is Verified'
+        verbose_name = 'Is Expired'
     )
 
     objects = PreUserManager()
 
 # 本登録用
 class UserManager(BaseUserManager):
-    def create_user(self, user_name, user_email, user_display_name, password=None, **extra_fields):
-        if not user_name:
+    def create_user(self, username, email, display_name, password = None, **extra_fields):
+        if not username:
             raise ValueError('Users must have a username')
-        if not user_email:
+        if not email:
             raise ValueError('Users must have an email address')
         
         user = self.model(
-            user_name = user_name,
-            user_email = user_email,
-            user_display_name = user_display_name,
+            username = username,
+            email = email,
+            display_name = display_name,
             **extra_fields
         )
         
@@ -88,57 +76,39 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def is_user_email_duplicate(self, user_email):
-        try:
-            if self.filter(user_email = user_email).exists():
-                return True
-            else:
-                return False
-        except Exception as e:
-            return False
-
-    def is_user_name_duplicate(self, user_name):
-        try:
-            if self.filter(user_name = user_name).exists():
-                return True
-            else:
-                return False
-        except Exception as e:
-            return False
-
-    def create_superuser(self, user_name, user_email, user_display_name, password=None, **extra_fields):
+    def create_superuser(self, username, email, display_name, password = None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(user_name, user_email, user_display_name, password, **extra_fields)
+        return self.create_user(username, email, display_name, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
-    user_id = models.AutoField(
+    id = models.AutoField(
         primary_key = True,
-        verbose_name = 'User ID'
+        verbose_name = 'ID'
     )
     
-    user_name = models.CharField(
-        max_length = 16,
+    username = models.CharField(
+        max_length = MAXIMUM_USERNAME_LENGTH,
         unique = True,
-        verbose_name = 'User Name'
+        verbose_name = 'Username'
     )
     
-    user_display_name = models.CharField(
-        max_length = 32,
-        verbose_name = 'User Display Name'
+    display_name = models.CharField(
+        max_length = MAXIMUM_DISPLAY_NAME_LENGTH,
+        verbose_name = 'Display Name'
     )
     
-    user_email = models.EmailField(
-        max_length = 255,
+    email = models.EmailField(
+        max_length = MAXIMUM_EMAIL_LENGTH,
         unique = True,
-        verbose_name = 'User Email'
+        verbose_name = 'Email'
     )
     
-    user_icon = models.ImageField(
+    icon = models.ImageField(
         upload_to = USER_ICON_URL,
         null = True,
         blank = True,
-        verbose_name = 'User Icon'
+        verbose_name = 'Icon'
     )
     
     is_active = models.BooleanField(
@@ -151,38 +121,38 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'Is Staff'
     )
     
-    user_created_at = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add = True,
-        verbose_name = 'User Created At'
+        verbose_name = 'Created At'
     )
     
-    user_updated_at = models.DateTimeField(
+    updated_at = models.DateTimeField(
         auto_now = True,
-        verbose_name = 'User Updated At'
+        verbose_name = 'Updated At'
     )
     
-    user_news_count = models.PositiveIntegerField(
+    news_count = models.PositiveIntegerField(
         default = 0,
-        verbose_name = 'User News Count'
+        verbose_name = 'News Count'
     )
     
-    user_news_referred_country = models.JSONField(
+    news_referred_country = models.JSONField(
         default = list,
-        verbose_name = 'User News Referred Country'
+        verbose_name = 'News Referred Country'
     )
     
-    user_news_referred_topic = models.JSONField(
+    news_referred_topic = models.JSONField(
         default = list,
-        verbose_name = 'User News Referred Topic'
+        verbose_name = 'News Referred Topic'
     )
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'user_name'
-    REQUIRED_FIELDS = ['user_email', 'user_display_name']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'display_name']
 
     def __str__(self):
-        return self.user_name
+        return self.username
 
 # パスワード変更用
 class PasswordChangeManager(models.Manager):
@@ -228,7 +198,7 @@ class PasswordChange(models.Model):
     )
     
     verification_code = models.CharField(
-        max_length = 255,
+        max_length = VALIDATION_CODE_LENGTH,
         verbose_name = 'Verification Code'
     )
     

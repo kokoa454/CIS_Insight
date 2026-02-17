@@ -9,7 +9,7 @@ import secrets
 import logging
 import threading
 
-from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES)
+from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES)
 from users.models import (PreUser, PreUserManager, User)
 
 logger = logging.getLogger(__name__)
@@ -38,11 +38,14 @@ def pre_sign_up(request):
             logger.error(f'Invalid email format: {email}')
             return JsonResponse({'status': 'error', 'message': 'メールアドレスの形式が正しくありません。'})
 
-        if PreUser.objects.filter(pre_user_email=email).exists():
+        if len(email) > MAXIMUM_EMAIL_LENGTH:
+            return JsonResponse({'status': "error", "message" : "メールアドレスは" + str(MAXIMUM_EMAIL_LENGTH) + "文字以内で入力してください。"})
+
+        if PreUser.objects.filter(email = email).exists():
             logger.error(f'Email already exists in pre_user: {email}')
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに仮登録されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
 
-        if User.objects.filter(user_email=email).exists():
+        if User.objects.filter(email = email).exists():
             logger.error(f'Email already exists in user: {email}')
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに本登録されています。'})
 
@@ -52,9 +55,10 @@ def pre_sign_up(request):
         if not send_verification_email(email, verification_code):
             return JsonResponse({'status': 'error', 'message': '申し訳ありません。メールの送信に失敗しました。時間を空けてから再度お試しください。'})
 
+        logger.info(f'User {email} pre-registered successfully')
         return JsonResponse({'status': 'success'})
     except Exception as e:
-        logger.error(f'Exception in pre_sign_up: {e}')
+        logger.error(f'Exception in pre_sign_up with email: {email}: {e}')
         return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
 
 def generate_verification_code():
@@ -63,7 +67,7 @@ def generate_verification_code():
 def send_verification_email(email, verification_code):
     try:
         subject = "CIS Insight - アカウント登録用リンク"
-        message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
+        message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は{PRE_USER_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
         send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
         logger.info(f'Email sent to: {email}')
         return True

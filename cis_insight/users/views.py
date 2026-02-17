@@ -5,72 +5,109 @@ from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.db import transaction
 import re
 import random
 import string
 import secrets
+import logging
 
 from .models import PreUser
 from .models import User
 from .models import PasswordChange
-from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS)
+from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH)
+
+logger = logging.getLogger(__name__)
 
 # 共通
 def generate_verification_code():
-    return secrets.token_hex(32)
+    return secrets.token_hex(VALIDATION_CODE_LENGTH)
 
 # ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
     try:
         pre_user = PreUser.objects.get_pre_user(verification_code)
+
+        if pre_user.is_expired:
+            return render(request, 'error.html')
     except Exception as e:
         return render(request, 'error.html')
     
     if pre_user:
-        user_email = pre_user.pre_user_email
+        user_email = pre_user.email
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
     return render(request, 'error.html')
 
 def sign_up(request):
     try:
-        user_email = request.POST.get('email')
-        user_name = request.POST.get('username')
-        user_display_name = request.POST.get('display_name')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        display_name = request.POST.get('display_name')
         password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
         verification_code = request.POST.get('verification_code')
-
-        if User.objects.is_user_email_duplicate(user_email):
+        
+        if len(email) > MAXIMUM_EMAIL_LENGTH:
+            return JsonResponse({'status': "error", "message" : "メールアドレスが不正に入力されています。"})
+        
+        if User.objects.filter(email = email).exists():
             return JsonResponse({'status': "error", "message" : "すでに登録済みのメールアドレスです。"})
         
-        if User.objects.is_user_name_duplicate(user_name):
-            return JsonResponse({'status': "error", "message" : "ユーザー名が重複しています。"})
+        if User.objects.filter(username = username).exists():
+            return JsonResponse({'status': "error", "message" : "ユーザー名が他のユーザーと重複しています。"})
 
-        registered_user_email = PreUser.objects.get_pre_user(verification_code).pre_user_email
-        if registered_user_email != user_email:
+        pre_user = PreUser.objects.get_pre_user(verification_code)
+        if pre_user.is_expired:
+            return JsonResponse({'status': "error", "message" : "リンクの有効期限が切れています。"})
+        
+        registered_email = pre_user.email
+        if registered_email != email:
             return JsonResponse({'status': "error", "message" : "登録済みのメールアドレスと一致しません。"})
 
-        if len(user_name) > 16 or not re.match(r'^[a-zA-Z0-9_]+$', user_name):
-            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
-        
-        if len(user_display_name) > 16:
-            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
-        
-        if len(password) < 8:
-            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        if len(username) > MAXIMUM_USERNAME_LENGTH:
+            return JsonResponse({'status': "error", "message" : "ユーザー名は" + str(MAXIMUM_USERNAME_LENGTH) + "文字以内で入力してください。"})
 
-        user = User.objects.create_user(user_name, user_email, user_display_name, password)
+        if not re.match(r'^[a-z0-9_]+$', username):
+            return JsonResponse({'status': "error", "message" : "ユーザー名は小文字英数字またはアンダースコアのみ使用できます。"})
+        
+        if len(display_name) > MAXIMUM_DISPLAY_NAME_LENGTH:
+            return JsonResponse({'status': "error", "message" : "表示名は" + str(MAXIMUM_DISPLAY_NAME_LENGTH) + "文字以内で入力してください。"})
+        
+        if len(password) < MINIMUM_PASSWORD_LENGTH:
+            return JsonResponse({'status': "error", "message" : "パスワードは" + str(MINIMUM_PASSWORD_LENGTH) + "文字以上で入力してください。"})
+
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$', password):
+            return JsonResponse({'status': "error", "message" : "パスワードは大小英数字混合で入力してください。"})
+
+        if password != password_confirm:
+            return JsonResponse({'status': "error", "message" : "パスワードが一致しません。"})
+
+        with transaction.atomic():
+            user = User.objects.create_user(username, email, display_name, password)
+
+            pre_user.delete()
+            logger.info(f'PreUser {username} deleted successfully')
+
         login(request, user)
-        send_sign_up_email(user_email, user_name, user_display_name)
-        PreUser.objects.verify_pre_user(verification_code)
+        
+        if not send_sign_up_email(email, username, display_name):
+            return JsonResponse({'status': "error", "message" : "メールの送信に失敗しました。時間を空けてから再度お試しください。"})
+
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in sign_up with user_name: {username}: {e}')
         return JsonResponse({'status': "error", "message" : "登録に失敗しました。", "error_message": str(e)})
 
-def send_sign_up_email(email, user_name, user_display_name):
-    subject = "CIS Insight - アカウント登録完了"
-    message = f"CIS Insightへの本登録が完了しました。\nアカウント登録内容は以下のとおりです。\n\nユーザー名: {user_name}\n表示名: {user_display_name}\nメールアドレス: {email}\n\n{SITE_URL}"
-    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
-    return True
+def send_sign_up_email(email, username, display_name):
+    try:
+        subject = "CIS Insight - アカウント登録完了"
+        message = f"CIS Insightへの本登録が完了しました。\nアカウント登録内容は以下のとおりです。\n\nユーザー名: {username}\n表示名: {display_name}\nメールアドレス: {email}\n\n{SITE_URL}"
+        send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+        logger.info(f'Email sent to: {email}')
+        return True
+    except Exception as e:
+        logger.error(f'Exception in send_sign_up_email: {e}')
+        return False
 
 # ログインページ関連
 def render_sign_in_page(request):
@@ -78,11 +115,11 @@ def render_sign_in_page(request):
 
 def sign_in(request):
     try:
-        user_name = request.POST.get('username')
+        username = request.POST.get('username')
         password = request.POST.get('password')
         remember_me = request.POST.get('remember_me')
 
-        user = authenticate(request, username = user_name, password = password)
+        user = authenticate(request, username = username, password = password)
         
         if user is None:
             return JsonResponse({'status': "error", "message" : "ユーザー名またはパスワードが正しくありません。"})

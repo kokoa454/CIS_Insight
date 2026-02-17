@@ -15,11 +15,11 @@
 
         <div class="relative">
             <button onclick="toggleMobileUserMenu()" class="focus:outline-none block">
-                {% if user.user_icon %}
-                <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
+                {% if user.icon %}
+                <img src="{{ user.icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover border-2 border-slate-800 ring-2 ring-red-500/20">
                 {% else %}
                 <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white border-2 border-slate-800">
-                    {{ user.user_name|slice:":1"|upper }}
+                    {{ user.username|slice:":1"|upper }}
                 </div>
                 {% endif %}
             </button>
@@ -27,11 +27,11 @@
             <div id="mobile-user-menu" class="hidden absolute right-0 mt-3 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-4 animate-fade-in z-50">
                 <div class="space-y-3">
                     <p class="text-white text-xs font-bold border-b border-slate-700 pb-2 truncate">
-                        {{ user.user_display_name }}
+                        {{ user.display_name }}
                     </p>
                     <div class="flex justify-between items-center text-[10px] font-bold">
                         <span class="text-slate-400 font-en">READ ARTICLES</span>
-                        <span class="text-red-500">{{ user.user_news_count }}</span>
+                        <span class="text-red-500">{{ user.news_count }}</span>
                     </div>
                     <form action="{% url 'logout' %}" method="POST" class="pt-2">
                         {% csrf_token %}
@@ -88,15 +88,15 @@
         <div class="hidden md:block p-4 border-t border-slate-800/50">
             <div class="bg-slate-800/40 rounded-2xl p-4">
                 <div class="flex items-center gap-3 mb-3">
-                    {% if user.user_icon %}
-                    <img src="{{ user.user_icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
+                    {% if user.icon %}
+                    <img src="{{ user.icon.url }}" class="w-8 h-8 rounded-full bg-slate-700 object-cover shrink-0">
                     {% else %}
                     <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                        {{ user.user_name|slice:":1"|upper }}
+                        {{ user.username|slice:":1"|upper }}
                     </div>
                     {% endif %}
                     <div class="flex-grow min-w-0">
-                        <p class="text-xs font-bold text-white truncate">{{ user.user_display_name }}</p>
+                        <p class="text-xs font-bold text-white truncate">{{ user.display_name }}</p>
                         <form action="{% url 'logout' %}" method="POST" class="inline">
                             {% csrf_token %}
                             <button type="submit" class="text-tiny text-slate-500 hover:text-red-400 font-bold transition-colors flex items-center gap-1">
@@ -108,7 +108,7 @@
                 </div>
                 <div class="flex justify-between items-center text-tiny text-slate-500 font-bold px-1 border-t border-slate-700/50 pt-2 font-en">
                     <span>READ ARTICLES</span>
-                    <span class="text-red-500">{{ user.user_news_count }}</span>
+                    <span class="text-red-500">{{ user.news_count }}</span>
                 </div>
             </div>
         </div>
@@ -134,7 +134,7 @@
                         {% for country in cis_countries %}
                         <label class="relative group cursor-pointer">
                             <input type="checkbox" name="countries" value="{{ country.id }}" class="peer hidden" 
-                                {% if country.id in user.user_news_referred_country %}checked{% endif %}>
+                                {% if country.id in user.news_referred_country %}checked{% endif %}>
                             <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl transition-all peer-checked:border-red-500 peer-checked:bg-red-50 group-hover:border-slate-300">
                                 <div class="flex flex-col items-center gap-2">
                                     <span class="text-5xl fi {{ country.emoji }}"></span>
@@ -154,7 +154,7 @@
                         {% for topic in topics %}
                         <label class="cursor-pointer">
                             <input type="checkbox" name="topics" value="{{ topic.id }}" class="peer hidden" 
-                                {% if topic.id in user.user_news_referred_topic %}checked{% endif %}>
+                                {% if topic.id in user.news_referred_topic %}checked{% endif %}>
                             <span class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-tiny font-bold text-slate-700 transition-all peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-500 peer-checked:font-black hover:border-slate-300 inline-block font-ja">
                                 # {{ topic.emoji }} {{ topic.name }}
                             </span>

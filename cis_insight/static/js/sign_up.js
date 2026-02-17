@@ -9,50 +9,10 @@ document.getElementById('final-signup-form').addEventListener('submit', async (e
     const btnSpinner = document.getElementById('btn-spinner');
     const btnIcon = document.getElementById('btn-icon');
     const errorMsg = document.getElementById('form-error');
-    const username = document.getElementById('username').value;
-    const displayName = document.getElementById('display_name').value;
-    const password = document.getElementById('password').value;
-    const passwordConfirm = document.getElementById('password-confirm').value;
 
     errorMsg.innerText = "";
 
-    if (username.length > 16) {
-        errorMsg.innerText += 'ユーザーネームは16文字以内で入力してください\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (!/^[a-z0-9_]+$/.test(username)) {
-        errorMsg.innerText += 'ユーザーネームは小文字英数字またはアンダースコアのみ使用できます\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (displayName.length > 16) {
-        errorMsg.innerText += '表示名は16文字以内で入力してください\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (password.length < 8) {
-        errorMsg.innerText += 'パスワードは8文字以上で入力してください\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (password !== passwordConfirm) {
-        errorMsg.innerText += 'パスワードが一致しません\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (!password.match(/^[a-zA-Z0-9]+$/)) {
-        errorMsg.innerText += 'パスワードは英数字で入力してください\n';
-        errorMsg.classList.remove('hidden');
-    }
-
-    if (errorMsg.innerText != "") {
-        return;
-    }
-
-    const csrfToken = document.cookie.split('; ')
-    .find(row => row.startsWith('csrftoken='))
-    ?.split('=')[1];
+    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
     submitBtn.disabled = true;
     btnText.innerText = "登録中...";
@@ -60,19 +20,26 @@ document.getElementById('final-signup-form').addEventListener('submit', async (e
     btnIcon.classList.add('hidden');
     errorMsg.classList.add('hidden');
 
-    const response = await fetch(form.action, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': csrfToken
-        },
-        body: formData
-    })
-    const data = await response.json();
-    if (data.status == "success") {
-        window.location.href = '/dashboard/';
-    } else {
-        errorMsg.innerText = data.message;
+    try{
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+
+        const data = await response.json();
+        if (data.status == "success") {
+            window.location.href = '/dashboard/';
+        } else {
+            errorMsg.innerText = data.message;
+            errorMsg.classList.remove('hidden');
+            resetButton();
+        }
+    } catch(error) {
+        errorMsg.innerText = "登録に失敗しました。時間を空けてから再度お試しください。";
         errorMsg.classList.remove('hidden');
         resetButton();
     }
