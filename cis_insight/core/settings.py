@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import dotenv
 from django.conf.urls.static import static
+from celery.schedules import crontab
+
 
 dotenv.load_dotenv()
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     'users',
 ]
 
@@ -130,11 +133,13 @@ IMG_URL = 'img/'
 LOGO_PATH = IMG_URL + 'logo.png'
 ICON_PATH = IMG_URL + 'icon.png'
 
+
 # Media settings
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 USER_ICON_URL = 'user_icon/'
+
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -144,12 +149,93 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
+
 # Site settings
 SITE_URL = os.getenv('SITE_URL')
+
 
 # Login settings
 LOGIN_URL = 'sign_in'
 LOGIN_REDIRECT_URL = 'dashboard'
+
+
+# Logger settings
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'all': {
+            'format': '\t'.join([
+                "[%(levelname)s]",
+                "asctime:%(asctime)s",
+                "module:%(module)s",
+                "message:%(message)s",
+                "process:%(process)d",
+                "thread:%(thread)d",
+            ])
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 10*1024*1024,
+            'backupCount': 10,
+            'filename': os.path.join(LOG_DIR, 'app.log'),
+            'formatter': 'all',
+            'encoding': 'utf-8',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'error.log'),
+            'maxBytes': 10*1024*1024,
+            'backupCount': 5,
+            'encoding': 'utf-8',
+            'formatter': 'all',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler', 
+            'formatter': 'all',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file', 'error_file', 'console'],
+            'level': 'INFO',
+        },
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+        },
+    }
+}
+
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+
+CELERY_BEAT_SCHEDULE = {
+    "delete-pre-user-every-minute": {
+        "task": "users.tasks.delete_pre_user",
+        "schedule": 60,
+    },
+    "delete-password-change-every-minute": {
+        "task": "users.tasks.delete_password_change",
+        "schedule": 60,
+    },
+}
+
 
 # constance
 COUNTRIES = [

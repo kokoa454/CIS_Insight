@@ -113,27 +113,24 @@ document.getElementById('pre-sign-up-form').addEventListener('submit', async fun
     ?.split('=')[1];
     const email = document.getElementById('user-email').value;
 
-    const response = await fetch(form.action, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ email: email }),
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({ email: email }),
+        })
+        
+        const data = await response.json();
         if (data.status === 'success') {
             showSuccess();
+            closeModal();
         } else {
-            console.log(data.error_message);
             showError(data.message);
         }
-    })
-    .catch(error => {
-        console.log(error);
+    } catch(error) {
         showError('申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。');
-    });
-
-    closeModal();
+    }
 });

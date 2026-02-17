@@ -31,7 +31,6 @@ def render_sign_up_page(request, verification_code):
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
     return render(request, 'error.html')
 
-@csrf_exempt
 def sign_up(request):
     try:
         user_email = request.POST.get('email')
@@ -109,7 +108,6 @@ def render_news_settings_page(request):
     user = get_user_model().objects.get(pk=request.user.pk)
     return render(request, 'news_settings.html', {'user': user, 'cis_countries': CIS_COUNTRIES, 'topics': TOPICS})
 
-@csrf_exempt
 def news_settings(request):
     try:
         user = get_user_model().objects.get(pk=request.user.pk)
@@ -133,7 +131,6 @@ def render_account_settings_page(request):
     user = get_user_model().objects.get(pk=request.user.pk)
     return render(request, 'account_settings.html', {'user': user})
 
-@csrf_exempt
 def account_settings(request):
     try:
         user = get_user_model().objects.get(pk=request.user.pk)
@@ -197,7 +194,6 @@ def render_password_change_page(request, verification_code):
     except PasswordChange.DoesNotExist:
         return render(request, 'error.html')
 
-@csrf_exempt
 def password_change(request, verification_code):
     try:
         password_change = PasswordChange.objects.get(verification_code = verification_code)

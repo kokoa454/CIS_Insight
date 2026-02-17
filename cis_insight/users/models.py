@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser, PermissionsMixin)
 from django.utils.translation import gettext_lazy as _
+import logging
 
 from core.settings import USER_ICON_URL
+
+logger = logging.getLogger(__name__)
 
 # 仮登録メール認証用
 class PreUserManager(models.Manager):
@@ -12,26 +15,28 @@ class PreUserManager(models.Manager):
             verification_code = verification_code
         )
         pre_user.save(using=self._db)
+        logger.info(f'PreUser created: {pre_user}')
         return pre_user
 
     def get_pre_user(self, verification_code):
         try:
             pre_user = self.get(verification_code = verification_code)
+            logger.info(f'PreUser retrieved: {pre_user}')
             return pre_user
         except Exception as e:
+            logger.error(f'Exception in get_pre_user: {e}')
             return None
 
     def verify_pre_user(self, verification_code):
         try:
             pre_user = self.get(verification_code = verification_code)
 
-            if verification_code == pre_user.verification_code:
-                pre_user.is_verified = True
-                pre_user.save(using=self._db)
-                return pre_user
-            else:
-                return None
+            pre_user.is_verified = True
+            logger.info(f'PreUser verified: {pre_user}')
+            pre_user.save(using=self._db)
+            return pre_user
         except Exception as e:
+            logger.error(f'Exception in verify_pre_user: {e}')
             return None
 
 class PreUser(models.Model):
@@ -48,6 +53,7 @@ class PreUser(models.Model):
     
     verification_code = models.CharField(
         max_length = 255,
+        unique = True,
         verbose_name = 'Verification Code'
     )
     

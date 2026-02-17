@@ -22,7 +22,6 @@ function previewImage(input) {
             if (preview) {
                 preview.src = e.target.result;
             } else {
-                // プレースホルダーをプレビューに差し替え
                 const placeholder = document.getElementById('icon-placeholder');
                 const img = document.createElement('img');
                 img.id = "icon-preview";
@@ -34,6 +33,9 @@ function previewImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+// TODO 画像サイズ変更と切り取り（400px * 400px）
+
 
 // フォーム関連
 document.getElementById('account-settings-form').addEventListener('submit', async (e) => {
