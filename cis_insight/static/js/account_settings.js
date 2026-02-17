@@ -100,6 +100,102 @@ document.getElementById('account-settings-form').addEventListener('submit', asyn
     }
 });
 
+// メールアドレス変更関連
+const emailChangeBtn = document.getElementById("email_change");
+const emailChangeModal = document.getElementById("email-change-modal");
+const emailChangeConfirmModal = document.getElementById("email-change-confirm-modal");
+const emailChangeForm = document.getElementById("email-change-form");
+const emailChangeConfirmForm = document.getElementById("email-change-confirm-form");
+const openEmailChangeConfirmModalBtn = document.getElementById("open-email-change-confirm-modal-btn");
+const emailInput = document.getElementById("email-change-input");
+const confirmEmailInput = document.getElementById("email-change-confirm-input");
+const confirmEmailChangeBtn = document.getElementById("confirm-email-change");
+
+function openEmailChangeModal() {
+    emailChangeModal.classList.remove('hidden');
+    emailChangeModal.classList.add('flex');
+}
+
+function closeEmailChangeModal() {
+    emailChangeModal.classList.add('hidden');
+    emailChangeModal.classList.remove('flex');
+}
+
+function openEmailChangeConfirmModal() {
+    emailChangeConfirmModal.classList.remove('hidden');
+    emailChangeConfirmModal.classList.add('flex');
+}
+
+function closeEmailChangeConfirmModal() {
+    emailChangeConfirmModal.classList.add('hidden');
+    emailChangeConfirmModal.classList.remove('flex');
+}
+
+emailChangeBtn.addEventListener("click", () => {
+    openEmailChangeModal();
+});
+
+openEmailChangeConfirmModalBtn.addEventListener("click", () => {
+
+    if (!emailChangeForm.checkValidity()) {
+        emailChangeForm.reportValidity();
+        return;
+    }
+
+    const email = emailInput.value.trim();
+
+    confirmEmailInput.value = email;
+
+    closeEmailChangeModal();
+    openEmailChangeConfirmModal();
+});
+
+emailChangeConfirmForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = confirmEmailInput.value;
+
+    confirmEmailChangeBtn.disabled = true;
+    confirmEmailChangeBtn.innerText = "送信中...";
+
+    const csrfToken = document.cookie.split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+
+    try{
+        const response = await fetch(emailChangeConfirmForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({email: email})
+        })
+
+        const data = await response.json();
+        if (data.status === 'success') {
+            showSuccess();
+            closeEmailChangeConfirmModal();
+        } else {
+            console.log(data.error_message);
+            showError(data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        showError('申し訳ありません。メールアドレスの変更用リンクの送信に失敗しました。時間を空けてから再度お試しください。');
+    }
+
+    confirmEmailChangeBtn.disabled = false;
+    confirmEmailChangeBtn.innerText = "メールを送信";
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeEmailChangeModal();
+        closeEmailChangeConfirmModal();
+    }
+});
+
 // パスワード変更関連
 const passwordModal = document.getElementById('password-modal');
 const passwordBtn = document.getElementById('password_change');
@@ -161,4 +257,5 @@ function showError(msg) {
     const toast = document.getElementById('error-toast');
     document.getElementById('error-message').innerText = msg;
     toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 5000);
 }

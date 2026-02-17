@@ -9,7 +9,7 @@ import secrets
 import logging
 import threading
 
-from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES)
+from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
 from users.models import (PreUser, PreUserManager, User)
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ def pre_sign_up(request):
         return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
 
 def generate_verification_code():
-    return secrets.token_hex(32)
+    return secrets.token_hex(VALIDATION_CODE_LENGTH)
 
 def send_verification_email(email, verification_code):
     try:

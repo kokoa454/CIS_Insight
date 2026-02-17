@@ -4,6 +4,67 @@
 {% block title %}アカウント設定 | CIS Insight{% endblock %}
 
 {% block main %}
+<div id="email-change-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeEmailChangeModal()"></div>
+    <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
+        <div class="p-8">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">メールアドレスを変更</h3>
+            <p class="text-tiny text-slate-500 font-ja mb-6 leading-relaxed">
+                新しいメールアドレスを入力してください。
+            </p>
+            <form id="email-change-form" method="post">
+                <div class="flex flex-col gap-3">
+                    <input type="email" id="email-change-input" required placeholder="example@mail.com" class="input-base font-en">
+                </div>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="button" id="open-email-change-confirm-modal-btn" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                        次へ
+                    </button>
+                    <button type="button" onclick="closeEmailChangeModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="email-change-confirm-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeEmailChangeConfirmModal()"></div>
+    <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
+        <div class="p-8">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">メールアドレス変更用リンクを送信</h3>
+            <form id="email-change-confirm-form" method="post" action="{% url 'api_pre_email_change' %}">
+                {% csrf_token %}
+                <div class="flex flex-col gap-3">
+                    <p class="text-tiny text-slate-500 font-ja mb-4 leading-relaxed">
+                        以下のメールアドレスに、メールアドレス変更用リンクをお送りします。よろしいですか？
+                    </p>
+                    <input type="email" name="email" id="email-change-confirm-input" class="input-base font-en cursor-not-allowed" readonly>
+                </div>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="submit" id="confirm-email-change" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                        メールを送信
+                    </button>
+                    <button type="button" onclick="closeEmailChangeModal(); closeEmailChangeConfirmModal();" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div id="password-modal" class="modal-overlay hidden px-4 z-[100]">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closePasswordModal()"></div>
     <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
@@ -30,7 +91,7 @@
     </div>
 </div>
 
-<div id="success-toast" class="fixed bottom-8 left-0 w-full z-[110] hidden pointer-events-none">
+<div id="success-toast" class="fixed bottom-8 left-0 w-full z-[999] hidden pointer-events-none">
     <div class="flex justify-center px-4">
         <div class="bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 animate-slide-up pointer-events-auto">
             <div class="flex-shrink-0 w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center">
@@ -43,7 +104,7 @@
     </div>
 </div>
 
-<div id="error-toast" class="fixed bottom-8 left-0 w-full z-[110] hidden transition-all duration-300">
+<div id="error-toast" class="fixed bottom-8 left-0 w-full z-[999] hidden transition-all duration-300">
     <div class="flex justify-center px-4">
         <div class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-red-500/30 pointer-events-auto">
             <div class="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
@@ -55,11 +116,6 @@
                 <span class="text-xs font-bold text-red-400 uppercase tracking-wider font-en">Error</span>
                 <span id="error-message" class="text-sm font-ja font-medium text-slate-200">エラーが発生しました。</span>
             </div>
-            <button onclick="hideErrorToast()" class="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
         </div>
     </div>
 </div>
@@ -183,7 +239,7 @@
 
             <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 font-bold text-sm"></div>
 
-            <form id="account-settings-form" method="post" action="{% url 'api_account_settings' %}" enctype="multipart/form-data" class="space-y-8">
+            <form id="account-settings-form" method="post" action="{% url 'api_account_settings' %}" enctype="multipart/form-data" class="space-y-8 mb-16">
                 {% csrf_token %}
 
                 <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
@@ -218,9 +274,7 @@
                             </div>
 
                             <div class="relative">
-                                <input type="text" name="user_name" value="{{ user.username }}" 
-                                    class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" 
-                                    readonly>
+                                <input type="text" name="username" value="{{ user.username }}" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
                             </div>
 
                             <p class="mt-2 px-1 flex items-center gap-1.5 text-tiny text-slate-400 font-bold">
@@ -232,34 +286,20 @@
                             <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2 px-1">Display Name</label>
                             <input type="text" name="display_name" value="{{ user.display_name }}" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all font-bold text-slate-900">
                         </div>
-                        <div>
-                            <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2 px-1">Email Address</label>
-                            <input type="email" name="email" value="{{ user.email }}" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all font-bold text-slate-900">
+                        <div class="flex items-center justify-between mb-2 px-1">
+                            <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest">Email</label>
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
                         </div>
-                    </div>
-                </section>
-
-                <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
-                    <div class="flex items-center gap-3 border-l-4 border-slate-900 pl-4 mb-6">
-                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">Security</h2>
-                    </div>
-                    
-                    <button id="password_change" class="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors group">
-                        <div class="flex items-center gap-4">
-                            <div class="p-2 bg-slate-100 rounded-xl group-hover:bg-white transition-colors">
-                                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-sm font-bold text-slate-900">パスワードの変更</p>
-                                <p class="text-tiny text-slate-500">定期的な更新を推奨します</p>
-                            </div>
+                        <div class="relative">
+                            <input type="text" name="email" value="{{ user.email }}" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
                         </div>
-                        <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
+                        <p class="mt-2 px-1 flex items-center gap-1.5 text-tiny text-slate-400 font-bold">
+                            <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                            メールアドレスは下部の「メールアドレスの変更」から変更できます。
+                        </p>
+                    </div>
                 </section>
 
                 <button type="submit" id="submit-btn" class="btn-primary w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95">
@@ -270,6 +310,54 @@
                     </svg>
                 </button>
             </form>
+            
+            <div class="border-t border-slate-200 my-8"></div>
+
+            <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
+                <div class="flex items-center gap-3 border-l-4 border-slate-900 pl-4 mb-6">
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">Email</h2>
+                </div>
+                
+                <button id="email_change" class="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors group">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-slate-100 rounded-xl group-hover:bg-white transition-colors">
+                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-bold text-slate-900">メールアドレスの変更</p>
+                            <p class="text-tiny text-slate-500">通知メールの宛先を変更する場合は、メールアドレスを変更してください。</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </section>
+
+            <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm mt-8">
+                <div class="flex items-center gap-3 border-l-4 border-slate-900 pl-4 mb-6">
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">Security</h2>
+                </div>
+                
+                <button id="password_change" class="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors group">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-slate-100 rounded-xl group-hover:bg-white transition-colors">
+                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-bold text-slate-900">パスワードの変更</p>
+                            <p class="text-tiny text-slate-500">定期的な更新を推奨します</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </section>
         </div>
     </main>
 </div>

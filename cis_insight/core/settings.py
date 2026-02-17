@@ -163,8 +163,12 @@ MAXIMUM_USERNAME_LENGTH = 16
 MAXIMUM_DISPLAY_NAME_LENGTH = 16
 MAXIMUM_EMAIL_LENGTH = 255
 VALIDATION_CODE_LENGTH = 32
+
+# Batch settings
 PRE_USER_EXPIRATION_TIME_MINUTES = 30
 PRE_USER_DELETION_TIME_MINUTES = PRE_USER_EXPIRATION_TIME_MINUTES * 24 # 12hrs
+EMAIL_CHANGE_EXPIRATION_TIME_MINUTES = 30
+EMAIL_CHANGE_DELETION_TIME_MINUTES = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 
 # Logger settings
 LOG_DIR = os.path.join(BASE_DIR, "logs")
@@ -199,7 +203,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'error.log'),
             'maxBytes': 10*1024*1024,
-            'backupCount': 5,
+            'backupCount': 10,
             'encoding': 'utf-8',
             'formatter': 'all',
         },

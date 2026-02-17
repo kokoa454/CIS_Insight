@@ -6,16 +6,21 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django_ratelimit.decorators import ratelimit
 import re
 import random
 import string
 import secrets
 import logging
+import json
 
 from .models import PreUser
 from .models import User
 from .models import PasswordChange
-from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH)
+from .models import EmailChange
+from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES)
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +31,15 @@ def generate_verification_code():
 # ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
     try:
-        pre_user = PreUser.objects.get_pre_user(verification_code)
-
-        if pre_user.is_expired:
-            return render(request, 'error.html')
-    except Exception as e:
+        pre_user = PreUser.objects.get(verification_code = verification_code)
+    except PreUser.DoesNotExist:
         return render(request, 'error.html')
-    
-    if pre_user:
+
+    if not pre_user.is_expired:
         user_email = pre_user.email
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
-    return render(request, 'error.html')
+    else:
+        return render(request, 'error.html')
 
 def sign_up(request):
     try:
@@ -168,39 +171,91 @@ def render_account_settings_page(request):
     user = get_user_model().objects.get(pk=request.user.pk)
     return render(request, 'account_settings.html', {'user': user})
 
+@login_required
+@ratelimit(key = 'ip', rate = '5/m', block = True)
 def account_settings(request):
     try:
-        user = get_user_model().objects.get(pk=request.user.pk)
-        user_name = request.POST.get('user_name')
-        user_display_name = request.POST.get('display_name')
-        user_icon = request.FILES.get('icon')
-        user_email = request.POST.get('email')
+        user = get_user_model().objects.get(pk = request.user.pk)
+        username = request.POST.get('username')
+        display_name = request.POST.get('display_name')
+        icon = request.FILES.get('icon')
 
-        if user_icon:
-            if user.user_icon:
-                user.user_icon.delete(save = False)
+        if icon:
+            if user.icon:
+                user.icon.delete(save = False)
 
-            new_user_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
-            user.user_icon.save(new_user_icon_name, user_icon, save = False)
+            new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+            user.icon.save(new_icon_name, icon, save = False)
 
-        if user_name != user.user_name:
+        if username != user.username:
             return JsonResponse({'status': "error", "message" : "不正な入力です。"})
 
-        if len(user_display_name) > 16:
+        if len(display_name) > 16:
             return JsonResponse({'status': "error", "message" : "表示名は16文字以内で入力してください。"})
 
-        if user_email != user.user_email:
-            if User.objects.is_user_email_duplicate(user_email):
-                return JsonResponse({'status': "error", "message" : "既に別のアカウントで登録されているメールアドレスです。"})
-            # else: TODO 新規メアドの認証後、DB更新するようにする
-            #     send_account_settings_email(user_email, user_name, user_display_name)
-
-        user.user_display_name = user_display_name
-        user.user_email = user_email
+        user.display_name = display_name
         user.save()
         return JsonResponse({'status': "success"})
     except Exception as e:
         return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
+
+@login_required
+@ratelimit(key = 'ip', rate = '5/m', block = True)
+def pre_email_change(request):
+    try:
+        data = json.loads(request.body)
+        user = get_user_model().objects.get(pk = request.user.pk)
+        old_email = user.email
+        new_email = data.get('email')
+        verification_code = generate_verification_code()
+
+        try:
+            validate_email(new_email)
+        except ValidationError:
+            logger.error(f'Invalid email format: {new_email}')
+            return JsonResponse({'status': 'error', 'message': 'メールアドレスの形式が正しくありません。'})
+        
+        if User.objects.filter(email = new_email).exists():
+            return JsonResponse({'status': "error", "message" : "既に別のアカウントで登録されているメールアドレスです。"})
+        
+        if old_email == new_email:
+            return JsonResponse({'status': "error", "message" : "新しいメールアドレスは現在のメールアドレスと異なる必要があります。"})
+
+        if EmailChange.objects.filter(user = user).exists() or EmailChange.objects.filter(new_email = new_email).exists():
+            return JsonResponse({'status': "error", "message" : "既にメールアドレスの変更用リンクが送信されています。"})
+        
+        EmailChange.objects.create_email_change(user, verification_code, new_email)
+        if not send_email_change_email(new_email, user.username, user.display_name, verification_code):
+            return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。"})
+        return JsonResponse({'status': "success"})
+    except Exception as e:
+        return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。", "error_message": str(e)})
+
+def send_email_change_email(email, username, display_name, verification_code):
+    try:
+        subject = "CIS Insight - メールアドレス変更"
+        message = f"下記の内容でメールアドレス変更を受け付けました。\n\nユーザー名: {username}\n表示名: {display_name}\n新しいメールアドレス: {email}\n\n以下のリンクでメールアドレス変更を完了してください。\n有効期限は{EMAIL_CHANGE_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/email_change/{verification_code}"
+        send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+        logger.info(f'Email sent to: {email}')
+        return True
+    except Exception as e:
+        logger.error(f'Exception in send_email_change_email: {e}')
+        return False
+
+def render_email_change_page(request, verification_code):
+    try:
+        email_change = EmailChange.objects.get(verification_code = verification_code)
+    except EmailChange.DoesNotExist:
+        return render(request, 'error.html')
+
+    if not email_change.is_expired:
+        user = get_user_model().objects.get(pk = email_change.user.pk)
+        user.email = email_change.new_email
+        user.save()
+        email_change.delete()
+        return render(request, 'email_change.html')
+    else:
+        return render(request, 'error.html')
 
 # パスワード変更ページ関連
 @login_required

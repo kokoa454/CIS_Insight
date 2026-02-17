@@ -18,15 +18,6 @@ class PreUserManager(models.Manager):
         logger.info(f'PreUser created: {pre_user}')
         return pre_user
 
-    def get_pre_user(self, verification_code):
-        try:
-            pre_user = self.get(verification_code = verification_code)
-            logger.info(f'PreUser retrieved: {pre_user}')
-            return pre_user
-        except Exception as e:
-            logger.error(f'Exception in get_pre_user: {e}')
-            return None
-
 class PreUser(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -153,6 +144,53 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+# メール変更用
+class EmailChangeManager(models.Manager):
+    def create_email_change(self, user, verification_code, new_email, **extra_fields):
+        email_change = self.model(
+            user = user,
+            verification_code = verification_code,
+            new_email = new_email,
+            **extra_fields
+        )
+        email_change.save(using=self._db)
+        return email_change
+
+class EmailChange(models.Model):
+    id = models.AutoField(
+        primary_key = True,
+        verbose_name = 'ID'
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete = models.CASCADE,
+        verbose_name = 'User'
+    )
+    
+    verification_code = models.CharField(
+        max_length = VALIDATION_CODE_LENGTH,
+        unique = True,
+        verbose_name = 'Verification Code'
+    )
+
+    new_email = models.EmailField(
+        max_length = MAXIMUM_EMAIL_LENGTH,
+        verbose_name = 'New Email'
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add = True,
+        verbose_name = 'Created At'
+    )
+    
+    is_expired = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Expired'
+    )
+
+    objects = EmailChangeManager()
 
 # パスワード変更用
 class PasswordChangeManager(models.Manager):

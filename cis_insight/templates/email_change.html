@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}メールアドレス変更完了 | CIS Insight{% endblock %}
+
+{% block main %}
+<div class="min-h-screen flex flex-col bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] bg-white overflow-x-hidden">
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div class="container-main px-4 h-16 sm:h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 group cursor-pointer">
+                <div class="p-1 bg-slate-50 rounded-lg group-hover:scale-105 transition-transform">
+                    <img src="{% static 'img/logo.png' %}" class="w-8 h-8 sm:w-12 sm:h-12 object-contain" alt="Logo">
+                </div>
+                <span class="text-subtitle tracking-tighter text-slate-900 font-cis_insight">
+                    CIS <span class="text-red-600">Insight</span>
+                </span>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow flex items-center justify-center py-12 px-6 sm:py-20">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div class="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h1 class="text-subtitle font-bold mb-3 font-ja">
+                メールアドレスを更新しました
+            </h1>
+            <p class="text-gray-600 mb-8 leading-relaxed text-standard font-ja">
+                新しいメールアドレスへの変更が完了しました。<br>
+                このウィンドウは閉じても問題ありません。
+            </p>
+            <div class="flex flex-col gap-6">
+                <a href="{% url 'dashboard' %}" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                    ダッシュボードへ戻る
+                </a>
+            </div>
+        </div>
+    </main>
+    <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-4 leading-relaxed">
+        &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> 
+        AI-Powered Eurasian Intelligence Platform.
+    </footer>
+</div>
+{% endblock %}
