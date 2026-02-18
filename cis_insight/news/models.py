@@ -37,6 +37,9 @@ class CisAndNeighborCountry(models.Model):
 
     objects = CisAndNeighborCountryManager()
 
+    def __str__(self):
+        return self.name
+
 # CIS国登録用
 class CisCountryManager(models.Manager):
     def create_cis_country(self, country_code, name, svg_path, **extra_fields):
@@ -72,6 +75,9 @@ class CisCountry(models.Model):
     )
 
     objects = CisCountryManager()
+
+    def __str__(self):
+        return self.name
 
 # トピック登録用
 class TopicManager(models.Manager):
@@ -111,6 +117,9 @@ class Topic(models.Model):
     )
 
     objects = TopicManager()
+
+    def __str__(self):
+        return self.name_ja
 
 # RSS登録用
 class NewsRssManager(models.Manager):
@@ -163,6 +172,9 @@ class NewsRss(models.Model):
     )
 
     objects = NewsRssManager()
+
+    def __str__(self):
+        return self.company
 
 # ニュース記事登録用
 class NewsArticleManager(models.Manager):
@@ -262,6 +274,9 @@ class NewsArticle(models.Model):
     )
 
     objects = NewsArticleManager()
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         ordering = ["-published_at"]

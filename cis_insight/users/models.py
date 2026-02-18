@@ -46,6 +46,9 @@ class PreUser(models.Model):
         verbose_name = 'Is Expired'
     )
 
+    def __str__(self):
+        return self.email
+
     objects = PreUserManager()
 
 # 本登録用
@@ -191,3 +194,6 @@ class EmailChange(models.Model):
     )
 
     objects = EmailChangeManager()
+
+    def __str__(self):
+        return self.user.username
