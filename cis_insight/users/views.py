@@ -9,12 +9,17 @@ from django.db import transaction
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django_ratelimit.decorators import ratelimit
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 import re
 import random
 import string
 import secrets
 import logging
 import json
+from PIL import Image
+from io import BytesIO
+import sys
 
 from .models import PreUser
 from .models import User
@@ -178,27 +183,57 @@ def account_settings(request):
         user = get_user_model().objects.get(pk = request.user.pk)
         username = request.POST.get('username')
         display_name = request.POST.get('display_name')
+        email = request.POST.get('email')
         icon = request.FILES.get('icon')
 
         if icon:
             if user.icon:
-                user.icon.delete(save = False)
-
-            new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
-            user.icon.save(new_icon_name, icon, save = False)
+                with transaction.atomic():
+                    user.icon.delete(save = False)
+                    new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+                    icon = enhance_icon(icon, new_icon_name)
+                    user.icon.save(new_icon_name, icon, save = False)
 
         if username != user.username:
-            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+            return JsonResponse({'status': "error", "message" : "不正な入力です"})
 
-        if len(display_name) > 16:
-            return JsonResponse({'status': "error", "message" : "表示名は16文字以内で入力してください。"})
+        if len(display_name) > MAXIMUM_DISPLAY_NAME_LENGTH:
+            return JsonResponse({'status': "error", "message" : f"表示名は {MAXIMUM_DISPLAY_NAME_LENGTH}文字以内で入力してください。"})
 
-        user.display_name = display_name
-        user.save()
+        if email != user.email:
+            return JsonResponse({'status': "error", "message" : "不正な入力です"})
+
+        with transaction.atomic():
+            user.display_name = display_name
+            user.save()
         return JsonResponse({'status': "success"})
     except Exception as e:
+        print(e)
         logger.error(f'Exception in account_settings: {e}')
         return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
+
+def enhance_icon(icon, icon_name, size = (400, 400)):
+    icon = Image.open(icon)
+    icon = icon.convert("RGBA")
+
+    w, h = icon.size
+    target_w, target_h = size
+
+    scale = max(target_w / w, target_h / h)
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+    icon = icon.resize((new_w, new_h), Image.LANCZOS)
+    left = (new_w - target_w) // 2
+    top = (new_h - target_h) // 2
+    right = left + target_w
+    bottom = top + target_h
+    icon = icon.crop((left, top, right, bottom))
+
+    buffer = BytesIO()
+    icon.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return InMemoryUploadedFile(buffer, None, icon_name, 'image/png', sys.getsizeof(buffer), None)
 
 @login_required
 @ratelimit(key = 'ip', rate = '5/m', block = True)
@@ -265,6 +300,7 @@ def render_email_change_page(request, verification_code):
 
 # パスワード変更関連
 @login_required
+@ratelimit(key = 'ip', rate = '5/m', block = True)
 def password_change(request):
     try:
         user = get_user_model().objects.get(pk = request.user.pk)
