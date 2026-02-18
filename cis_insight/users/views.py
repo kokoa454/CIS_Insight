@@ -150,19 +150,24 @@ def render_logout_page(request):
 # ニュース設定ページ関連
 @login_required
 def render_news_settings_page(request):
-    user = get_user_model().objects.get(pk=request.user.pk)
+    user = get_user_model().objects.get(pk = request.user.pk)
     return render(request, 'news_settings.html', {'user': user, 'cis_countries': CIS_COUNTRIES, 'topics': TOPICS})
 
+@login_required
+@ratelimit(key = 'ip', rate = '5/m', block = True)
 def news_settings(request):
     try:
-        user = get_user_model().objects.get(pk=request.user.pk)
+        user = get_user_model().objects.get(pk = request.user.pk)
         countries = request.POST.getlist('countries')
         topics = request.POST.getlist('topics')
-        user.user_news_referred_country = countries
-        user.user_news_referred_topic = topics
-        user.save()
+
+        with transaction.atomic():
+            user.news_referred_country = countries
+            user.news_referred_topic = topics
+            user.save()
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in news_settings: {e}')
         return JsonResponse({'status': "error", "message" : "ニュース設定に失敗しました。", "error_message": str(e)})
 
 # 表示設定ページ関連
