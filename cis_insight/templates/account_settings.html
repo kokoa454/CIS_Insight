@@ -194,7 +194,7 @@
                         <span class="text-slate-400 font-en">READ ARTICLES</span>
                         <span class="text-red-500">{{ user.news_count }}</span>
                     </div>
-                    <form action="{% url 'logout' %}" method="POST" class="pt-2">
+                    <form action="{% url 'api_logout' %}" method="POST" class="pt-2">
                         {% csrf_token %}
                         <button type="submit" class="w-full text-left text-[10px] text-slate-500 hover:text-red-400 font-bold transition-colors">
                             ログアウト
@@ -239,7 +239,7 @@
             </a>
 
             {% if user.is_staff %}
-            <a href="{% url 'admin' %}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
+            <a href="{% url 'admin:index' %}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
                 <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                 <span class="hidden md:inline">管理者設定</span>
             </a>
@@ -258,7 +258,7 @@
                     {% endif %}
                     <div class="flex-grow min-w-0">
                         <p class="text-xs font-bold text-white truncate">{{ user.display_name }}</p>
-                        <form action="{% url 'logout' %}" method="POST" class="inline">
+                        <form action="{% url 'api_logout' %}" method="POST" class="inline">
                             {% csrf_token %}
                             <button type="submit" class="text-tiny text-slate-500 hover:text-red-400 font-bold transition-colors flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

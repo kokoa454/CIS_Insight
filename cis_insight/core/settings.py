@@ -130,7 +130,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 IMG_URL = 'img/'
 LOGO_PATH = IMG_URL + 'logo.png'
-ICON_PATH = IMG_URL + 'icon.png'
 
 
 # Media settings

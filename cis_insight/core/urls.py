@@ -28,16 +28,16 @@ urlpatterns = [
     path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'),
     path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
     path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
-    path('logout/', users_views.render_logout_page, name='logout'),
+    path('logout_complete/', users_views.render_logout_complete_page, name='logout_complete'),
     path('news_settings/', users_views.render_news_settings_page, name='news_settings'),
     path('display_settings/', users_views.render_display_settings_page, name='display_settings'),
     path('account_settings/', users_views.render_account_settings_page, name='account_settings'),
     path('email_change/<str:verification_code>/', users_views.render_email_change_page, name='email_change'),
     path('error/', views.render_error_page, name='error'),
-    path('admin/', users_views.render_admin_page, name='admin'),
     path('api/pre_sign_up/', views.pre_sign_up, name='api_pre_sign_up'),
     path('api/sign_up/', users_views.sign_up, name='api_sign_up'),
     path('api/sign_in/', users_views.sign_in, name='api_sign_in'),
+    path('api/logout/', users_views.logout, name='api_logout'),
     path('api/news_settings/', users_views.news_settings, name='api_news_settings'),
     path('api/account_settings/', users_views.account_settings, name='api_account_settings'),
     path('api/pre_email_change/', users_views.pre_email_change, name='api_pre_email_change'),
@@ -46,4 +46,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

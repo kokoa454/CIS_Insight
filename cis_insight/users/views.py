@@ -11,6 +11,8 @@ from django.core.exceptions import ValidationError
 from django_ratelimit.decorators import ratelimit
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import redirect
 import re
 import random
 import string
@@ -143,9 +145,13 @@ def sign_in(request):
         return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})
 
 # ログアウトページ関連
+def render_logout_complete_page(request):
+    return render(request, 'logout_complete.html')
+
 @login_required
-def render_logout_page(request):
-    return render(request, 'logout.html')
+def logout(request):
+    auth_logout(request)
+    return redirect('logout_complete')
 
 # ニュース設定ページ関連
 @login_required
@@ -336,10 +342,3 @@ def password_change(request):
     except Exception as e:
         logger.error(f'Exception in password_change: {e}')
         return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。", "error_message": str(e)})
-
-# 管理者ページ関連
-@login_required
-def render_admin_page(request):
-    if not request.user.is_staff:
-        return render(request, 'error.html')
-    return render(request, 'admin.html')
