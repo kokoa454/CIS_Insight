@@ -9,17 +9,20 @@ import secrets
 import logging
 import threading
 
-from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, COUNTRIES, CIS_COUNTRIES, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
+from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
 from users.models import (PreUser, PreUserManager, User)
+from news.models import (CisAndNeighborCountry, CisCountry)
 
 logger = logging.getLogger(__name__)
 
 # ランディングページ関連
 def render_landing_page(request):
+    countries = CisAndNeighborCountry.objects.all()
+    cis_countries = CisCountry.objects.all()
     return render(request, 'landing.html', {
         'logo_path': LOGO_PATH,
-        'countries': COUNTRIES,
-        'cis_countries': CIS_COUNTRIES
+        'countries': countries,
+        'cis_countries': cis_countries
     })
 
 # ユーザー登録前の仮登録関連

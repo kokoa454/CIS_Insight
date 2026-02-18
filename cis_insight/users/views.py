@@ -26,7 +26,8 @@ import sys
 from .models import PreUser
 from .models import User
 from .models import EmailChange
-from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES)
+from news.models import (CisCountry, Topic)
+from core.settings import (SITE_URL, EMAIL_HOST_USER, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, MAXIMUM_ICON_SIZE_PIXEL)
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +158,9 @@ def logout(request):
 @login_required
 def render_news_settings_page(request):
     user = get_user_model().objects.get(pk = request.user.pk)
-    return render(request, 'news_settings.html', {'user': user, 'cis_countries': CIS_COUNTRIES, 'topics': TOPICS})
+    cis_countries = CisCountry.objects.all()
+    topics = Topic.objects.all()
+    return render(request, 'news_settings.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics})
 
 @login_required
 @ratelimit(key = 'ip', rate = '5/m', block = True)
@@ -223,7 +226,7 @@ def account_settings(request):
         logger.error(f'Exception in account_settings: {e}')
         return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
 
-def enhance_icon(icon, icon_name, size = (400, 400)):
+def enhance_icon(icon, icon_name, size = MAXIMUM_ICON_SIZE_PIXEL):
     icon = Image.open(icon)
     icon = icon.convert("RGBA")
 

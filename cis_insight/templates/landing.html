@@ -210,7 +210,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="1000 -30 800 400" class="w-full h-auto drop-shadow-2xl">
                         <g id="map-layer">
                             {% for country in countries %}
-                            <path id="map-{{ country.id }}" data-name="{{ country.name }}" d="{{ country.path }}" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5"
+                            <path id="map-{{ country.country_code }}" data-name="{{ country.name }}" d="{{ country.svg_path }}" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5"
                                 class="country-path transition-all duration-300 cursor-pointer hover:fill-red-500 hover:stroke-red-700 origin-center"
                                 style="vector-effect: non-scaling-stroke; transform-box: fill-box;" />
                             {% endfor %}
@@ -223,10 +223,10 @@
                     <h3 class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Target Countries</h3>
                     <div class="grid grid-cols-2 lg:grid-cols-1 gap-2 max-h-[400px] lg:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {% for country in cis_countries %}
-                        <button id="btn-{{ country.id }}"
+                        <button id="btn-{{ country.country_code }}"
                             class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-red-500 hover:bg-red-50 group transition-all">
                             <span class="font-bold text-slate-700 group-hover:text-red-700 font-en text-tiny">{{ country.name }}</span>
-                            <span class="text-tiny font-bold text-slate-400 group-hover:text-red-400">{{ country.id }}</span>
+                            <span class="text-tiny font-bold text-slate-400 group-hover:text-red-400">{{ country.country_code }}</span>
                         </button>
                         {% endfor %}
                     </div>
