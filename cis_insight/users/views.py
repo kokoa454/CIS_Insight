@@ -18,7 +18,6 @@ import json
 
 from .models import PreUser
 from .models import User
-from .models import PasswordChange
 from .models import EmailChange
 from core.settings import (SITE_URL, EMAIL_HOST_USER, CIS_COUNTRIES, TOPICS, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES)
 
@@ -135,6 +134,7 @@ def sign_in(request):
         login(request, user)
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in sign_in: {e}')
         return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})
 
 # ログアウトページ関連
@@ -197,6 +197,7 @@ def account_settings(request):
         user.save()
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in account_settings: {e}')
         return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
 
 @login_required
@@ -225,10 +226,13 @@ def pre_email_change(request):
             return JsonResponse({'status': "error", "message" : "既にメールアドレスの変更用リンクが送信されています。"})
         
         EmailChange.objects.create_email_change(user, verification_code, new_email)
+        
         if not send_email_change_email(new_email, user.username, user.display_name, verification_code):
             return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。"})
+        
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in pre_email_change: {e}')
         return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。", "error_message": str(e)})
 
 def send_email_change_email(email, username, display_name, verification_code):
@@ -236,7 +240,6 @@ def send_email_change_email(email, username, display_name, verification_code):
         subject = "CIS Insight - メールアドレス変更"
         message = f"下記の内容でメールアドレス変更を受け付けました。\n\nユーザー名: {username}\n表示名: {display_name}\n新しいメールアドレス: {email}\n\n以下のリンクでメールアドレス変更を完了してください。\n有効期限は{EMAIL_CHANGE_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/email_change/{verification_code}"
         send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
-        logger.info(f'Email sent to: {email}')
         return True
     except Exception as e:
         logger.error(f'Exception in send_email_change_email: {e}')
@@ -251,67 +254,46 @@ def render_email_change_page(request, verification_code):
     if not email_change.is_expired:
         user = get_user_model().objects.get(pk = email_change.user.pk)
         user.email = email_change.new_email
-        user.save()
-        email_change.delete()
+        
+        with transaction.atomic():
+            user.save()
+            email_change.delete()
+        
         return render(request, 'email_change.html')
     else:
         return render(request, 'error.html')
 
-# パスワード変更ページ関連
+# パスワード変更関連
 @login_required
-def pre_password_change(request):
+def password_change(request):
     try:
         user = get_user_model().objects.get(pk = request.user.pk)
-        verification_code = generate_verification_code()
-
-        if PasswordChange.objects.filter(user_id = user.pk).exists():
-            return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでにパスワード変更用リンクが送信されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
-        
-        PasswordChange.objects.create_password_change(user, verification_code)
-        send_password_change_email(user.user_email, verification_code)
-        return JsonResponse({'status': "success"})
-    except Exception as e:
-        return JsonResponse({'status': "error", "message" : "パスワード変更用リンクの送信に失敗しました。", "error_message": str(e)})
-
-def send_password_change_email(email, verification_code):
-    subject = "CIS Insight - パスワード変更用リンク"
-    message = f"CIS Insightのパスワード変更用リンクです。\n\n以下のリンクでパスワードの変更を完了してください。\n有効期限は30分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/password_change/{verification_code}"
-    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
-    return
-
-def render_password_change_page(request, verification_code):
-    try:
-        password_change = PasswordChange.objects.get(verification_code = verification_code)
-        return render(request, 'password_change.html', {'verification_code': verification_code})
-    except PasswordChange.DoesNotExist:
-        return render(request, 'error.html')
-
-def password_change(request, verification_code):
-    try:
-        password_change = PasswordChange.objects.get(verification_code = verification_code)
-        if not password_change:
-            return JsonResponse({'status': "error", "message" : "このパスワード変更用リンクは無効です。"})
-        
-        old_password = request.POST.get('old_password')
+        old_password = request.POST.get('current_password')
         new_password = request.POST.get('new_password')
+        new_password_confirm = request.POST.get('new_password_confirm')
         
-        if not password_change.user.check_password(old_password):
+        if not user.check_password(old_password):
             return JsonResponse({'status': "error", "message" : "現在のパスワードが正しくありません。"})
+        
+        if new_password != new_password_confirm:
+            return JsonResponse({'status': "error", "message" : "新しいパスワードと確認用パスワードが一致しません。"})
         
         if new_password == old_password:
             return JsonResponse({'status': "error", "message" : "新しいパスワードは現在のパスワードと同じです。"})
         
-        if len(new_password) < 8:
+        if len(new_password) < MINIMUM_PASSWORD_LENGTH:
             return JsonResponse({'status': "error", "message" : "新しいパスワードは8文字以上で入力してください。"})
         
-        if not new_password.isalnum():
-            return JsonResponse({'status': "error", "message" : "新しいパスワードは英数字で入力してください。"})
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$', new_password):
+            return JsonResponse({'status': "error", "message" : "パスワードは大小英数字混合で入力してください。"})
         
-        password_change.user.set_password(new_password)
-        password_change.user.save()
-        PasswordChange.objects.verify_password_change(verification_code)
+        with transaction.atomic():
+            user.set_password(new_password)
+            user.save()
+            
         return JsonResponse({'status': "success"})
     except Exception as e:
+        logger.error(f'Exception in password_change: {e}')
         return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。", "error_message": str(e)})
 
 # 管理者ページ関連

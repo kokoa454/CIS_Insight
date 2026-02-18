@@ -65,28 +65,73 @@
     </div>
 </div>
 
-<div id="password-modal" class="modal-overlay hidden px-4 z-[100]">
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closePasswordModal()"></div>
+<div id="password-change-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closePasswordChangeModal()"></div>
     <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
         <div class="p-8">
-            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-6">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">パスワードを変更</h3>
+            <p class="text-tiny text-slate-500 font-ja mb-6 leading-relaxed">
+                現在のパスワードと新しいパスワードを入力してください。
+            </p>
+            <form id="password-change-form" method="post">
+                <div class="flex flex-col gap-3">
+                    {% csrf_token %}
+                    <label for="current_password" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Current Password</label>
+                    <input type="password" name="current_password" id="current-password-input" required placeholder="••••••••" class="input-base font-en mb-4">
+                    <label for="new_password" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">New Password</label>
+                    <input type="password" name="new_password" id="new-password-input" required placeholder="••••••••" class="input-base font-en mb-4">
+                    <label for="new_password_confirm" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Confirm New Password</label>
+                    <input type="password" name="new_password_confirm" id="new-password-confirm-input" required placeholder="••••••••" class="input-base font-en mb-4">
+                </div>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="button" id="open-password-change-confirm-modal-btn" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                        次へ
+                    </button>
+                    <button type="button" onclick="closePasswordChangeModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="password-change-confirm-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closePasswordChangeConfirmModal()"></div>
+    <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
+        <div class="p-8">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
                 <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
             </div>
-            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">パスワード再設定メールを送信</h3>
-            <p class="text-tiny text-slate-500 font-ja mb-8 leading-relaxed">
-                ご登録済みのメールアドレス（{{ user.email }}）に、パスワード再設定用のリンクをお送りします。よろしいですか？
-            </p>
-            
-            <div class="flex flex-col gap-3">
-                <button id="confirm-password-change" data-url="{% url 'api_pre_password_change' %}" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-red-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 bg-slate-900">
-                    メールを送信する
-                </button>
-                <button onclick="closePasswordModal()" class="w-full py-3 text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors font-bold">
-                    キャンセル
-                </button>
-            </div>
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">パスワードを変更</h3>
+            <form id="password-change-confirm-form" method="post" action="{% url 'api_password_change' %}">
+                {% csrf_token %}
+                <div class="flex flex-col gap-3">
+                    <p class="text-tiny text-slate-500 font-ja mb-4 leading-relaxed">
+                        本当にパスワードを変更しますか？
+                    </p>
+                </div>
+                <input type="password" name="current_password" id="current-password-input-confirm" required placeholder="••••••••" class="input-base font-en mb-4" hidden>
+                <input type="password" name="new_password" id="new-password-input-confirm" required placeholder="••••••••" class="input-base font-en mb-4" hidden>
+                <input type="password" name="new_password_confirm" id="new-password-confirm-input-confirm" required placeholder="••••••••" class="input-base font-en mb-4" hidden>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="submit" id="confirm-password-change" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                        パスワードを変更
+                    </button>
+                </div>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="button" onclick="closePasswordChangeModal(); closePasswordChangeConfirmModal();" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -99,7 +144,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
-            <span class="text-tiny font-ja font-medium">メールを送信しました。リンクを確認してください。</span>
+            <span class="text-tiny font-ja font-medium" id="success-message"></span>
         </div>
     </div>
 </div>
@@ -114,7 +159,7 @@
             </div>
             <div class="flex flex-col">
                 <span class="text-xs font-bold text-red-400 uppercase tracking-wider font-en">Error</span>
-                <span id="error-message" class="text-sm font-ja font-medium text-slate-200">エラーが発生しました。</span>
+                <span id="error-message" class="text-sm font-ja font-medium text-slate-200"></span>
             </div>
         </div>
     </div>
@@ -284,7 +329,7 @@
                         </div>
                         <div>
                             <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2 px-1">Display Name</label>
-                            <input type="text" name="display_name" value="{{ user.display_name }}" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all font-bold text-slate-900">
+                            <input type="text" name="display_name" value="{{ user.display_name }}" class="input-base font-ja font-bold">
                         </div>
                         <div class="flex items-center justify-between mb-2 px-1">
                             <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest">Email</label>
@@ -322,7 +367,7 @@
                     <div class="flex items-center gap-4">
                         <div class="p-2 bg-slate-100 rounded-xl group-hover:bg-white transition-colors">
                             <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
                         <div class="text-left">
@@ -350,7 +395,7 @@
                         </div>
                         <div class="text-left">
                             <p class="text-sm font-bold text-slate-900">パスワードの変更</p>
-                            <p class="text-tiny text-slate-500">定期的な更新を推奨します</p>
+                            <p class="text-tiny text-slate-500">流出があったと思われる場合は、パスワードを変更してください。</p>
                         </div>
                     </div>
                     <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

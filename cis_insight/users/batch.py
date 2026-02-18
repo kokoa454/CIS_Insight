@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 import logging
 
-from .models import PreUser, PasswordChange, EmailChange
+from .models import PreUser, EmailChange
 from core.settings import (PRE_USER_EXPIRATION_TIME_MINUTES, PRE_USER_DELETION_TIME_MINUTES, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, EMAIL_CHANGE_DELETION_TIME_MINUTES)
 
 logger = logging.getLogger(__name__)
@@ -44,26 +44,10 @@ def delete_email_change():
 
     expired_email_changes.delete()
 
-# パスワード変更ユーザーの削除
-def delete_password_change():
-    verified_password_changes = PasswordChange.objects.filter(is_verified = True)
-    expired_password_changes = PasswordChange.objects.filter(password_change_created_at__lt = timezone.now() - timedelta(minutes = 30))
-    
-    for password_change in verified_password_changes:
-        logger.info(f'PasswordChange verified: {password_change}')
-    
-    verified_password_changes.delete()
-    
-    for password_change in expired_password_changes:
-        logger.info(f'PasswordChange expired: {password_change}')
-    
-    expired_password_changes.delete()
-
 def start():
     scheduler = BackgroundScheduler()
     scheduler.add_job(expire_pre_user, 'interval', minutes = 1)
     scheduler.add_job(delete_pre_user, 'interval', minutes = 1)
     scheduler.add_job(expire_email_change, 'interval', minutes = 1)
     scheduler.add_job(delete_email_change, 'interval', minutes = 1)
-    scheduler.add_job(delete_password_change, 'interval', minutes = 1)
     scheduler.start()

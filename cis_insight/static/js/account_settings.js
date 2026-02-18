@@ -34,9 +34,6 @@ function previewImage(input) {
     }
 }
 
-// TODO 画像サイズ変更と切り取り（400px * 400px）
-
-
 // フォーム関連
 document.getElementById('account-settings-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -174,7 +171,7 @@ emailChangeConfirmForm.addEventListener('submit', async function(e) {
 
         const data = await response.json();
         if (data.status === 'success') {
-            showSuccess();
+            showSuccess("メールアドレスの変更用リンクを送信しました。メールをご確認ください。");
             closeEmailChangeConfirmModal();
         } else {
             console.log(data.error_message);
@@ -197,65 +194,121 @@ document.addEventListener("keydown", (e) => {
 });
 
 // パスワード変更関連
-const passwordModal = document.getElementById('password-modal');
-const passwordBtn = document.getElementById('password_change');
+const passwordChangeBtn = document.getElementById("password_change");
+const passwordChangeModal = document.getElementById("password-change-modal");
+const passwordChangeConfirmModal = document.getElementById("password-change-confirm-modal");
+const passwordChangeForm = document.getElementById("password-change-form");
+const passwordChangeConfirmForm = document.getElementById("password-change-confirm-form");
+const openPasswordChangeConfirmModalBtn = document.getElementById("open-password-change-confirm-modal-btn");
+const confirmPasswordChangeBtn = document.getElementById("confirm-password-change");
 
-passwordBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    passwordModal.classList.remove('hidden');
-    passwordModal.classList.add('flex');
-});
-
-function closePasswordModal() {
-    passwordModal.classList.add('hidden');
-    passwordModal.classList.remove('flex');
+function openPasswordChangeModal() {
+    passwordChangeModal.classList.remove('hidden');
+    passwordChangeModal.classList.add('flex');
 }
 
-document.getElementById('confirm-password-change').addEventListener('click', async function() {
-    const btn = this;
-    const originalText = btn.innerText;
-    
-    btn.disabled = true;
-    btn.innerText = '送信中...';
+function closePasswordChangeModal() {
+    passwordChangeModal.classList.add('hidden');
+    passwordChangeModal.classList.remove('flex');
+}
+
+function openPasswordChangeConfirmModal() {
+    passwordChangeConfirmModal.classList.remove('hidden');
+    passwordChangeConfirmModal.classList.add('flex');
+}
+
+function closePasswordChangeConfirmModal() {
+    passwordChangeConfirmModal.classList.add('hidden');
+    passwordChangeConfirmModal.classList.remove('flex');
+}
+
+passwordChangeBtn.addEventListener("click", () => {
+    openPasswordChangeModal();
+});
+
+openPasswordChangeConfirmModalBtn.addEventListener("click", () => {
+
+    const currentPassword = document.getElementById("current-password-input").value;
+    const newPassword = document.getElementById("new-password-input").value;
+    const newPasswordConfirm = document.getElementById("new-password-confirm-input").value;
+
+    closePasswordChangeModal();
+    openPasswordChangeConfirmModal();
+
+    document.getElementById("current-password-input-confirm").value = currentPassword;
+    document.getElementById("new-password-input-confirm").value = newPassword;
+    document.getElementById("new-password-confirm-input-confirm").value = newPasswordConfirm;
+});
+
+passwordChangeConfirmForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(passwordChangeConfirmForm);
+
+    confirmPasswordChangeBtn.disabled = true;
+    confirmPasswordChangeBtn.innerText = "送信中...";
 
     const csrfToken = document.cookie.split('; ')
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1];
 
-    const response = await fetch(this.dataset.url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
+    try{
+        const response = await fetch(passwordChangeConfirmForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+
+        const data = await response.json();
         if (data.status === 'success') {
-            showSuccess();
+            showSuccess("パスワードを変更しました。ログインし直してください。");
+            closePasswordChangeConfirmModal();
+            setTimeout(() => {
+                window.location.href = "/sign_in/";
+            }, 2000);
         } else {
             console.log(data.error_message);
             showError(data.message);
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.log(error);
-        showError('申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。');
-    });
+        showError('申し訳ありません。パスワードの変更に失敗しました。時間を空けてから再度お試しください。');
+    }
 
-    btn.disabled = false;
-    btn.innerText = originalText;
+    confirmPasswordChangeBtn.disabled = false;
+    confirmPasswordChangeBtn.innerText = "パスワードを変更";
 });
 
-function showSuccess() {
-    const toast = document.getElementById('success-toast');
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 5000);
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closePasswordChangeModal();
+        closePasswordChangeConfirmModal();
+    }
+});
+
+function showSuccess(msg){
+    const successToast = document.getElementById("success-toast");
+    const successMessage = document.getElementById("success-message");
+    successMessage.innerText = msg;
+    successToast.classList.remove("hidden");
+    successToast.classList.add("flex");
+    setTimeout(() => {
+        successToast.classList.add("hidden");
+        successToast.classList.remove("flex");
+    }, 2000);
 }
 
-function showError(msg) {
-    const toast = document.getElementById('error-toast');
-    document.getElementById('error-message').innerText = msg;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 5000);
+function showError(msg){
+    const errorToast = document.getElementById("error-toast");
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.innerText = msg;
+    errorToast.classList.remove("hidden");
+    errorToast.classList.add("flex");
+    setTimeout(() => {
+        errorToast.classList.add("hidden");
+        errorToast.classList.remove("flex");
+    }, 2000);
 }

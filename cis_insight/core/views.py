@@ -55,10 +55,9 @@ def pre_sign_up(request):
         if not send_verification_email(email, verification_code):
             return JsonResponse({'status': 'error', 'message': '申し訳ありません。メールの送信に失敗しました。時間を空けてから再度お試しください。'})
 
-        logger.info(f'User {email} pre-registered successfully')
         return JsonResponse({'status': 'success'})
     except Exception as e:
-        logger.error(f'Exception in pre_sign_up with email: {email}: {e}')
+        logger.error(f'Exception in pre_sign_up: {e}')
         return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
 
 def generate_verification_code():
@@ -69,7 +68,6 @@ def send_verification_email(email, verification_code):
         subject = "CIS Insight - アカウント登録用リンク"
         message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は{PRE_USER_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
         send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
-        logger.info(f'Email sent to: {email}')
         return True
     except Exception as e:
         logger.error(f'Exception in send_verification_email: {e}')
