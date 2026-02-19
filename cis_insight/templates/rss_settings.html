@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}ニュース設定 | CIS Insight{% endblock %}
+{% block title %}RSS設定 | CIS Insight{% endblock %}
 
 {% block main %}
 <div class="md:hidden bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-40">
@@ -132,7 +132,141 @@
     </aside>
 
     <main class="flex-grow overflow-y-auto h-screen p-6 md:p-12 pb-32">
-        
+        <div class="max-w-4xl mx-auto">
+            <header class="mb-12">
+                <h1 class="text-2xl font-black text-slate-900 font-en uppercase tracking-tight">RSS Settings</h1>
+                <p class="text-slate-500 text-sm mt-2 font-ja">RSSフィードの登録と稼働状況を管理します。</p>
+            </header>
+
+            <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 font-bold text-sm"></div>
+
+            <form id="rss-settings-form" method="post" action="{% url 'api_rss_settings' %}" enctype="multipart/form-data" class="space-y-8 mb-16">
+                {% csrf_token %}
+
+                <section class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
+                    <div class="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-6">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">ADD NEW RSS</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2">Company Name</label>
+                            <input type="text" name="company" required class="input-base font-en" placeholder="Example: TASS News">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2">Country</label>
+                            <select name="country" required class="input-base font-en">
+                                <option value="">国を選択してください</option>
+                                {% for country in countries %}
+                                <option value="{{ country.country_code }}">{{ country.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <label class="block text-tiny font-black text-slate-500 uppercase tracking-widest mb-2">RSS URL</label>
+                            <input type="url" name="url" required class="input-base font-en" placeholder="https://example.com/rss.xml">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <input type="checkbox" name="is_active" checked class="w-4 h-4 accent-red-600">
+                            <label class="text-sm font-ja text-slate-700">有効化する</label>
+                        </div>
+                    </div>
+                </section>
+
+                <button type="submit" id="submit-btn" class="btn-primary w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95">
+                    <span id="btn-text">登録する</span>
+                    <div id="btn-spinner" class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    <svg id="btn-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </button>
+            </form>
+
+            <div class="border-t border-slate-200 my-8"></div>
+
+            <section>
+                <div class="flex items-center gap-3 border-l-4 border-slate-900 pl-4 mb-8">
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest font-en">RSS Status</h2>
+                </div>
+
+                <div class="space-y-6">
+                    {% for rss in rsses %}
+                    <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 font-en">
+                                    {{ rss.company }}
+                                </h3>
+                                <p class="text-sm text-slate-500 break-all font-en">
+                                    {{ rss.url }}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                {% if rss.is_active %}
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">ACTIVE</span>
+                                {% else %}
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-slate-200 text-slate-600">DISABLED</span>
+                                {% endif %}
+
+                                {% if rss.last_error %}
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-600">ERROR</span>
+                                {% else %}
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-600">OK</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid md:grid-cols-3 gap-6 text-sm">
+                            <div>
+                                <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1">Last Fetched</p>
+                                <p class="text-slate-700 font-en">{{ rss.last_fetched_at|default:"-" }}</p>
+                            </div>
+
+                            <div>
+                                <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1">Articles Imported</p>
+                                <p class="text-slate-700 font-en">{{ rss.total_articles }}</p>
+                            </div>
+
+                            <div>
+                                <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1">Last Error</p>
+                                <p class="text-red-500 font-en text-xs break-all">{{ rss.last_error|default:"-" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex gap-4">
+                            <button data-id="{{ rss.id }}"
+                                class="toggle-rss px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                                {% if rss.is_active %}
+                                    無効化
+                                {% else %}
+                                    有効化
+                                {% endif %}
+                            </button>
+
+                            <button data-id="{{ rss.id }}" class="delete-rss px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                                削除
+                            </button>
+                        </div>
+
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-slate-400 py-12">
+                        RSSがまだ登録されていません。
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
     </main>
 </div>
 

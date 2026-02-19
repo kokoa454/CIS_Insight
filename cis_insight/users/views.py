@@ -170,6 +170,18 @@ def news_settings(request):
         countries = request.POST.getlist('countries')
         topics = request.POST.getlist('topics')
 
+        for country in countries:
+            if country not in CisCountry.objects.all().values_list('country_code', flat=True):
+                return JsonResponse({'status': "error", "message" : "国名が不正に入力されています。"})
+            else:
+                country = CisCountry.objects.get(country_code = country)
+
+        for topic in topics:
+            if topic not in Topic.objects.all().values_list('name_en', flat=True):
+                return JsonResponse({'status': "error", "message" : "トピックが不正に入力されています。"})
+            else:
+                topic = Topic.objects.get(name_en = topic)
+
         with transaction.atomic():
             user.news_referred_country = countries
             user.news_referred_topic = topics
@@ -201,12 +213,16 @@ def account_settings(request):
         icon = request.FILES.get('icon')
 
         if icon:
-            if user.icon:
+            try: 
                 with transaction.atomic():
-                    user.icon.delete(save = False)
+                    if user.icon:
+                        user.icon.delete(save = False)
                     new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
                     icon = enhance_icon(icon, new_icon_name)
                     user.icon.save(new_icon_name, icon, save = False)
+            except Exception as e:
+                logger.error(f'Exception in account_settings: {e}')
+                return JsonResponse({'status': "error", "message" : "アイコンの更新に失敗しました。", "error_message": str(e)})
 
         if username != user.username:
             return JsonResponse({'status': "error", "message" : "不正な入力です"})

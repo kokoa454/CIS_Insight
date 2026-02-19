@@ -123,11 +123,12 @@ class Topic(models.Model):
 
 # RSS登録用
 class NewsRssManager(models.Manager):
-    def create_news_rss(self, company, url, country, **extra_fields):
+    def create_news_rss(self, company, url, country, is_active, **extra_fields):
         news_rss = self.model(
             company = company,
             url = url,
             country = country,
+            is_active = is_active,
             **extra_fields
         )
         news_rss.save(using=self._db)
@@ -167,8 +168,25 @@ class NewsRss(models.Model):
     )
 
     is_active = models.BooleanField(
-        default = True,
+        default = False,
         verbose_name = 'Is Active'
+    )
+
+    last_fetched_at = models.DateTimeField(
+        verbose_name = 'Last Fetched At',
+        null = True,
+        blank = True
+    )
+
+    total_articles = models.IntegerField(
+        default = 0,
+        verbose_name = 'Total Articles'
+    )
+
+    last_error = models.TextField(
+        verbose_name = 'Last Error',
+        null = True,
+        blank = True
     )
 
     objects = NewsRssManager()
@@ -178,16 +196,17 @@ class NewsRss(models.Model):
 
 # ニュース記事登録用
 class NewsArticleManager(models.Manager):
-    def create_news_article(self, title, published_at, content_ru, url, country, topic, image, rss, is_active, **extra_fields):
+    def create_news_article(self, title_ru, title_ja, summary_ru, summary_ja, published_at, url, country, topic, image, rss, **extra_fields):
         news_article = self.model(
-            title = title,
+            title_ru = title_ru,
+            title_ja = title_ja,
+            summary_ru = summary_ru,
+            summary_ja = summary_ja,
             published_at = published_at,
-            content_ru = content_ru,
             url = url,
             country = country,
             image = image,
             rss = rss,
-            is_active = is_active,
             **extra_fields
         )
 
@@ -204,8 +223,24 @@ class NewsArticle(models.Model):
         verbose_name = 'ID'
     )
 
-    title = models.TextField(
-        verbose_name = 'Title'
+    title_ru = models.TextField(
+        verbose_name = 'Title RU'
+    )
+
+    title_ja = models.TextField(
+        verbose_name = 'Title JA',
+        null = True,
+        blank = True
+    )
+
+    summary_ru = models.TextField(
+        verbose_name = 'Summary RU',
+    )
+
+    summary_ja = models.TextField(
+        verbose_name = 'Summary JA',
+        null = True,
+        blank = True
     )
 
     published_at = models.DateTimeField(
@@ -214,6 +249,8 @@ class NewsArticle(models.Model):
 
     content_ru = models.TextField(
         verbose_name = 'Content RU',
+        null = True,
+        blank = True
     )
 
     content_ja = models.TextField(
@@ -273,10 +310,30 @@ class NewsArticle(models.Model):
         verbose_name = 'Is Active'
     )
 
+    is_title_translated = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Title Translated'
+    )
+
+    is_summary_translated = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Summary Translated'
+    )
+
+    is_content_added = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Content Added'
+    )
+
+    is_content_translated = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Content Translated'
+    )
+
     objects = NewsArticleManager()
 
     def __str__(self):
-        return self.title
+        return self.title_ru
 
     class Meta:
         ordering = ["-published_at"]
