@@ -56,9 +56,19 @@ def rss_settings(request):
         is_active = False
 
     try:
+        if not test_rss(url):
+            return JsonResponse({'status': "error", "message" : "RSSの取得テストに失敗しました。"})
         NewsRss.objects.create_news_rss(company, url, country, is_active)
         return JsonResponse({'status': "success", "message" : "RSS設定に成功しました。"})
     except Exception as e:
-        print(e)
         logger.error(f'Exception in rss_settings: {e}')
         return JsonResponse({'status': "error", "message" : "RSS設定に失敗しました。", "error_message": str(e)}) 
+
+def test_rss(url):
+    try:
+        feed = feedparser.parse(url)
+        return True
+    except Exception as e:
+        logger.error(f'Exception in test_rss: {e}')
+        return False
+    
