@@ -66,7 +66,7 @@ def sign_up(request):
         if User.objects.filter(username = username).exists():
             return JsonResponse({'status': "error", "message" : "ユーザー名が他のユーザーと重複しています。"})
 
-        pre_user = PreUser.objects.get_pre_user(verification_code)
+        pre_user = PreUser.objects.get(verification_code = verification_code)
         if pre_user.is_expired:
             return JsonResponse({'status': "error", "message" : "リンクの有効期限が切れています。"})
         

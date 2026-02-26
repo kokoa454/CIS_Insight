@@ -44,6 +44,9 @@ urlpatterns = [
     path('api/pre_email_change/', users_views.pre_email_change, name='api_pre_email_change'),
     path('api/password_change/', users_views.password_change, name='api_password_change'),
     path('api/rss_settings/', news_views.rss_settings, name='api_rss_settings'),
+    path('api/delete_rss/', news_views.delete_rss, name='api_delete_rss'),
+    path('api/deactivate_rss/', news_views.deactivate_rss, name='api_deactivate_rss'),
+    path('api/activate_rss/', news_views.activate_rss, name='api_activate_rss'),
 ]
 
 if settings.DEBUG:

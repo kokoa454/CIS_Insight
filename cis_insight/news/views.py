@@ -5,6 +5,8 @@ import feedparser
 import logging
 import re
 from django.http import JsonResponse
+import json
+from django.db import transaction
 
 from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss
 from core.settings import MAXIMUM_COMPANY_LENGTH
@@ -42,7 +44,7 @@ def rss_settings(request):
     if len(company) > MAXIMUM_COMPANY_LENGTH:
         return JsonResponse({'status': "error", "message" : "会社名は" + str(MAXIMUM_COMPANY_LENGTH) + "文字以内で入力してください。"})
     
-    if country not in CisCountry.objects.all().values_list('country_code', flat=True):
+    if country not in CisCountry.objects.all().values_list('country_code', flat = True):
         return JsonResponse({'status': "error", "message" : "国名が不正に入力されています。"})
     else:
         country = CisCountry.objects.get(country_code = country)
@@ -63,7 +65,7 @@ def rss_settings(request):
         return JsonResponse({'status': "success", "message" : "RSS設定に成功しました。"})
     except Exception as e:
         logger.error(f'Exception in rss_settings: {e}')
-        return JsonResponse({'status': "error", "message" : "RSS設定に失敗しました。", "error_message": str(e)}) 
+        return JsonResponse({'status': "error", "message" : "RSS設定に失敗しました。", "error_message": str(e)})
 
 def test_rss(url):
     try:
@@ -77,3 +79,71 @@ def test_rss(url):
         logger.error(f'Exception in test_rss: {e}')
         return False
     
+
+@login_required
+def delete_rss(request):
+    try:
+        NewsRss.objects.get(pk = request.POST.get('pk')).delete()
+        return JsonResponse({'status': "success", "message" : "RSS設定を削除しました。"})
+    except Exception as e:
+        logger.error(f'Exception in delete_rss: {e}')
+        return JsonResponse({'status': "error", "message" : "RSS設定を削除に失敗しました。", "error_message": str(e)})
+
+@login_required
+def deactivate_rss(request):
+    try:
+        data = json.loads(request.body)
+        rss_id = data.get('rss_id')
+        rss_is_active = data.get('rss_is_active')
+        rss_company = data.get('rss_company')
+        rss_url = data.get('rss_url')
+
+        print(rss_id)
+        print(rss_is_active)
+        print(rss_company)
+        print(rss_url)
+        
+        rss = NewsRss.objects.get(pk = rss_id)
+
+        if rss_is_active == "True":
+            rss_is_active = True
+        else:
+            rss_is_active = False
+
+        if rss.is_active != rss_is_active or rss.company != rss_company or rss.url != rss_url:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        
+        with transaction.atomic():
+            rss.is_active = False
+            rss.save()
+        return JsonResponse({'status': "success", "message" : "RSS設定を無効化しました。"})
+    except Exception as e:
+        logger.error(f'Exception in deactivate_rss: {e}')
+        return JsonResponse({'status': "error", "message" : "RSS設定を無効化に失敗しました。", "error_message": str(e)})
+
+@login_required
+def activate_rss(request):
+    try:
+        data = json.loads(request.body)
+        rss_id = data.get('rss_id')
+        rss_is_active = data.get('rss_is_active')
+        rss_company = data.get('rss_company')
+        rss_url = data.get('rss_url')
+        
+        rss = NewsRss.objects.get(pk = rss_id)
+
+        if rss_is_active == "True":
+            rss_is_active = True
+        else:
+            rss_is_active = False
+
+        if rss.is_active != rss_is_active or rss.company != rss_company or rss.url != rss_url:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        
+        with transaction.atomic():
+            rss.is_active = True
+            rss.save()
+        return JsonResponse({'status': "success", "message" : "RSS設定を有効化しました。"})
+    except Exception as e:
+        logger.error(f'Exception in activate_rss: {e}')
+        return JsonResponse({'status': "error", "message" : "RSS設定を有効化に失敗しました。", "error_message": str(e)})
