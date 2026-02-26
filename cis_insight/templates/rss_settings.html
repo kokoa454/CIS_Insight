@@ -21,16 +21,16 @@
                 {% csrf_token %}
                 <div class="flex flex-col gap-3">
                     <div class="flex flex-col gap-2">
-                        <label for="rss-delete-confirm-id" class="text-tiny text-slate-500 font-ja">RSS ID</label>
-                        <input type="text" name="rss_id" id="rss-delete-confirm-id" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
-                    </div>
-                    <div class="flex flex-col gap-2">
                         <label for="rss-delete-confirm-company" class="text-tiny text-slate-500 font-ja">RSS COMPANY</label>
                         <input type="text" name="rss_company" id="rss-delete-confirm-company" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
                     </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="rss-delete-confirm-url" class="text-tiny text-slate-500 font-ja">RSS URL</label>
+                        <input type="text" name="rss_url" id="rss-delete-confirm-url" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
+                    </div>
                 </div>
                 <div class="flex flex-col gap-3 mt-6">
-                    <button type="button" id="rss-delete-confirm-btn" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                    <button type="submit" id="rss-delete-confirm-btn" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
                         削除
                     </button>
                     <button type="button" onclick="closeRssDeleteConfirmModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
@@ -86,7 +86,7 @@
     <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
         <div class="p-8">
             <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
@@ -132,7 +132,7 @@
     </div>
 </div>
 
-<div id="error-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] hidden transition-all duration-300">
+<div id="error-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] hidden pointer-events-none">
     <div class="flex justify-center px-4">
         <div class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-red-500/30 pointer-events-auto">
             <div class="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
@@ -142,7 +142,7 @@
             </div>
             <div class="flex flex-col">
                 <span class="text-xs font-bold text-red-400 uppercase tracking-wider font-en">Error</span>
-                <span id="error-message" class="text-sm font-ja font-medium text-slate-200"></span>
+                <span id="error-message" class="text-tiny font-ja font-medium text-slate-200"></span>
             </div>
         </div>
     </div>
@@ -396,7 +396,7 @@
                                 {% endif %}
                             </button>
 
-                            <button type="button" data-id="{{ rss.id }}" data-company="{{ rss.company }}" data-url="{{ rss.url }}" class="rss-delete-btn px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                            <button type="button" data-id="{{ rss.id }}" data-is-active="{{ rss.is_active }}" data-company="{{ rss.company }}" data-url="{{ rss.url }}" class="rss-delete-btn px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
                                 削除
                             </button>
                         </div>

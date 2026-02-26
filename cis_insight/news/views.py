@@ -83,7 +83,23 @@ def test_rss(url):
 @login_required
 def delete_rss(request):
     try:
-        NewsRss.objects.get(pk = request.POST.get('pk')).delete()
+        data = json.loads(request.body)
+        rss_id = data.get('rss_id')
+        rss_is_active = data.get('rss_is_active')
+        rss_company = data.get('rss_company')
+        rss_url = data.get('rss_url')
+
+        if rss_is_active == "True":
+            rss_is_active = True
+        else:
+            rss_is_active = False
+        
+        rss = NewsRss.objects.get(pk = rss_id)
+
+        if rss.is_active != rss_is_active or rss.company != rss_company or rss.url != rss_url:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        
+        rss.delete()
         return JsonResponse({'status': "success", "message" : "RSS設定を削除しました。"})
     except Exception as e:
         logger.error(f'Exception in delete_rss: {e}')
@@ -97,11 +113,6 @@ def deactivate_rss(request):
         rss_is_active = data.get('rss_is_active')
         rss_company = data.get('rss_company')
         rss_url = data.get('rss_url')
-
-        print(rss_id)
-        print(rss_is_active)
-        print(rss_company)
-        print(rss_url)
         
         rss = NewsRss.objects.get(pk = rss_id)
 

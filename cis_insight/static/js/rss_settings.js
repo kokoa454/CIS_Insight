@@ -32,7 +32,7 @@ document.getElementById('rss-settings-form').addEventListener('submit', async (e
     ?.split('=')[1];
 
     submitBtn.disabled = true;
-    btnText.innerText = "更新中...";
+    btnText.innerText = "登録中...";
     btnSpinner.classList.remove('hidden');
     btnIcon.classList.add('hidden');
     errorMsg.classList.add('hidden');
@@ -50,7 +50,7 @@ document.getElementById('rss-settings-form').addEventListener('submit', async (e
         const data = await response.json();
 
         if (data.status === "success") {
-            btnText.innerText = "更新完了";
+            btnText.innerText = "登録完了";
             setTimeout(() => {
                 window.location.href = '/rss_settings/';
             }, 800);
@@ -83,6 +83,7 @@ let currentRss = null;
 
 const rssDeactivateForm = document.getElementById("rss-deactivate-form");
 const rssActivateForm = document.getElementById("rss-activate-form");
+const rssDeleteForm = document.getElementById("rss-delete-form");
 
 document.querySelectorAll(".rss-activate-deactivate-btn")
 .forEach(button => {
@@ -187,6 +188,67 @@ rssActivateForm.addEventListener("submit", async (e) => {
             showError(data.message);
         }
     }catch (error) {
+        console.error("Error:", error);
+        showError("通信に失敗しました。" + error);
+    }
+});
+
+// RSS削除
+document.querySelectorAll(".rss-delete-btn")
+.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        currentRss = {
+            id: button.dataset.id,
+            company: button.dataset.company,
+            isActive: button.dataset.isActive,
+            url: button.dataset.url
+        };
+
+        const modal = document.getElementById("rss-delete-confirm-modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        document.getElementById("rss-delete-confirm-company").value = currentRss.company;
+        document.getElementById("rss-delete-confirm-url").value = currentRss.url;
+    });
+}); 
+
+rssDeleteForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    console.log(currentRss);
+    if (!currentRss) return;
+
+    try {
+        const csrfToken = document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+        const response = await fetch("/api/delete_rss/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify({
+                rss_id: currentRss.id,
+                rss_is_active: currentRss.isActive,
+                rss_company: currentRss.company,
+                rss_url: currentRss.url
+            })
+        });
+
+        const data = await response.json();
+        if (data.status === "success") {
+            showSuccess("RSS設定を削除しました。");
+            setTimeout(() => {
+                window.location.href = '/rss_settings/';
+            }, 800);
+        } else {
+            showError(data.message);
+        }
+    } catch (error) {
         console.error("Error:", error);
         showError("通信に失敗しました。" + error);
     }
