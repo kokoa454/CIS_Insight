@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core.apps.CoreConfig',
     'users',
     'news',
 ]
@@ -157,6 +158,7 @@ SITE_URL = 'http://localhost:8000'
 LOGIN_URL = 'sign_in'
 LOGIN_REDIRECT_URL = 'dashboard'
 
+
 # User validation settings
 MINIMUM_PASSWORD_LENGTH = 8
 MAXIMUM_USERNAME_LENGTH = 16
@@ -165,6 +167,7 @@ MAXIMUM_EMAIL_LENGTH = 255
 VALIDATION_CODE_LENGTH = 32
 MAXIMUM_ICON_SIZE_PIXEL = (400, 400)
 
+
 # News validation settings
 MAXIMUM_NEWS_IMAGE_SIZE_PIXEL = (1920, 1080)
 MAXIMUM_COMPANY_LENGTH = 255
@@ -172,6 +175,8 @@ MAXIMUM_COUNTRY_CODE_LENGTH = 2
 MAXIMUM_COUNTRY_NAME_LENGTH = 255
 MAXIMUM_TOPIC_NAME_LENGTH = 16
 MAXIMUM_TOPIC_EMOJI_LENGTH = 8
+MAXIMUM_IMAGE_SIZE_PIXEL = (1920, 1080)
+
 
 # Batch settings
 PRE_USER_EXPIRATION_TIME_MINUTES = 30
@@ -179,12 +184,27 @@ PRE_USER_DELETION_TIME_MINUTES = PRE_USER_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 EMAIL_CHANGE_EXPIRATION_TIME_MINUTES = 30
 EMAIL_CHANGE_DELETION_TIME_MINUTES = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 
+
+# Gemini settings
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_MODEL_1 = os.getenv('GEMINI_MODEL_1')
+GEMINI_MODEL_2 = os.getenv('GEMINI_MODEL_2')
+GEMINI_MODEL_3 = os.getenv('GEMINI_MODEL_3')
+
+
+# Groq settings
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_MODEL_1 = os.getenv('GROQ_MODEL_1')
+GROQ_MODEL_2 = os.getenv('GROQ_MODEL_2')
+
+
 # Logger settings
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     'version': 1,
+    'disable_existing_loggers': False,
     'formatters': {
         'all': {
             'format': '\t'.join([
@@ -223,18 +243,30 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {
+        'core': {
             'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
+            'propagate': False,
+        },
+        'news': {
+            'handlers': ['file', 'error_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['file', 'error_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'django': {
             'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
-        'django.request': {
-            'handlers': ['error_file'],
-            'level': 'ERROR',
+        'apscheduler': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     }
 }

@@ -87,15 +87,18 @@
 
             {% if user.is_staff %}
             <a href="{% url 'rss_settings' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a14 14 0 0114 0M5 12a7 7 0 017 7"/>
+                <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M4 11a9 9 0 0 1 9 9"></path>
+                    <path d="M4 4a16 16 0 0 1 16 16"></path>
+                    <circle cx="5" cy="19" r="1"></circle>
                 </svg>
                 <span class="hidden md:inline">RSS設定</span>
             </a>
 
             <a href="{% url 'admin:index' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
-                <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l2 4 4 .6-3 3 .7 4-3.7-2-3.7 2 .7-4-3-3 4-.6z"/>
+                <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
                 </svg>
                 <span class="hidden md:inline">管理者設定</span>
             </a>
@@ -172,8 +175,8 @@
                         <label class="cursor-pointer">
                             <input type="checkbox" name="topics" value="{{ topic.name_en }}" class="peer hidden" 
                                 {% if topic.name_en in user.news_referred_topic %}checked{% endif %}>
-                            <span class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-tiny font-bold text-slate-700 transition-all peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-500 peer-checked:font-black hover:border-slate-300 inline-block font-ja">
-                                # {{ topic.emoji }} {{ topic.name_ja }}
+                            <span class="text-sm px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-tiny font-bold text-slate-700 transition-all peer-checked:bg-red-50 peer-checked:text-red-700 peer-checked:border-red-500 peer-checked:font-black hover:border-slate-300 inline-block font-ja">
+                                {{ topic.emoji }} {{ topic.name_ja }}
                             </span>
                         </label>
                         {% endfor %}

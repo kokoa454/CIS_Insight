@@ -23,9 +23,7 @@ from PIL import Image
 from io import BytesIO
 import sys
 
-from .models import PreUser
-from .models import User
-from .models import EmailChange
+from .models import PreUser, User, EmailChange
 from news.models import (CisCountry, Topic)
 from core.settings import (SITE_URL, EMAIL_HOST_USER, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, MAXIMUM_ICON_SIZE_PIXEL)
 
@@ -290,10 +288,19 @@ def pre_email_change(request):
         if EmailChange.objects.filter(user = user).exists() or EmailChange.objects.filter(new_email = new_email).exists():
             return JsonResponse({'status': "error", "message" : "既にメールアドレスの変更用リンクが送信されています。"})
         
-        EmailChange.objects.create_email_change(user, verification_code, new_email)
+        email_change, created = EmailChange.objects.get_or_create(
+            user = user,
+            defaults = {
+                'verification_code': verification_code,
+                'new_email': new_email
+            }
+        )
         
-        if not send_email_change_email(new_email, user.username, user.display_name, verification_code):
-            return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。"})
+        if created:
+            if not send_email_change_email(new_email, user.username, user.display_name, verification_code):
+                return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。"})
+        else:
+            return JsonResponse({'status': "error", "message" : "既にメールアドレスの変更用リンクが送信されています。"})
         
         return JsonResponse({'status': "success"})
     except Exception as e:

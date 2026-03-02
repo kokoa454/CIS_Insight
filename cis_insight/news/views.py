@@ -8,7 +8,7 @@ from django.http import JsonResponse
 import json
 from django.db import transaction
 
-from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss
+from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss, NewsArticle
 from core.settings import MAXIMUM_COMPANY_LENGTH
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,14 @@ def rss_settings(request):
         return JsonResponse({'status': "error", "message" : "RSSの取得テストに失敗しました。"})
 
     try:
-        NewsRss.objects.create_news_rss(company, url, country, is_active)
+        NewsRss.objects.get_or_create(
+            url = url,
+            defaults = {
+                'company': company,
+                'country': country,
+                'is_active': is_active
+            }
+        )
         return JsonResponse({'status': "success", "message" : "RSS設定に成功しました。"})
     except Exception as e:
         logger.error(f'Exception in rss_settings: {e}')
@@ -98,12 +105,23 @@ def delete_rss(request):
 
         if rss.is_active != rss_is_active or rss.company != rss_company or rss.url != rss_url:
             return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+
+        if rss.is_active == True:
+            return JsonResponse({'status': "error", "message" : "RSS設定を削除するには、まず無効化してください。"})
         
-        rss.delete()
+        news_articles = NewsArticle.objects.filter(rss = rss)
+
+        with transaction.atomic():
+            for news_article in news_articles:
+                if news_article.image is not None:
+                    news_article.image.delete()
+                news_article.delete()
+
+            rss.delete()
         return JsonResponse({'status': "success", "message" : "RSS設定を削除しました。"})
     except Exception as e:
         logger.error(f'Exception in delete_rss: {e}')
-        return JsonResponse({'status': "error", "message" : "RSS設定を削除に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "RSS設定の削除に失敗しました。", "error_message": str(e)})
 
 @login_required
 def deactivate_rss(request):

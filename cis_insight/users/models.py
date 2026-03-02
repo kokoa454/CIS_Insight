@@ -8,16 +8,6 @@ from core.settings import (USER_ICON_URL, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPL
 logger = logging.getLogger(__name__)
 
 # 仮登録メール認証用
-class PreUserManager(models.Manager):
-    def create_pre_user(self, email, verification_code):
-        pre_user = self.model(
-            email = email,
-            verification_code = verification_code
-        )
-        pre_user.save(using=self._db)
-        logger.info(f'PreUser created: {pre_user}')
-        return pre_user
-
 class PreUser(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -48,8 +38,6 @@ class PreUser(models.Model):
 
     def __str__(self):
         return self.email
-
-    objects = PreUserManager()
 
 # 本登録用
 class UserManager(BaseUserManager):
@@ -149,17 +137,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
 
 # メール変更用
-class EmailChangeManager(models.Manager):
-    def create_email_change(self, user, verification_code, new_email, **extra_fields):
-        email_change = self.model(
-            user = user,
-            verification_code = verification_code,
-            new_email = new_email,
-            **extra_fields
-        )
-        email_change.save(using=self._db)
-        return email_change
-
 class EmailChange(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -192,8 +169,6 @@ class EmailChange(models.Model):
         default = False,
         verbose_name = 'Is Expired'
     )
-
-    objects = EmailChangeManager()
 
     def __str__(self):
         return self.user.username

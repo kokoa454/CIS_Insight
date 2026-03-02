@@ -2,17 +2,6 @@ from django.db import models
 from core.settings import (MAXIMUM_COMPANY_LENGTH, MAXIMUM_COUNTRY_CODE_LENGTH, MAXIMUM_COUNTRY_NAME_LENGTH, MAXIMUM_TOPIC_NAME_LENGTH, MAXIMUM_TOPIC_EMOJI_LENGTH, NEWS_IMAGE_URL)
 
 # CIS国と周辺国登録用
-class CisAndNeighborCountryManager(models.Manager):
-    def create_cis_and_neighbor_country(self, country_code, name, svg_path, **extra_fields):
-        cis_country_and_neighbor = self.model(
-            country_code = country_code,
-            name = name,
-            svg_path = svg_path,
-            **extra_fields
-        )
-        cis_country_and_neighbor.save(using=self._db)
-        return cis_country_and_neighbor
-
 class CisAndNeighborCountry(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -35,23 +24,10 @@ class CisAndNeighborCountry(models.Model):
         verbose_name = 'Path'
     )
 
-    objects = CisAndNeighborCountryManager()
-
     def __str__(self):
         return self.name
 
 # CIS国登録用
-class CisCountryManager(models.Manager):
-    def create_cis_country(self, country_code, name, svg_path, **extra_fields):
-        cis_country = self.model(
-            country_code = country_code,
-            name = name,
-            svg_path = svg_path,
-            **extra_fields
-        )
-        cis_country.save(using=self._db)
-        return cis_country
-
 class CisCountry(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -74,23 +50,10 @@ class CisCountry(models.Model):
         verbose_name = 'Path'
     )
 
-    objects = CisCountryManager()
-
     def __str__(self):
         return self.name
 
 # トピック登録用
-class TopicManager(models.Manager):
-    def create_topic(self, name_en, name_ja, emoji, **extra_fields):
-        topic = self.model(
-            name_en = name_en,
-            name_ja = name_ja,
-            emoji = emoji,
-            **extra_fields
-        )
-        topic.save(using=self._db)
-        return topic
-
 class Topic(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -116,24 +79,10 @@ class Topic(models.Model):
         blank = True
     )
 
-    objects = TopicManager()
-
     def __str__(self):
         return self.name_ja
 
 # RSS登録用
-class NewsRssManager(models.Manager):
-    def create_news_rss(self, company, url, country, is_active, **extra_fields):
-        news_rss = self.model(
-            company = company,
-            url = url,
-            country = country,
-            is_active = is_active,
-            **extra_fields
-        )
-        news_rss.save(using=self._db)
-        return news_rss
-
 class NewsRss(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -189,34 +138,10 @@ class NewsRss(models.Model):
         blank = True
     )
 
-    objects = NewsRssManager()
-
     def __str__(self):
         return self.company
 
 # ニュース記事登録用
-class NewsArticleManager(models.Manager):
-    def create_news_article(self, title_ru, title_ja, summary_ru, summary_ja, published_at, url, country, topic, image, rss, **extra_fields):
-        news_article = self.model(
-            title_ru = title_ru,
-            title_ja = title_ja,
-            summary_ru = summary_ru,
-            summary_ja = summary_ja,
-            published_at = published_at,
-            url = url,
-            country = country,
-            image = image,
-            rss = rss,
-            **extra_fields
-        )
-
-        news_article.save(using=self._db)
-
-        if topic:
-            news_article.topic.set(topic)
-
-        return news_article
-
 class NewsArticle(models.Model):
     id = models.AutoField(
         primary_key = True,
@@ -235,6 +160,8 @@ class NewsArticle(models.Model):
 
     summary_ru = models.TextField(
         verbose_name = 'Summary RU',
+        null = True,
+        blank = True
     )
 
     summary_ja = models.TextField(
@@ -315,9 +242,19 @@ class NewsArticle(models.Model):
         verbose_name = 'Is Title Translated'
     )
 
+    is_summary_added = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Summary Added'
+    )
+
     is_summary_translated = models.BooleanField(
         default = False,
         verbose_name = 'Is Summary Translated'
+    )
+
+    is_topic_picked = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Topic Picked'
     )
 
     is_content_added = models.BooleanField(
@@ -329,8 +266,6 @@ class NewsArticle(models.Model):
         default = False,
         verbose_name = 'Is Content Translated'
     )
-
-    objects = NewsArticleManager()
 
     def __str__(self):
         return self.title_ru

@@ -10,7 +10,7 @@ import logging
 import threading
 
 from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
-from users.models import (PreUser, PreUserManager, User)
+from users.models import (PreUser, User)
 from news.models import (CisAndNeighborCountry, CisCountry)
 
 logger = logging.getLogger(__name__)
@@ -53,10 +53,19 @@ def pre_sign_up(request):
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに本登録されています。'})
 
         verification_code = generate_verification_code()
-        PreUser.objects.create_pre_user(email, verification_code)
 
-        if not send_verification_email(email, verification_code):
-            return JsonResponse({'status': 'error', 'message': '申し訳ありません。メールの送信に失敗しました。時間を空けてから再度お試しください。'})
+        pre_user, created = PreUser.objects.get_or_create(
+            email = email,
+            defaults = {
+                'verification_code': verification_code
+            }
+        )
+
+        if created:
+            if not send_verification_email(email, verification_code):
+                return JsonResponse({'status': 'error', 'message': '申し訳ありません。メールの送信に失敗しました。時間を空けてから再度お試しください。'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに仮登録されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
 
         return JsonResponse({'status': 'success'})
     except Exception as e:
