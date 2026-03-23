@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
 import feedparser
 import logging
 import re
@@ -16,10 +15,23 @@ logger = logging.getLogger(__name__)
 # ダッシュボードページ関連
 @login_required
 def render_dashboard_page(request):
-    user = get_user_model().objects.get(pk=request.user.pk)
+    user = request.user
     cis_countries = CisAndNeighborCountry.objects.all()
     topics = Topic.objects.all()
-    return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics})
+
+    user_news_referred_country = user.news_referred_country
+    user_news_referred_topic = user.news_referred_topic
+
+    if len(user_news_referred_country) > 0 and len(user_news_referred_topic) > 0:
+        news_articles = NewsArticle.objects.filter(country__country_code__in = user_news_referred_country, topic__name_en__in = user_news_referred_topic, is_active = True).select_related('country', 'rss').prefetch_related('topic').distinct().order_by('-published_at')[:100]
+    elif len(user_news_referred_country) > 0 and len(user_news_referred_topic) == 0:
+        news_articles = NewsArticle.objects.filter(country__country_code__in = user_news_referred_country, is_active = True).select_related('country', 'rss').distinct().order_by('-published_at')[:100]
+    elif len(user_news_referred_country) == 0 and len(user_news_referred_topic) > 0:
+        news_articles = NewsArticle.objects.filter(topic__name_en__in = user_news_referred_topic, is_active = True).select_related('country', 'rss').prefetch_related('topic').distinct().order_by('-published_at')[:100]
+    else:
+        news_articles = []
+    
+    return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
 # RSS設定ページ関連
 @login_required

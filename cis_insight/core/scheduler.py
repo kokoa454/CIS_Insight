@@ -18,7 +18,7 @@ def start():
     scheduler = BackgroundScheduler(daemon = True)
 
     # news
-    scheduler.add_job(fetch_news_articles, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(fetch_news_articles, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
 
     # users
     scheduler.add_job(expire_email_change, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)

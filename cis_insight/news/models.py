@@ -158,18 +158,6 @@ class NewsArticle(models.Model):
         blank = True
     )
 
-    summary_ru = models.TextField(
-        verbose_name = 'Summary RU',
-        null = True,
-        blank = True
-    )
-
-    summary_ja = models.TextField(
-        verbose_name = 'Summary JA',
-        null = True,
-        blank = True
-    )
-
     published_at = models.DateTimeField(
         verbose_name = 'Published At'
     )
@@ -237,19 +225,14 @@ class NewsArticle(models.Model):
         verbose_name = 'Is Active'
     )
 
+    is_title_added = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Title Added'
+    )
+
     is_title_translated = models.BooleanField(
         default = False,
         verbose_name = 'Is Title Translated'
-    )
-
-    is_summary_added = models.BooleanField(
-        default = False,
-        verbose_name = 'Is Summary Added'
-    )
-
-    is_summary_translated = models.BooleanField(
-        default = False,
-        verbose_name = 'Is Summary Translated'
     )
 
     is_topic_picked = models.BooleanField(
