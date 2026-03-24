@@ -176,6 +176,12 @@ MAXIMUM_COUNTRY_NAME_LENGTH = 255
 MAXIMUM_TOPIC_NAME_LENGTH = 16
 MAXIMUM_TOPIC_EMOJI_LENGTH = 8
 MAXIMUM_IMAGE_SIZE_PIXEL = (1920, 1080)
+NOISE_PHRASES = [
+    r"©", r"copyright", r"http",
+    r"Читать .* в",
+    r"Фото:", r"Иллюстрация:",
+    r"^— ",
+]
 
 
 # Batch settings

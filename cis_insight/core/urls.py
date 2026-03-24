@@ -28,7 +28,7 @@ urlpatterns = [
     path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'),
     path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
     path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
-    # path('news_article/<int:pk>/', news_views.render_news_article_page, name='news_article'),
+    path('news_article/news_article_id=<int:pk>/', news_views.render_news_article_page, name='news_article_page'),
     path('logout_complete/', users_views.render_logout_complete_page, name='logout_complete'),
     path('news_settings/', users_views.render_news_settings_page, name='news_settings'),
     path('display_settings/', users_views.render_display_settings_page, name='display_settings'),

@@ -6,9 +6,16 @@ import re
 from django.http import JsonResponse
 import json
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
+from bs4 import BeautifulSoup
+import requests
+import newspaper
+from google import genai
+import trafilatura
 
 from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss, NewsArticle
-from core.settings import MAXIMUM_COMPANY_LENGTH
+from core.settings import MAXIMUM_COMPANY_LENGTH, GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, NOISE_PHRASES
+from core.views import render_error_page
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +39,136 @@ def render_dashboard_page(request):
         news_articles = []
     
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
+
+# ニュース記事関連
+@login_required
+def render_news_article_page(request, pk):
+    user = request.user
+    cis_countries = CisAndNeighborCountry.objects.all()
+    topics = Topic.objects.all()
+
+    try:
+        news_article = NewsArticle.objects.get(pk = pk)
+
+        if news_article.is_active == False:
+            return render_error_page(request)
+        
+        if news_article.is_content_added == False:
+            content_ru = get_news_article_content(news_article.url)
+            if content_ru is None:
+                return render_error_page(request)
+            try:
+                with transaction.atomic():
+                    news_article.content_ru = content_ru
+                    news_article.is_content_added = True
+                    news_article.save()
+            except Exception as e:
+                logger.error(f'Exception in render_news_article_page: {e}')
+                return render_error_page(request)
+        
+        if news_article.is_content_added == True and news_article.is_content_translated == False:
+            content_ja = translate_content(news_article.content_ru)
+            if content_ja is None:
+                return render_error_page(request)
+            try:
+                with transaction.atomic():
+                    news_article.content_ja = content_ja
+                    news_article.is_content_translated = True
+                    news_article.save()
+            except Exception as e:
+                logger.error(f'Exception in render_news_article_page: {e}')
+                return render_error_page(request)
+
+    except ObjectDoesNotExist:
+        return render_error_page(request)
+    
+    return render(request, 'news_article.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_article': news_article})
+
+def get_news_article_content(news_article_url):
+    try:
+        article = newspaper.Article(news_article_url)
+        article.download()
+        article.parse()
+        article_content = article.text
+        
+        if len(article_content) == 0:
+            downloaded = requests.get(news_article_url)
+            downloaded.raise_for_status()
+            article_content = trafilatura.extract(downloaded.text)
+        
+        if article_content is None or len(article_content) == 0:
+            return None
+        
+        cleaned_article_content = clean_article_content(article_content)
+        if cleaned_article_content == None or len(cleaned_article_content) == 0:
+            return None
+        
+        return cleaned_article_content
+    except Exception as e:
+        logger.error(f'Exception in get_news_article_content: {e}')
+        return None
+
+def clean_article_content(article_content):
+    prompt = f"""
+    Clean the following Russian news content.
+    - Extract ONLY the core narrative text.
+    - Remove the dateline (e.g., "CITY, Date - Agency Name").
+    - Remove all noise: ads, social media links, navigation menu, phone numbers, emails, and copyright notices.
+    - Remove repetitive titles or image captions.
+    - Output ONLY the plain text. 
+    - Do not add any extra empty lines or spaces at the beginning or end of the output.
+    - Use a single newline between paragraphs.
+
+    Content: {article_content}
+    """
+
+    client = genai.Client(api_key = GEMINI_API_KEY)
+    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3]
+
+    for model in models:
+        try:
+            response = client.models.generate_content(
+                model = model,
+                contents = prompt,
+            )
+
+            return response.text.strip()
+        except Exception as e:
+            if "429" in str(e):
+                raise RateLimitError()
+            else:
+                logger.error(f'Error cleaning content from {article_content}: {e}')
+                continue
+    return None
+
+def translate_content(content_ru):
+    prompt = f"""
+    Translate the following Russian news content into natural Japanese for a news site.
+    - Do not add extra explanations.
+    - Translate all the words into officially correct Japanese(である調).
+    - If media company name or organization name or person name or place name are included in the content, translate them into officially correct Japanese.
+    - Return only the translated content.
+
+    Content: {content_ru}
+    """
+
+    client = genai.Client(api_key = GEMINI_API_KEY)
+    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3]
+
+    for model in models:
+        try:
+            response = client.models.generate_content(
+                model = model,
+                contents = prompt,
+            )
+            return response.text.strip()
+        except Exception as e:
+            if "429" in str(e):
+                raise RateLimitError()
+            else:
+                logger.error(f'Error translating content from {content_ru}: {e}')
+                continue
+    return None
 
 # RSS設定ページ関連
 @login_required

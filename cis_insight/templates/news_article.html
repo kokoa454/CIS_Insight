@@ -55,7 +55,7 @@
         </div>
         
         <nav class="flex-grow p-2 md:p-4 flex flex-row md:flex-col md:space-y-1 items-center md:items-stretch justify-around md:justify-start">
-            <a href="{% url 'dashboard' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-900/20 transition-all">
+            <a href="{% url 'dashboard' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
                 <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>
                 </svg>
@@ -173,68 +173,60 @@
                 </div>
             </div>
         </header>
-
         <div class="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
-            <div class="max-w-4xl mx-auto space-y-4">
-                
-                {% for article in news_articles %}
-                    <a href="{% url 'news_article_page' article.pk %}" class="card block hover:border-red-200 transition-all group relative p-4 mb-4 border border-slate-100 rounded-xl">
-                        <div class="flex flex-col md:flex-row gap-4 lg:gap-6">
-                            
-                            {% if article.image %}
-                            <div class="flex-shrink-0 w-full md:w-48 lg:w-56 h-32 md:h-28 lg:h-32 overflow-hidden rounded-lg bg-slate-100">
-                                <img src="{{ article.image.url }}" 
-                                    alt="{{ article.title_ja }}" 
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            </div>
-                            {% endif %}
-
-                            <div class="flex-grow space-y-2 flex flex-col justify-center">
-                                <div class="flex items-center gap-3">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="fi fi-{{ article.country.country_code|lower }} text-[10px]"></span>
-                                        <span class="text-[10px] font-black text-red-600 uppercase tracking-widest">{{ article.country.name }}</span>
-                                    </span>
-                                    <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                        {% for t in article.topic.all %}{{ t.name_ja }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                    </span>
-                                    <span class="text-[10px] text-slate-400 ml-auto font-en">{{ article.published_at|date:"Y.m.d H:i" }}</span>
-                                </div>
-                                
-                                <h3 class="text-base md:text-lg font-bold text-slate-900 group-hover:text-red-600 transition-colors font-ja leading-snug">
-                                    {{ article.title_ja }}
-                                </h3>
-                                
-                                <p class="text-xs text-slate-500 font-ru line-clamp-1 italic opacity-70">
-                                    {{ article.title_ru }}
-                                </p>
-                            </div>
-                            
-                            <div class="hidden md:flex items-center justify-end self-center pl-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-red-50 group-hover:text-red-500 transition-all">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
-
-                {% if not news_articles %}
-                <div class="py-20 text-center animate-fade-in">
-                    <div class="text-slate-300 mb-4">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" /></svg>
+            <div class="max-w-4xl mx-auto space-y-8">
+                <div class="border-b border-slate-100 pb-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-slate-400 text-xs font-medium">
+                            参照日時: {{ news_article.published_at|date:"Y.m.d H:i" }}
+                        </span>
                     </div>
-                    <p class="text-slate-500 font-ja">現在、表示できるニュースはありません。</p>
+                    <div class="flex items-center gap-2 mb-4">
+                        {% for topic in news_article.topic.all %}
+                        <span class="px-2 py-1 rounded bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-wider">
+                            {{topic.name_ja}}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-black text-slate-900 leading-tight mb-4">{{ news_article.title_ja }}</h1>
+                    <h2 class="text-slate-500 text-md font-medium leading-relaxed italic">{{ news_article.title_ru }}</h2>
                 </div>
+                
+                {% if news_article.image %}
+                <img src="{{ news_article.image.url }}" alt="{{ news_article.title_ja }}" class="w-full h-auto rounded-lg shadow-sm">
                 {% endif %}
 
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">日本語</h3>
+                        </div>
+                        <div class="prose prose-slate max-w-none">
+                            <p class="text-slate-700 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap">{{ news_article.content_ja }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Русский</h3>
+                        </div>
+                        <div class="prose prose-slate max-w-none">
+                            <p class="text-slate-600 leading-loose text-sm md:text-base font-cis_insight whitespace-pre-wrap">{{ news_article.content_ru }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-8 border-t border-slate-100">
+                    <a href="{{ news_article.url }}" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        元の記事を表示する
+                    </a>
+                </div>
+                <p class="text-slate-500 text-sm font-medium leading-relaxed italic mb-4">※AIによる翻訳は自動で行われています。そのため、一部不自然な表現や不正確な翻訳が含まれる可能性があります。また、画像は参照元のニュース記事から自動で取得されますが、メディアの性質上、記事の内容と関係のない画像が表示される場合があります。</p>
             </div>
         </div>
     </main>
 </div>
-
-<script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

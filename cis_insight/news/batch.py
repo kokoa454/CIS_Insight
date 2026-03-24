@@ -200,7 +200,7 @@ def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
 
 def translate_title(title_ru):
     prompt = f"""
-    Translate the following Russian news content into natural Japanese for a news site.
+    Translate the following Russian news title into natural Japanese for a news site.
     - Title should be concise and catchy.
     - Do not add extra explanations.
     - Translate all the words into officially correct Japanese.
