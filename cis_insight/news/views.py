@@ -16,10 +16,12 @@ import trafilatura
 from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss, NewsArticle
 from core.settings import MAXIMUM_COMPANY_LENGTH, GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, NOISE_PHRASES
 from core.views import render_error_page
+from core.exceptions import RateLimitError
 
 logger = logging.getLogger(__name__)
 
 # ダッシュボードページ関連
+# TODO: ページを最初にレンダーして、翻訳中はロードアイコンを出してUX改善を行う
 @login_required
 def render_dashboard_page(request):
     user = request.user
@@ -41,6 +43,7 @@ def render_dashboard_page(request):
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
 # ニュース記事関連
+# TODO: DBアクセスを減らして負荷を軽減する
 @login_required
 def render_news_article_page(request, pk):
     user = request.user

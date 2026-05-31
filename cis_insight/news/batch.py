@@ -28,6 +28,7 @@ from core.settings import MAXIMUM_IMAGE_SIZE_PIXEL
 
 logger = logging.getLogger(__name__)
 
+# TODO: DBアクセスを減らして負荷を軽減する
 def fetch_news_articles():
     processed_urls = set()
 
