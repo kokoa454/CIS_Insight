@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import feedparser
 import logging
@@ -7,7 +7,7 @@ from django.http import JsonResponse
 import json
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-from bs4 import BeautifulSoup
+from django.core.cache import cache
 import requests
 import newspaper
 from google import genai
@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 @login_required
 def render_dashboard_page(request):
     user = request.user
-    cis_countries = CisAndNeighborCountry.objects.all()
-    topics = Topic.objects.all()
+    cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
+    topics = cache.get_or_set('news_topics', lambda: list(Topic.objects.all()), 3600)
 
     user_news_referred_country = user.news_referred_country
     user_news_referred_topic = user.news_referred_topic
@@ -43,40 +43,39 @@ def render_dashboard_page(request):
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
 # ニュース記事関連
-# TODO: DBアクセスを減らして負荷を軽減する
 @login_required
 def render_news_article_page(request, pk):
     user = request.user
-    cis_countries = CisAndNeighborCountry.objects.all()
-    topics = Topic.objects.all()
+    cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
+    topics = cache.get_or_set('news_topics', lambda: list(Topic.objects.all()), 3600)
 
     try:
-        news_article = NewsArticle.objects.get(pk = pk)
+        news_article = NewsArticle.objects.select_related('country', 'rss').get(pk = pk)
 
         if news_article.is_active == False:
             return render_error_page(request)
+
+        updated = False
         
         if news_article.is_content_added == False:
             content_ru = get_news_article_content(news_article.url)
             if content_ru is None:
                 return render_error_page(request)
-            try:
-                with transaction.atomic():
-                    news_article.content_ru = content_ru
-                    news_article.is_content_added = True
-                    news_article.save()
-            except Exception as e:
-                logger.error(f'Exception in render_news_article_page: {e}')
-                return render_error_page(request)
+            news_article.content_ru = content_ru
+            news_article.is_content_added = True
+            updated = True
         
         if news_article.is_content_added == True and news_article.is_content_translated == False:
             content_ja = translate_content(news_article.content_ru)
             if content_ja is None:
                 return render_error_page(request)
+            news_article.content_ja = content_ja
+            news_article.is_content_translated = True
+            updated = True
+
+        if updated:
             try:
                 with transaction.atomic():
-                    news_article.content_ja = content_ja
-                    news_article.is_content_translated = True
                     news_article.save()
             except Exception as e:
                 logger.error(f'Exception in render_news_article_page: {e}')
