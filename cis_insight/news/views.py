@@ -153,11 +153,12 @@ def clean_article_content(article_content):
             return response.text.strip()
         except Exception as e:
             if "429" in str(e):
-                raise RateLimitError()
+                logger.warning(f"Rate limit hit for model {model}.")
+                continue
             else:
                 logger.error(f'Error cleaning content from {article_content}: {e}')
                 continue
-    return None
+    raise RateLimitError()
 
 def translate_content(content_ru):
     prompt = f"""
@@ -182,11 +183,12 @@ def translate_content(content_ru):
             return response.text.strip()
         except Exception as e:
             if "429" in str(e):
-                raise RateLimitError()
+                logger.warning(f"Rate limit hit for model {model}.")
+                continue
             else:
                 logger.error(f'Error translating content from {content_ru}: {e}')
                 continue
-    return None
+    raise RateLimitError()
 
 # RSS設定ページ関連
 @login_required

@@ -24,7 +24,8 @@ from core.settings import MAXIMUM_IMAGE_SIZE_PIXEL
 
 logger = logging.getLogger(__name__)
 
-def fetch_news_articles():
+# Webサイト用
+def fetch_web_news_articles():
     processed_urls = set()
     all_topics = list(Topic.objects.all())
 
@@ -188,6 +189,12 @@ def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
 
     return InMemoryUploadedFile(buffer, None, image_name, 'image/png', sys.getsizeof(buffer), None)
 
+# Telegram用
+def fetch_telegram_news_articles():
+    # todo
+    pass
+
+# 共通
 def translate_title(title_ru):
     prompt = f"""
     Translate the following Russian news title into natural Japanese for a news site.
@@ -212,12 +219,12 @@ def translate_title(title_ru):
             return response.text.strip()
         except Exception as e:
             if "429" in str(e):
-                raise RateLimitError()
+                logger.warning(f"Rate limit hit for model {model}.")
+                continue
             else:
                 logger.error(f'Error translating title from {title_ru}: {e}')
                 continue
-    return None
-
+    raise RateLimitError()
 
 def pick_up_news_article_topic(title, topics):
     prompt = f"""
@@ -249,8 +256,9 @@ def pick_up_news_article_topic(title, topics):
             return matched_topics
         except Exception as e:
             if "429" in str(e):
-                raise RateLimitError()
+                logger.warning(f"Rate limit hit for model {model}.")
+                continue
             else:
                 logger.error(f'Error picking up news article topic from {title}: {e}')
                 continue
-    return None
+    raise RateLimitError()
