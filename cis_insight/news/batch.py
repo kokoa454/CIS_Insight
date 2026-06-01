@@ -191,10 +191,11 @@ def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
 
 # Telegram用
 def fetch_telegram_news_articles():
-    # todo
+    #TODO テレグラム用の取得を実装
     pass
 
 # 共通
+# TODO RateLimitErrorの仕様変更
 def translate_title(title_ru):
     prompt = f"""
     Translate the following Russian news title into natural Japanese for a news site.
@@ -226,6 +227,7 @@ def translate_title(title_ru):
                 continue
     raise RateLimitError()
 
+# TODO RateLimitErrorの仕様変更
 def pick_up_news_article_topic(title, topics):
     prompt = f"""
     Classify the following news article title into some of the following topics. 

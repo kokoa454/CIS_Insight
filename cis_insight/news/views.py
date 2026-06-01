@@ -22,7 +22,6 @@ from core.exceptions import RateLimitError
 logger = logging.getLogger(__name__)
 
 # ダッシュボードページ関連
-# TODO: ページを最初にレンダーして、翻訳中はロードアイコンを出してUX改善を行う
 @login_required
 def render_dashboard_page(request):
     user = request.user
@@ -126,6 +125,7 @@ def get_news_article_translated_content(request, pk):
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'Article not found'}, status=404)    
 
+# TODO RateLimitErrorの仕様変更
 def clean_article_content(article_content):
     prompt = f"""
     Clean the following Russian news content.
@@ -160,6 +160,7 @@ def clean_article_content(article_content):
                 continue
     raise RateLimitError()
 
+# TODO RateLimitErrorの仕様変更
 def translate_content(content_ru):
     prompt = f"""
     Translate the following Russian news content into natural Japanese for a news site.
