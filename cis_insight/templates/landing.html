@@ -136,7 +136,7 @@
 
                 <div class="order-1 lg:order-2 stack">
                     <h2 class="text-section-title text-slate-900 font-ja">一次情報への、最短ルート。</h2>
-                    <p class="text-standard text-slate-600 font-ja">主要メディアが報じない現地の詳細な動向を、GeminiとDeepLのハイブリッドAIが解析。原文のニュアンスを保ったまま、あなたの言語で理解できます。</p>
+                    <p class="text-standard text-slate-600 font-ja">主要メディアが報じない現地の詳細な動向を、GeminiとllamaのハイブリッドAIが解析。原文のニュアンスを保ったまま、あなたの言語で理解できます。</p>
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3 text-slate-700 font-medium font-ja text-standard">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z" /></svg>
@@ -144,7 +144,7 @@
                         </li>
                         <li class="flex items-start gap-3 text-slate-700 font-medium font-ja text-standard">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z" /></svg>
-                            <span>Gemini 1.5 Flashによる高精度なトピック分類</span>
+                            <span>膨大なニュースも、AIが瞬時にジャンル分け</span>
                         </li>
                     </ul>
                 </div>
@@ -175,22 +175,19 @@
     <section class="section bg-slate-900 text-white">
         <div class="container-main text-center stack-lg">
             <h2 class="text-section-title font-ja">信頼できる一次情報源から。</h2>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 opacity-80">
-                <div class="stack-small">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-8 opacity-80">
+                <div class="stack-small col-span-2 justify-self-center lg:col-span-1">
                     <span class="text-subtitle font-en">Telegram</span>
-                    <p class="text-tiny text-slate-400 font-ja">現地速報チャンネル</p>
+                    <p class="text-tiny text-slate-400 font-ja">現地速報チャンネル（準備中）</p>
                 </div>
                 <div class="stack-small">
-                    <span class="text-subtitle font-en">RSS Feeds</span>
+                    <span class="text-subtitle font-en">Local News Media</span>
                     <p class="text-tiny text-slate-400 font-ja">主要新聞・通信社</p>
                 </div>
+                
                 <div class="stack-small">
-                    <span class="text-subtitle font-en">Official</span>
-                    <p class="text-tiny text-slate-400 font-ja">政府機関リリース</p>
-                </div>
-                <div class="stack-small">
-                    <span class="text-subtitle font-en">Gemini / DeepL</span>
-                    <p class="text-tiny text-slate-400 font-ja">整合性チェック</p>
+                    <span class="text-subtitle font-en">Official Press</span>
+                    <p class="text-tiny text-slate-400 font-ja">政府報道機関</p>
                 </div>
             </div>
         </div>
@@ -200,7 +197,8 @@
         <div class="container-main stack">
             <div class="text-center stack-small">
                 <h2 class="text-section-title text-slate-900 font-ja">ユーラシアを可視化する。</h2>
-                <p class="text-slate-500 font-ja text-standard">すべてのCIS加盟国のニュースが対象。</p>
+                <p class="text-slate-500 font-ja text-standard">すべてのCIS加盟国のニュースが対象。（予定）</p>
+                <p class="text-slate-500 font-ja text-tiny">※現在はロシアとキルギスの二カ国のみ対応済</p>
             </div>
 
             <div class="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
@@ -235,37 +233,6 @@
         </div>
     </section>
 
-    <!-- <section class="section bg-white">
-        <div class="container-narrow">
-            <div class="card bg-slate-50 p-6 sm:p-10 relative overflow-hidden border-slate-100">
-                <div class="absolute top-0 right-0 bg-red-600 text-white px-4 py-1 text-tiny font-bold uppercase tracking-widest">Free Plan</div>
-                <h3 class="text-subtitle mb-4 font-ja">今すぐ無料で体験。</h3>
-                <p class="text-standard text-slate-600 mb-8 font-ja">登録するだけで、すべての記事のタイトル翻訳と、月間一定数の詳細対訳が無料で利用可能です。</p>
-                
-                <div class="space-y-4">
-                    {% for step, text in steps %}
-                    <div class="flex items-start gap-3 text-standard">
-                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">{{ forloop.counter }}</div>
-                        <span class="text-slate-700 font-ja">{{ text }}</span>
-                    </div>
-                    {% endfor %}
-                    <div class="flex items-start gap-3 text-standard">
-                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">1</div>
-                        <span class="text-slate-700 font-ja">アカウントを作成（30秒）</span>
-                    </div>
-                    <div class="flex items-start gap-3 text-standard">
-                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">2</div>
-                        <span class="text-slate-700 font-ja">関心のある国やトピックを選択</span>
-                    </div>
-                    <div class="flex items-start gap-3 text-standard">
-                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-tiny font-bold flex-shrink-0 mt-0.5">3</div>
-                        <span class="text-slate-700 font-ja">あなた専用のインテリジェンス・フィードが完成</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> -->
-
     <section class="section border-t border-slate-100 bg-slate-50/50">
         <div class="container-narrow">
             <div class="flex items-center justify-between mb-10">
@@ -273,14 +240,14 @@
                     <div class="h-6 w-1 bg-red-600 rounded-full"></div>
                     <h2 class="text-subtitle text-slate-900 font-ja">更新履歴</h2>
                 </div>
-                <span class="text-tiny font-bold text-slate-400 font-en bg-white px-3 py-1 rounded-full border border-slate-200">Current: v1.0.0</span>
+                <span class="text-tiny font-bold text-slate-400 font-en bg-white px-3 py-1 rounded-full border border-slate-200">Current: v0.1.0</span>
             </div>
             
             <div class="stack space-y-8">
                 <div class="flex flex-col md:flex-row md:gap-8 group">
                     <div class="md:w-32 mb-2 md:mb-0">
-                        <time class="block text-tiny font-bold text-slate-400 font-en mb-1">2026.02.03</time>
-                        <span class="status-success bg-blue-50 text-blue-600 text-[10px] uppercase tracking-widest px-2 py-0.5 border border-blue-100 font-en">v1.0.0</span>
+                        <time class="block text-tiny font-bold text-slate-400 font-en mb-1">2026.06.01</time>
+                        <span class="status-success bg-blue-50 text-blue-600 text-[10px] uppercase tracking-widest px-2 py-0.5 border border-blue-100 font-en">v0.1.0</span>
                     </div>
                     <div class="flex-1">
                         <h3 class="text-standard font-bold text-slate-800 font-ja mb-1 group-hover:text-blue-600 transition-colors">CIS Insight ベータ版公開</h3>
