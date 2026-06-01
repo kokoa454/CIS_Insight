@@ -29,6 +29,8 @@ urlpatterns = [
     path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
     path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
     path('news_article/news_article_id=<int:pk>/', news_views.render_news_article_page, name='news_article_page'),
+    path('api/news_article_content/news_article_id=<int:pk>/', news_views.get_news_article_content, name='api_news_article_content'),
+    path('api/news_article_content_translated/news_article_id=<int:pk>/', news_views.get_news_article_translated_content, name='api_news_article_content_translated'),
     path('logout_complete/', users_views.render_logout_complete_page, name='logout_complete'),
     path('news_settings/', users_views.render_news_settings_page, name='news_settings'),
     path('display_settings/', users_views.render_display_settings_page, name='display_settings'),

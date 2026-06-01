@@ -196,24 +196,46 @@
                 <img src="{{ news_article.image.url }}" alt="{{ news_article.title_ja }}" class="w-full h-auto rounded-lg shadow-sm">
                 {% endif %}
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="article-container" data-article-id="{{ news_article.pk }}">
                     <div class="space-y-4">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">日本語</h3>
                         </div>
                         <div class="prose prose-slate max-w-none">
+                            {% if news_article.is_content_translated %}
                             <p class="text-slate-700 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap">{{ news_article.content_ja }}</p>
+                            {% else %}
+                            <div id="spinner-ja" class="flex items-center gap-3 text-slate-500 font-medium py-4">
+                                <svg class="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>日本語に翻訳中...</span>
+                            </div>
+                            <p id="content-ja" class="text-slate-700 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap hidden"></p>
+                            {% endif %}
                         </div>
                     </div>
 
-                    <div class="space-y-4">
+                    <div class="space-y-4 mt-6">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Русский</h3>
                         </div>
                         <div class="prose prose-slate max-w-none">
+                            {% if news_article.is_content_translated %}
                             <p class="text-slate-600 leading-loose text-sm md:text-base font-cis_insight whitespace-pre-wrap">{{ news_article.content_ru }}</p>
+                            {% else %}
+                            <div id="spinner-ru" class="flex items-center gap-3 text-slate-500 font-medium py-4">
+                                <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>原文を取得中...</span>
+                            </div>
+                            <p id="content-ru" class="text-slate-600 leading-loose text-sm md:text-base font-cis_insight whitespace-pre-wrap hidden"></p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -225,8 +247,11 @@
                     </a>
                 </div>
                 <p class="text-slate-500 text-sm font-medium leading-relaxed italic mb-4">※AIによる翻訳は自動で行われています。そのため、一部不自然な表現や不正確な翻訳が含まれる可能性があります。また、画像は参照元のニュース記事から自動で取得されますが、メディアの性質上、記事の内容と関係のない画像が表示される場合があります。</p>
+                <p class="text-slate-500 text-sm font-medium leading-relaxed italic mb-4">※CIS Insightは個人開発のため、無料で開発・運営をしています。そのため、記事が初めて閲覧された時に原文取得および翻訳を行います。もしあなたがこの記事を開いた初めてのユーザだった場合、処理が実行されるため、読み込みに時間がかかる場合があります。（二回目以降に記事が開かれる場合は原文取得済みで翻訳済みの記事が表示されるため、素早く閲覧可能です）</p>
             </div>
         </div>
     </main>
 </div>
+
+<script src="{% static 'js/news_article.js' %}"></script>
 {% endblock %}
