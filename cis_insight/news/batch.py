@@ -1,3 +1,4 @@
+from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from .models import NewsRss, NewsArticle, Topic
 import logging
 import feedparser
@@ -9,6 +10,8 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+import sys
+
 import datetime
 import time
 import requests
@@ -17,9 +20,6 @@ import string
 from PIL import Image
 from io import BytesIO
 
-import sys
-
-from core.exceptions import RateLimitError
 from core.settings import MAXIMUM_IMAGE_SIZE_PIXEL
 
 logger = logging.getLogger(__name__)
@@ -62,20 +62,15 @@ def fetch_web_news_articles():
                     title_ru = entry.title
 
                     try:
-                        topic = pick_up_news_article_topic(title_ru, all_topics)
+                        topic = pick_up_news_article_topic(title_ru, all_topics, rss)
 
                         if topic is None:
                             continue
 
-                        title_ja = translate_title(title_ru)
+                        title_ja = translate_title(title_ru, rss)
 
                         if title_ja is None:
                             continue
-                    except RateLimitError:
-                        logger.error(f'Rate limit error while translating topics or title')
-                        rss.last_error = 'Rate limit error while translating topics or title'
-                        rss.save()
-                        return
                     except Exception as e:
                         logger.error(f'Error translating topics or title: {e}')
                         rss.last_error = f'Error translating topics or title: {e}'
@@ -195,8 +190,7 @@ def fetch_telegram_news_articles():
     pass
 
 # 共通
-# TODO RateLimitErrorの仕様変更
-def translate_title(title_ru):
+def translate_title(title_ru, rss):
     prompt = f"""
     Translate the following Russian news title into natural Japanese for a news site.
     - Title should be concise and catchy.
@@ -219,16 +213,17 @@ def translate_title(title_ru):
             )
             return response.text.strip()
         except Exception as e:
-            if "429" in str(e):
+            error = convert_to_custom_ai_exception(e)
+            if isinstance(error, RateLimitError):
                 logger.warning(f"Rate limit hit for model {model}.")
                 continue
-            else:
-                logger.error(f'Error translating title from {title_ru}: {e}')
-                continue
-    raise RateLimitError()
+            
+            logger.error(f"Error for model {model}: {e}")
+            rss.last_error = f"{error.user_message} while translating title"
+            rss.save()
+            continue
 
-# TODO RateLimitErrorの仕様変更
-def pick_up_news_article_topic(title, topics):
+def pick_up_news_article_topic(title, topics, rss):
     prompt = f"""
     Classify the following news article title into some of the following topics. 
     - Do not add any extra explanations.
@@ -257,10 +252,12 @@ def pick_up_news_article_topic(title, topics):
                         matched_topics.append(topic)
             return matched_topics
         except Exception as e:
-            if "429" in str(e):
+            error = convert_to_custom_ai_exception(e)
+            if isinstance(error, RateLimitError):
                 logger.warning(f"Rate limit hit for model {model}.")
                 continue
-            else:
-                logger.error(f'Error picking up news article topic from {title}: {e}')
-                continue
-    raise RateLimitError()
+            
+            logger.error(f"Error for model {model}: {e}")
+            rss.last_error = f"{error.user_message} while picking up topics"
+            rss.save()
+            continue

@@ -1,3 +1,4 @@
+from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -15,9 +16,7 @@ from google import genai
 import trafilatura
 
 from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss, NewsArticle
-from core.settings import MAXIMUM_COMPANY_LENGTH, GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, NOISE_PHRASES
-from core.views import render_error_page
-from core.exceptions import RateLimitError
+from core.settings import MAXIMUM_COMPANY_LENGTH, GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +74,7 @@ def get_news_article_content(request, pk):
                 if article_content is None or len(article_content) == 0:
                     raise Exception("Scraped content is empty")
                 
-                cleaned_article_content = clean_article_content(article_content)
+                cleaned_article_content = clean_article_content(article_content, news_article.rss)
                 if cleaned_article_content is None or len(cleaned_article_content) == 0:
                     raise Exception("Cleaned content is empty")
                 
@@ -109,7 +108,7 @@ def get_news_article_translated_content(request, pk):
             return JsonResponse({'error': 'Article is not active'}, status=403)
 
         if news_article.is_content_translated == False:
-            content_ja = translate_content(news_article.content_ru)
+            content_ja = translate_content(news_article.content_ru, news_article.rss)
             if content_ja is None:
                 return JsonResponse({'error': 'Failed to translate content'}, status=500)
             news_article.content_ja = content_ja
@@ -125,8 +124,7 @@ def get_news_article_translated_content(request, pk):
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'Article not found'}, status=404)    
 
-# TODO RateLimitErrorの仕様変更
-def clean_article_content(article_content):
+def clean_article_content(article_content, rss):
     prompt = f"""
     Clean the following Russian news content.
     - Extract ONLY the core narrative text.
@@ -152,16 +150,17 @@ def clean_article_content(article_content):
 
             return response.text.strip()
         except Exception as e:
-            if "429" in str(e):
+            error = convert_to_custom_ai_exception(e)
+            if isinstance(error, RateLimitError):
                 logger.warning(f"Rate limit hit for model {model}.")
                 continue
-            else:
-                logger.error(f'Error cleaning content from {article_content}: {e}')
-                continue
-    raise RateLimitError()
 
-# TODO RateLimitErrorの仕様変更
-def translate_content(content_ru):
+            logger.error(f"Error for model {model}: {e}")
+            rss.last_error = f"{error.user_message} while cleaning content"
+            rss.save()
+            continue
+
+def translate_content(content_ru, rss):
     prompt = f"""
     Translate the following Russian news content into natural Japanese for a news site.
     - Do not add extra explanations.
@@ -183,13 +182,15 @@ def translate_content(content_ru):
             )
             return response.text.strip()
         except Exception as e:
-            if "429" in str(e):
+            error = convert_to_custom_ai_exception(e)
+            if isinstance(error, RateLimitError):
                 logger.warning(f"Rate limit hit for model {model}.")
                 continue
-            else:
-                logger.error(f'Error translating content from {content_ru}: {e}')
-                continue
-    raise RateLimitError()
+            
+            logger.error(f"Error for model {model}: {e}")
+            rss.last_error = f"{error.user_message} while translating content"
+            rss.save()
+            continue
 
 # RSS設定ページ関連
 @login_required
