@@ -1,3 +1,4 @@
+from datetime import timedelta
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from .models import NewsRss, NewsArticle, Topic
 import logging
@@ -261,3 +262,26 @@ def pick_up_news_article_topic(title, topics, rss):
             rss.last_error = f"{error.user_message} while picking up topics"
             rss.save()
             continue
+        
+def delete_old_news_articles():
+    for rss in NewsRss.objects.all():
+        day = settings.DISPLAY_DAY_LIMIT
+        old_news_articles = NewsArticle.objects.filter(rss = rss, created_at__lt = timezone.now() - timedelta(days = day))
+        deleted_count = old_news_articles.count()
+
+        try:
+            with transaction.atomic():
+                for old_news_article in old_news_articles:
+                    if old_news_article.image:
+                        old_news_article.image.delete()
+                
+                old_news_articles.delete()
+                rss.total_articles = NewsArticle.objects.filter(rss = rss).count()
+                rss.save()
+        except Exception as e:
+            logger.error(f'Error deleting old news articles from {rss.company}: {e}')
+            rss.last_error = 'Error deleting old news articles'
+            rss.save()
+            continue
+
+        logger.info(f"Deleted {deleted_count} old news articles from {rss.company}.")
