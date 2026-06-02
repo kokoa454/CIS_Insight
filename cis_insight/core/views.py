@@ -72,7 +72,7 @@ def pre_sign_up(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         logger.error(f'Exception in pre_sign_up: {e}')
-        return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。', 'error_message': str(e)})
+        return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。'})
 
 def generate_verification_code():
     return secrets.token_hex(VALIDATION_CODE_LENGTH)

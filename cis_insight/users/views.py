@@ -104,7 +104,7 @@ def sign_up(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         logger.error(f'Exception in sign_up with user_name: {username}: {e}')
-        return JsonResponse({'status': "error", "message" : "登録に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "登録に失敗しました。"})
 
 def send_sign_up_email(email, username, display_name):
     try:
@@ -141,7 +141,7 @@ def sign_in(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         logger.error(f'Exception in sign_in: {e}')
-        return JsonResponse({'status': "error", "message" : "ログインに失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "ログインに失敗しました。"})
 
 # ログアウトページ関連
 def render_logout_complete_page(request):
@@ -187,7 +187,7 @@ def news_settings(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         logger.error(f'Exception in news_settings: {e}')
-        return JsonResponse({'status': "error", "message" : "ニュース設定に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "ニュース設定に失敗しました。"})
 
 # 表示設定ページ関連
 @login_required
@@ -238,7 +238,7 @@ def account_settings(request):
     except Exception as e:
         print(e)
         logger.error(f'Exception in account_settings: {e}')
-        return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。"})
 
 def enhance_icon(icon, icon_name, size = MAXIMUM_ICON_SIZE_PIXEL):
     icon = Image.open(icon)
@@ -305,7 +305,7 @@ def pre_email_change(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         logger.error(f'Exception in pre_email_change: {e}')
-        return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "メールアドレスの変更用リンクの送信に失敗しました。"})
 
 def send_email_change_email(email, username, display_name, verification_code):
     try:
@@ -367,4 +367,4 @@ def password_change(request):
         return JsonResponse({'status': "success"})
     except Exception as e:
         logger.error(f'Exception in password_change: {e}')
-        return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。", "error_message": str(e)})
+        return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。"})
