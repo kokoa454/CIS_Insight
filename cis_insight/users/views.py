@@ -121,6 +121,7 @@ def send_sign_up_email(email, username, display_name):
 def render_sign_in_page(request):
     return render(request, 'sign_in.html')
 
+@ratelimit(key = 'ip', rate = '10/m', block = True)
 def sign_in(request):
     try:
         username = request.POST.get('username')
