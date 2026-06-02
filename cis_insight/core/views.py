@@ -7,7 +7,6 @@ from django_ratelimit.decorators import ratelimit
 import json
 import secrets
 import logging
-import threading
 
 from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
 from users.models import (PreUser, User)
@@ -24,6 +23,9 @@ def render_landing_page(request):
         'countries': countries,
         'cis_countries': cis_countries
     })
+
+def pre_sign_up_error(request):
+    return JsonResponse({'status': 'error', 'message': '新規ユーザ登録は現在受け付けておりません。'})
 
 # ユーザー登録前の仮登録関連
 @ratelimit(key = 'ip', rate = '5/m', block = True)
