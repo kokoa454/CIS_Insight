@@ -1,3 +1,4 @@
+from core.settings import CHUNK_SIZE, ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE
 from datetime import timedelta
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from .models import NewsRss, NewsArticle, Topic
@@ -148,19 +149,53 @@ def download_image(image_url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
     if image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://')):
         try:
-            image_data = requests.get(image_url, timeout = 10, headers = headers)
+            image_data = requests.get(image_url, timeout = 10, headers = headers, stream = True)
 
             if image_data.status_code != 200:
-                image = None
-            else:
-                image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
-                image = enhance_image(BytesIO(image_data.content), image_name)
+                return None
+            
+            content_type = image_data.headers.get('Content-Type', '').lower()
+
+            if content_type not in ALLOWED_IMAGE_TYPE:
+                return None
+            
+            image_size = int(image_data.headers.get('Content-Length', 0))
+
+            if image_size > ALLOWED_IMAGE_SIZE:
+                return None
+
+            buffer = BytesIO()
+            downloaded_size = 0
+            
+            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+                downloaded_size += len(chunk)
+                
+                if downloaded_size > ALLOWED_IMAGE_SIZE:
+                    return None
+                
+                buffer.write(chunk)
+            
+            buffer.seek(0)
+
+            try:
+                with Image.open(buffer) as img:
+                    img.verify()
+                
+                buffer.seek(0)
+            except Exception as e:
+                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+                return None
+
+            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+            image = enhance_image(buffer, image_name)
+            
+            return image
         except Exception as e:
             logger.error(f'Error enhancing image from {image_url}: {e}')
-            image = None
+            return None
     else:
-        image = None
-    return image
+        logger.warning(f'Invalid image URL: {image_url}')
+        return None
 
 def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
     image = Image.open(image)

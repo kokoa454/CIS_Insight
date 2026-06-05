@@ -188,6 +188,7 @@ VALIDATION_CODE_LENGTH = 64 # Characters
 MAXIMUM_ICON_SIZE_PIXEL = (400, 400)
 ALLOWED_IMAGE_SIZE = 5 * 1024 * 1024 # 5MB
 ALLOWED_IMAGE_TYPE = ["image/png", "image/jpeg", "image/webp"]
+CHUNK_SIZE = 8192 # Bytes
 
 
 # News validation settings
