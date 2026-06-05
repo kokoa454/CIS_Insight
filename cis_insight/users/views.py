@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # 共通
 def generate_verification_code():
-    return secrets.token_hex(VALIDATION_CODE_LENGTH)
+    return secrets.token_hex(VALIDATION_CODE_LENGTH // 2) # Convert characters to bytes
 
 # ユーザ登録ページ関連
 def render_sign_up_page(request, verification_code):
