@@ -25,7 +25,7 @@ import sys
 
 from .models import PreUser, User, EmailChange
 from news.models import (CisCountry, Topic)
-from core.settings import (SITE_URL, EMAIL_HOST_USER, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, MAXIMUM_ICON_SIZE_PIXEL)
+from core.settings import (SITE_URL, EMAIL_HOST_USER, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, MAXIMUM_ICON_SIZE_PIXEL, ALLOWED_IMAGE_TYPE, ALLOWED_IMAGE_SIZE)
 
 logger = logging.getLogger(__name__)
 
@@ -212,6 +212,21 @@ def account_settings(request):
         icon = request.FILES.get('icon')
 
         if icon:
+            if icon.content_type not in ALLOWED_IMAGE_TYPE:
+                return JsonResponse({'status': "error", "message" : "アイコンの種類が不正です (png、jpegまたはwebpのみ)"})
+
+            if icon.size > ALLOWED_IMAGE_SIZE:
+                return JsonResponse({'status': "error", "message" : "アイコンのサイズが大きすぎます (最大5MB)"})
+
+            try:
+                with Image.open(icon) as img:
+                    img.verify()
+                    
+                icon.seek(0)
+            except (IOError, SyntaxError, Image.DecompressionBombError) as e:
+                logger.warning(f'Malicious or corrupt image uploaded by user {user.pk}: {e}')
+                return JsonResponse({'status': "error", "message": "不正な画像ファイルです。"})
+
             try: 
                 with transaction.atomic():
                     if user.icon:
