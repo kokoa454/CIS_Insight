@@ -10,6 +10,7 @@ from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2,
                            GEMINI_MODEL_3, MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
+from core.views import render_error_page
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -49,7 +50,11 @@ def render_news_article_page(request, pk):
     user = request.user
     cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
     topics = cache.get_or_set('news_topics', lambda: list(Topic.objects.all()), 3600)
-    news_article = get_object_or_404(NewsArticle, pk = pk, is_active = True)
+
+    try:
+        news_article = NewsArticle.objects.get(pk = pk, is_active = True)
+    except ObjectDoesNotExist:
+        return render_error_page(request, '404', 'Page not found')
     
     return render(request, 'news_article.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_article': news_article})
 
@@ -72,18 +77,18 @@ def get_news_article_content(request, pk):
                     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
                     
                     if not is_safe_url(news_article.url):
-                        raise Exception("Invalid URL")
+                        return render_error_page(request, '404', 'Page not found')
                     
                     downloaded = requests.get(news_article.url, headers = headers, timeout = 10, stream = True)
                     downloaded.raise_for_status()
                     article_content = trafilatura.extract(downloaded.text)
                 
                 if article_content is None or len(article_content) == 0:
-                    raise Exception("Scraped content is empty")
+                    return render_error_page(request, '404', 'Page not found')
                 
                 cleaned_article_content = clean_article_content(article_content, news_article.rss)
                 if cleaned_article_content is None or len(cleaned_article_content) == 0:
-                    raise Exception("Cleaned content is empty")
+                    return render_error_page(request, '500', 'Internal server error')
                 
                 content_ru = cleaned_article_content
             except Exception as e:
@@ -104,7 +109,7 @@ def get_news_article_content(request, pk):
 
         return JsonResponse({'content_ru': news_article.content_ru})
     except ObjectDoesNotExist:
-        return JsonResponse({'error': 'Article not found'}, status=404)
+        return render_error_page(request, '404', 'Page not found')
 
 @login_required
 def get_news_article_translated_content(request, pk):
@@ -129,7 +134,7 @@ def get_news_article_translated_content(request, pk):
 
         return JsonResponse({'content_ja': news_article.content_ja})
     except ObjectDoesNotExist:
-        return JsonResponse({'error': 'Article not found'}, status=404)    
+        return render_error_page(request, '404', 'Page not found')
 
 def clean_article_content(article_content, rss):
     prompt = f"""

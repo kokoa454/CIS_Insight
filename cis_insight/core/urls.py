@@ -55,5 +55,10 @@ urlpatterns = [
     path('api/activate_rss/', news_views.activate_rss, name='api_activate_rss'),
 ]
 
+handler404 = views.error_404
+handler500 = views.error_500
+handler403 = views.error_403
+handler405 = views.error_400
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

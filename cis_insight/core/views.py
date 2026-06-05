@@ -91,5 +91,17 @@ def send_verification_email(email, verification_code):
         return False
 
 # エラーページ関連
-def render_error_page(request):
-    return render(request, 'error.html')
+def render_error_page(request, error_code, error_message):
+    return render(request, 'error.html', {'error_code': error_code, 'error_message': error_message})
+
+def error_400(request, exception = None):
+    return render_error_page(request, '400', 'Bad request')
+
+def error_403(request, exception = None):
+    return render_error_page(request, '403', 'Forbidden')
+
+def error_404(request, exception = None):
+    return render_error_page(request, '404', 'Page not found')
+
+def error_500(request, exception = None):
+    return render_error_page(request, '500', 'Internal server error')

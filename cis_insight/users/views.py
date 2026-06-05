@@ -13,6 +13,7 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE,
                            MAXIMUM_EMAIL_LENGTH, MAXIMUM_ICON_SIZE_PIXEL,
                            MAXIMUM_USERNAME_LENGTH, MINIMUM_PASSWORD_LENGTH,
                            SITE_URL, VALIDATION_CODE_LENGTH)
+from core.views import render_error_page
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -40,13 +41,13 @@ def render_sign_up_page(request, verification_code):
     try:
         pre_user = PreUser.objects.get(verification_code = verification_code)
     except PreUser.DoesNotExist:
-        return render(request, 'error.html')
+        return render_error_page(request, '404', 'Page not found')
 
     if not pre_user.is_expired:
         user_email = pre_user.email
         return render(request, 'sign_up.html', {'user_email': user_email, 'verification_code': verification_code})
     else:
-        return render(request, 'error.html')
+        return render_error_page(request, '403', 'Forbidden')
 
 def sign_up(request):
     try:
@@ -238,7 +239,7 @@ def account_settings(request):
                     user.icon.save(new_icon_name, icon, save = False)
             except Exception as e:
                 logger.error(f'Exception in account_settings: {e}')
-                return JsonResponse({'status': "error", "message" : "アイコンの更新に失敗しました。", "error_message": str(e)})
+                return JsonResponse({'status': "error", "message" : "アイコンの更新に失敗しました。"})
 
         if username != user.username:
             return JsonResponse({'status': "error", "message" : "不正な入力です"})
@@ -339,7 +340,7 @@ def render_email_change_page(request, verification_code):
     try:
         email_change = EmailChange.objects.get(verification_code = verification_code)
     except EmailChange.DoesNotExist:
-        return render(request, 'error.html')
+        return render_error_page(request, '404', 'Page not found')
 
     if not email_change.is_expired:
         user = get_user_model().objects.get(pk = email_change.user.pk)
@@ -351,7 +352,7 @@ def render_email_change_page(request, verification_code):
         
         return render(request, 'email_change.html')
     else:
-        return render(request, 'error.html')
+        return render_error_page(request, '403', 'Forbidden')
 
 # パスワード変更関連
 @login_required

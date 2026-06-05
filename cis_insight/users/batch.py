@@ -19,9 +19,12 @@ def expire_pre_user():
     )
     
     for pre_user in expired_pre_users:
-        logger.info(f'PreUser expired: {pre_user.email}')
-        pre_user.is_expired = True
-        pre_user.save()
+        try:
+            logger.info(f'PreUser expired: {pre_user.email}')
+            pre_user.is_expired = True
+            pre_user.save()
+        except Exception as e:
+            logger.error(f'Error expiring pre_user {pre_user.email}: {e}')
 
 # 仮登録ユーザーの削除
 def delete_pre_user():
@@ -29,10 +32,11 @@ def delete_pre_user():
         created_at__lt = timezone.now() - timedelta(minutes = PRE_USER_DELETION_TIME_MINUTES)
     )
     
-    for pre_user in expired_pre_users:
-        logger.info(f'PreUser deleted: {pre_user.email}')
-
-    expired_pre_users.delete()
+    try:
+        expired_pre_users.delete()
+        logger.info(f'Deleted {expired_pre_users.count()} pre_users')
+    except Exception as e:
+        logger.error(f'Error deleting pre_users: {e}')
 
 # メール変更ユーザの有効期限切れ設定
 def expire_email_change():
@@ -40,11 +44,14 @@ def expire_email_change():
         created_at__lt = timezone.now() - timedelta(minutes = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES),
         is_expired = False
     )
-    
+
     for email_change in expired_email_changes:
-        logger.info(f'EmailChange expired: {email_change.new_email}')
-        email_change.is_expired = True
-        email_change.save()
+        try:
+            logger.info(f'EmailChange expired: {email_change.new_email}')
+            email_change.is_expired = True
+            email_change.save()
+        except Exception as e:
+            logger.error(f'Error expiring email_change {email_change.new_email}: {e}')
 
 # メール変更ユーザの削除
 def delete_email_change():
@@ -52,7 +59,8 @@ def delete_email_change():
         created_at__lt = timezone.now() - timedelta(minutes = EMAIL_CHANGE_DELETION_TIME_MINUTES)
     )
     
-    for email_change in expired_email_changes:
-        logger.info(f'EmailChange deleted: {email_change.new_email}')
-
-    expired_email_changes.delete()
+    try:
+        expired_email_changes.delete()
+        logger.info(f'Deleted {expired_email_changes.count()} email_changes')
+    except Exception as e:
+        logger.error(f'Error deleting email_changes: {e}')
