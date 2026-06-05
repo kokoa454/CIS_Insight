@@ -1,3 +1,4 @@
+from core.utils import is_safe_url
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
@@ -67,7 +68,12 @@ def get_news_article_content(request, pk):
                 article_content = article.text
                 
                 if len(article_content) == 0:
-                    downloaded = requests.get(news_article.url)
+                    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+                    
+                    if not is_safe_url(news_article.url):
+                        raise Exception("Invalid URL")
+                    
+                    downloaded = requests.get(news_article.url, headers = headers, timeout = 10, stream = True)
                     downloaded.raise_for_status()
                     article_content = trafilatura.extract(downloaded.text)
                 
@@ -165,7 +171,7 @@ def translate_content(content_ru, rss):
     Translate the following Russian news content into natural Japanese for a news site.
     - Do not add extra explanations.
     - Translate all the words into officially correct Japanese(である調).
-    - If media company name or organization name or person name or place name are included in the content, translate them into officially correct Japanese.
+    - If media company name or organization name, person name or place name are included in the content, translate them into officially correct Japanese.
     - Return only the translated content.
 
     Content: {content_ru}
