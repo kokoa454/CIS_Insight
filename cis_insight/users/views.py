@@ -1,31 +1,33 @@
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.core.mail import send_mail
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-from django_ratelimit.decorators import ratelimit
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.contrib.auth import logout as auth_logout
-from django.shortcuts import redirect
-import re
-import random
-import string
-import secrets
-import logging
 import json
-from PIL import Image
-from io import BytesIO
+import logging
+import random
+import re
+import secrets
+import string
 import sys
+from io import BytesIO
 
-from .models import PreUser, User, EmailChange
-from news.models import (CisCountry, Topic)
-from core.settings import (SITE_URL, EMAIL_HOST_USER, MAXIMUM_USERNAME_LENGTH, MAXIMUM_DISPLAY_NAME_LENGTH, MINIMUM_PASSWORD_LENGTH, MAXIMUM_EMAIL_LENGTH, VALIDATION_CODE_LENGTH, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, MAXIMUM_ICON_SIZE_PIXEL, ALLOWED_IMAGE_TYPE, ALLOWED_IMAGE_SIZE)
+from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE,
+                           EMAIL_CHANGE_EXPIRATION_TIME_MINUTES,
+                           EMAIL_HOST_USER, MAXIMUM_DISPLAY_NAME_LENGTH,
+                           MAXIMUM_EMAIL_LENGTH, MAXIMUM_ICON_SIZE_PIXEL,
+                           MAXIMUM_USERNAME_LENGTH, MINIMUM_PASSWORD_LENGTH,
+                           SITE_URL, VALIDATION_CODE_LENGTH)
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.mail import send_mail
+from django.core.validators import validate_email
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django_ratelimit.decorators import ratelimit
+from news.models import CisCountry, Topic
+from PIL import Image
+
+from .models import EmailChange, PreUser, User
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +223,7 @@ def account_settings(request):
             try:
                 with Image.open(icon) as img:
                     img.verify()
-                    
+
                 icon.seek(0)
             except (IOError, SyntaxError, Image.DecompressionBombError) as e:
                 logger.warning(f'Malicious or corrupt image uploaded by user {user.pk}: {e}')

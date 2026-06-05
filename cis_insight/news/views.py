@@ -1,23 +1,24 @@
-from core.utils import is_safe_url
-from core.exceptions import RateLimitError, convert_to_custom_ai_exception
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-import feedparser
+import json
 import logging
 import re
-from django.http import JsonResponse
-import json
-from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.cache import cache
-import requests
-import newspaper
-from google import genai
-import trafilatura
 
-from news.models import CisAndNeighborCountry, CisCountry, Topic, NewsRss, NewsArticle
-from core.settings import MAXIMUM_COMPANY_LENGTH, GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3
+import feedparser
+import newspaper
+import requests
+import trafilatura
+from core.exceptions import RateLimitError, convert_to_custom_ai_exception
+from core.settings import (GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2,
+                           GEMINI_MODEL_3, MAXIMUM_COMPANY_LENGTH)
+from core.utils import is_safe_url
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from google import genai
+from news.models import (CisAndNeighborCountry, CisCountry, NewsArticle,
+                         NewsRss, Topic)
 
 logger = logging.getLogger(__name__)
 

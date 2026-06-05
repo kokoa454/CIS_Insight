@@ -1,11 +1,13 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
+import logging
 import signal
 import sys
-import logging
+from datetime import datetime
 
-from news.batch import fetch_web_news_articles, fetch_telegram_news_articles, delete_old_news_articles
-from users.batch import expire_email_change, delete_email_change, expire_pre_user, delete_pre_user
+from apscheduler.schedulers.background import BackgroundScheduler
+from news.batch import (delete_old_news_articles, fetch_telegram_news_articles,
+                        fetch_web_news_articles)
+from users.batch import (delete_email_change, delete_pre_user,
+                         expire_email_change, expire_pre_user)
 
 logger = logging.getLogger(__name__)
 

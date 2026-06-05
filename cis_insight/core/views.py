@@ -1,16 +1,19 @@
-from django.shortcuts import render
-from django.http import JsonResponse
+import json
+import logging
+import secrets
+
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from django.shortcuts import render
 from django_ratelimit.decorators import ratelimit
-import json
-import secrets
-import logging
+from news.models import CisAndNeighborCountry, CisCountry
+from users.models import PreUser, User
 
-from .settings import (LOGO_PATH, SITE_URL, EMAIL_HOST_USER, MAXIMUM_EMAIL_LENGTH, PRE_USER_EXPIRATION_TIME_MINUTES, VALIDATION_CODE_LENGTH)
-from users.models import (PreUser, User)
-from news.models import (CisAndNeighborCountry, CisCountry)
+from .settings import (EMAIL_HOST_USER, LOGO_PATH, MAXIMUM_EMAIL_LENGTH,
+                       PRE_USER_EXPIRATION_TIME_MINUTES, SITE_URL,
+                       VALIDATION_CODE_LENGTH)
 
 logger = logging.getLogger(__name__)
 

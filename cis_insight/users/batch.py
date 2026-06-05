@@ -1,10 +1,13 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from django.utils import timezone
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
-from .models import PreUser, EmailChange
-from core.settings import (PRE_USER_EXPIRATION_TIME_MINUTES, PRE_USER_DELETION_TIME_MINUTES, EMAIL_CHANGE_EXPIRATION_TIME_MINUTES, EMAIL_CHANGE_DELETION_TIME_MINUTES)
+from core.settings import (EMAIL_CHANGE_DELETION_TIME_MINUTES,
+                           EMAIL_CHANGE_EXPIRATION_TIME_MINUTES,
+                           PRE_USER_DELETION_TIME_MINUTES,
+                           PRE_USER_EXPIRATION_TIME_MINUTES)
+from django.utils import timezone
+
+from .models import EmailChange, PreUser
 
 logger = logging.getLogger(__name__)
 

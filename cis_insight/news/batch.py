@@ -1,29 +1,28 @@
-from core.settings import CHUNK_SIZE, ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, MAXIMUM_IMAGE_SIZE_PIXEL
-from datetime import timedelta
-from core.exceptions import RateLimitError, convert_to_custom_ai_exception
-from core.utils import is_safe_url
-from .models import NewsRss, NewsArticle, Topic
-import logging
-import feedparser
-from django.conf import settings
-from google import genai
-from groq import Groq
-from django.db import transaction
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.uploadedfile import InMemoryUploadedFile
-
-import sys
-
 import datetime
-import time
-import requests
+import logging
 import random
 import string
-from PIL import Image
+import sys
+import time
+from datetime import timedelta
 from io import BytesIO
 
-from core.settings import MAXIMUM_IMAGE_SIZE_PIXEL
+import feedparser
+import requests
+from core.exceptions import RateLimitError, convert_to_custom_ai_exception
+from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
+                           MAXIMUM_IMAGE_SIZE_PIXEL)
+from core.utils import is_safe_url
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import transaction
+from django.utils import timezone
+from google import genai
+from groq import Groq
+from PIL import Image
+
+from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
 

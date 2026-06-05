@@ -1,7 +1,7 @@
-import urllib.parse
-import socket
 import ipaddress
 import logging
+import socket
+import urllib.parse
 
 logger = logging.getLogger(__name__)
 

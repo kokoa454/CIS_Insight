@@ -1,5 +1,9 @@
+from core.settings import (MAXIMUM_COMPANY_LENGTH, MAXIMUM_COUNTRY_CODE_LENGTH,
+                           MAXIMUM_COUNTRY_NAME_LENGTH,
+                           MAXIMUM_TOPIC_EMOJI_LENGTH,
+                           MAXIMUM_TOPIC_NAME_LENGTH, NEWS_IMAGE_URL)
 from django.db import models
-from core.settings import (MAXIMUM_COMPANY_LENGTH, MAXIMUM_COUNTRY_CODE_LENGTH, MAXIMUM_COUNTRY_NAME_LENGTH, MAXIMUM_TOPIC_NAME_LENGTH, MAXIMUM_TOPIC_EMOJI_LENGTH, NEWS_IMAGE_URL)
+
 
 # CIS国と周辺国登録用
 class CisAndNeighborCountry(models.Model):
