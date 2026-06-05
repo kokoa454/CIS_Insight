@@ -1,7 +1,7 @@
 import logging
 
 from core.settings import (MAXIMUM_DISPLAY_NAME_LENGTH, MAXIMUM_EMAIL_LENGTH,
-                           MAXIMUM_USERNAME_LENGTH, USER_ICON_URL,
+                           MAXIMUM_USERNAME_LENGTH, USER_ICON_DIR,
                            VALIDATION_CODE_LENGTH)
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
@@ -90,7 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     
     icon = models.ImageField(
-        upload_to = USER_ICON_URL,
+        upload_to = USER_ICON_DIR,
         null = True,
         blank = True,
         verbose_name = 'Icon'

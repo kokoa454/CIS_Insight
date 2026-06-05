@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -146,7 +146,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 IMG_URL = 'img/'
@@ -154,11 +154,11 @@ LOGO_PATH = IMG_URL + 'logo.png'
 
 
 # Media settings
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-USER_ICON_URL = 'user_icon/'
-NEWS_IMAGE_URL = 'news_images/'
+USER_ICON_DIR = 'user_icon'
+NEWS_IMAGE_DIR = 'news_images'
 
 
 # Email settings

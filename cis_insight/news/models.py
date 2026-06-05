@@ -1,7 +1,7 @@
 from core.settings import (MAXIMUM_COMPANY_LENGTH, MAXIMUM_COUNTRY_CODE_LENGTH,
                            MAXIMUM_COUNTRY_NAME_LENGTH,
                            MAXIMUM_TOPIC_EMOJI_LENGTH,
-                           MAXIMUM_TOPIC_NAME_LENGTH, NEWS_IMAGE_URL)
+                           MAXIMUM_TOPIC_NAME_LENGTH, NEWS_IMAGE_DIR)
 from django.db import models
 
 
@@ -195,7 +195,7 @@ class NewsArticle(models.Model):
     )
 
     image = models.ImageField(
-        upload_to = NEWS_IMAGE_URL,
+        upload_to = NEWS_IMAGE_DIR,
         verbose_name = 'Image',
         null = True,
         blank = True
