@@ -32,11 +32,19 @@ def fetch_web_news_articles():
     processed_urls = set()
     all_topics = list(Topic.objects.all())
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/rdf+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1'
+    }
+
     for rss in NewsRss.objects.filter(is_active = True).order_by(F('last_fetched_at').asc(nulls_first = True)):
         pending_articles = []
 
         try:
-            feed = feedparser.parse(rss.url)
+            downloaded = requests.get(rss.url, headers=headers)
+            downloaded.raise_for_status()
+            
+            feed = feedparser.parse(downloaded.content)
             
             feed_urls = [entry.link for entry in feed.entries if 'link' in entry]
             

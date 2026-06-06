@@ -76,7 +76,6 @@ def get_news_article_content(request, pk):
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
             }
 
             try:
@@ -268,7 +267,15 @@ def test_rss(url):
         return False
     
     try:
-        feed = feedparser.parse(url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/rss+xml, application/rdf+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1'
+        }
+        
+        downloaded = requests.get(url, headers=headers)
+        downloaded.raise_for_status()
+        
+        feed = feedparser.parse(downloaded.content)
 
         if len(feed.entries) == 0:
             return False

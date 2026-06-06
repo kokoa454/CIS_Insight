@@ -5,7 +5,6 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-
 def is_safe_url(url):
     try:
         parsed_url = urllib.parse.urlparse(url)
