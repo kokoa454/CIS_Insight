@@ -42,6 +42,44 @@
     </div>
 </div>
 
+<div id="rss-error-delete-confirm-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRssErrorDeleteConfirmModal()"></div>
+    <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
+        <div class="p-8">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7V4h6v3m-8 0l1 13h6l1-13" />
+                </svg>
+            </div>
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">本当にエラーを削除しますか？</h3>
+            <p class="text-tiny text-slate-500 font-ja mb-6 leading-relaxed">
+                エラーを削除すると、そのエラーは表示されなくなります。
+            </p>
+            <form id="rss-error-delete-form" method="post" action="{% url 'api_delete_rss_error' %}">
+                {% csrf_token %}
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label for="rss-error-delete-confirm-company" class="text-tiny text-slate-500 font-ja">RSS COMPANY</label>
+                        <input type="text" name="rss_company" id="rss-error-delete-confirm-company" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="rss-error-delete-confirm-last-error" class="text-tiny text-slate-500 font-ja">エラー内容</label>
+                        <textarea name="rss_error" id="rss-error-delete-confirm-last-error" class="w-full px-4 py-3 bg-slate-100/50 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed outline-none" readonly></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="submit" id="rss-error-delete-confirm-btn" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
+                        削除
+                    </button>
+                    <button type="button" onclick="closeRssErrorDeleteConfirmModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div id="rss-deactivate-confirm-modal" class="modal-overlay hidden px-4 z-[100]">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRssDeactivateConfirmModal()"></div>
     <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl">
@@ -399,9 +437,15 @@
                                 {% endif %}
                             </button>
 
-                            <button type="button" data-id="{{ rss.id }}" data-is-active="{{ rss.is_active }}" data-company="{{ rss.company }}" data-url="{{ rss.url }}" class="rss-delete-btn px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                            <button type="button" data-id="{{ rss.id }}" data-company="{{ rss.company }}" data-url="{{ rss.url }}" class="rss-delete-btn px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
                                 削除
                             </button>
+
+                            {% if rss.last_error %}
+                                <button type="button" data-id="{{ rss.id }}" data-company="{{ rss.company }}" data-last_error="{{ rss.last_error }}" data-url="{{ rss.url }}" class="rss-error-delete-btn px-4 py-2 text-xs font-bold rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                                    エラー削除
+                                </button>
+                            {% endif %}
                         </div>
 
                     </div>

@@ -78,13 +78,15 @@ document.getElementById('rss-settings-form').addEventListener('submit', async (e
     }
 });
 
-// RSS有効無効
+
 let currentRss = null;
 
 const rssDeactivateForm = document.getElementById("rss-deactivate-form");
 const rssActivateForm = document.getElementById("rss-activate-form");
 const rssDeleteForm = document.getElementById("rss-delete-form");
+const rssErrorDeleteForm = document.getElementById("rss-error-delete-form");
 
+// RSS有効無効
 document.querySelectorAll(".rss-activate-deactivate-btn")
 .forEach(button => {
 
@@ -187,7 +189,7 @@ rssActivateForm.addEventListener("submit", async (e) => {
         } else {
             showError(data.message);
         }
-    }catch (error) {
+    } catch (error) {
         console.error("Error:", error);
         showError("通信に失敗しました。" + error);
     }
@@ -202,7 +204,6 @@ document.querySelectorAll(".rss-delete-btn")
         currentRss = {
             id: button.dataset.id,
             company: button.dataset.company,
-            isActive: button.dataset.isActive,
             url: button.dataset.url
         };
 
@@ -233,7 +234,6 @@ rssDeleteForm.addEventListener("submit", async (e) => {
             },
             body: JSON.stringify({
                 rss_id: currentRss.id,
-                rss_is_active: currentRss.isActive,
                 rss_company: currentRss.company,
                 rss_url: currentRss.url
             })
@@ -241,7 +241,66 @@ rssDeleteForm.addEventListener("submit", async (e) => {
 
         const data = await response.json();
         if (data.status === "success") {
-            showSuccess("RSS設定を削除しました。");
+            showSuccess("RSSを削除しました。");
+            setTimeout(() => {
+                window.location.href = '/rss_settings/';
+            }, 800);
+        } else {
+            showError(data.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showError("通信に失敗しました。" + error);
+    }
+});
+
+// RSSエラーメッセージ削除
+document.querySelectorAll(".rss-error-delete-btn")
+.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        currentRss = {
+            id: button.dataset.id,
+            company: button.dataset.company,
+            lastError: button.dataset.last_error,
+            url: button.dataset.url
+        };
+
+        const modal = document.getElementById("rss-error-delete-confirm-modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        document.getElementById("rss-error-delete-confirm-company").value = currentRss.company;
+        document.getElementById("rss-error-delete-confirm-last-error").value = currentRss.lastError;
+    });
+}); 
+
+rssErrorDeleteForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentRss) return;
+
+    try {
+        const csrfToken = document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+        const response = await fetch("/api/delete_rss_error/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify({
+                rss_id: currentRss.id,
+                rss_company: currentRss.company,
+                rss_url: currentRss.url
+            })
+        });
+
+        const data = await response.json();
+        if (data.status === "success") {
+            showSuccess("RSSエラーメッセージを削除しました。");
             setTimeout(() => {
                 window.location.href = '/rss_settings/';
             }, 800);
@@ -294,4 +353,10 @@ function closeRssDeleteConfirmModal() {
     const rssDeleteConfirmModal = document.getElementById("rss-delete-confirm-modal");
     rssDeleteConfirmModal.classList.add("hidden");
     rssDeleteConfirmModal.classList.remove("flex");
+}
+
+function closeRssErrorDeleteConfirmModal() {
+    const rssErrorDeleteConfirmModal = document.getElementById("rss-error-delete-confirm-modal");
+    rssErrorDeleteConfirmModal.classList.add("hidden");
+    rssErrorDeleteConfirmModal.classList.remove("flex");
 }

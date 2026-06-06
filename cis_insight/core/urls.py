@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/password_change/', users_views.password_change, name='api_password_change'),
     path('api/rss_settings/', news_views.rss_settings, name='api_rss_settings'),
     path('api/delete_rss/', news_views.delete_rss, name='api_delete_rss'),
+    path('api/delete_rss_error/', news_views.delete_rss_error, name='api_delete_rss_error'),
     path('api/deactivate_rss/', news_views.deactivate_rss, name='api_deactivate_rss'),
     path('api/activate_rss/', news_views.activate_rss, name='api_activate_rss'),
 ]

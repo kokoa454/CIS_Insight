@@ -1,3 +1,4 @@
+from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import user_passes_test
 import json
 import logging
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 # ダッシュボードページ関連
 @login_required
+@never_cache
 def render_dashboard_page(request):
     user = request.user
     cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
@@ -47,6 +49,7 @@ def render_dashboard_page(request):
 
 # ニュース記事関連
 @login_required
+@never_cache
 def render_news_article_page(request, pk):
     user = request.user
     cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
@@ -286,18 +289,12 @@ def delete_rss(request):
     try:
         data = json.loads(request.body)
         rss_id = data.get('rss_id')
-        rss_is_active = data.get('rss_is_active')
         rss_company = data.get('rss_company')
         rss_url = data.get('rss_url')
-
-        if rss_is_active == "True":
-            rss_is_active = True
-        else:
-            rss_is_active = False
         
         rss = NewsRss.objects.get(pk = rss_id)
 
-        if rss.is_active != rss_is_active or rss.company != rss_company or rss.url != rss_url:
+        if rss.company != rss_company or rss.url != rss_url:
             return JsonResponse({'status': "error", "message" : "不正な入力です。"})
 
         if rss.is_active == True:
@@ -316,6 +313,28 @@ def delete_rss(request):
     except Exception as e:
         logger.error(f'Exception in delete_rss: {e}')
         return JsonResponse({'status': "error", "message" : "RSS設定の削除に失敗しました。", "error_message": str(e)})
+
+@login_required
+@user_passes_test(lambda user: user.is_staff)
+def delete_rss_error(request):
+    try:
+        data = json.loads(request.body)
+        rss_id = data.get('rss_id')
+        rss_company = data.get('rss_company')
+        rss_url = data.get('rss_url')
+        
+        rss = NewsRss.objects.get(pk = rss_id)
+
+        if rss.company != rss_company or rss.url != rss_url:
+            return JsonResponse({'status': "error", "message" : "不正な入力です。"})
+        
+        with transaction.atomic():
+            rss.last_error = None
+            rss.save()
+        return JsonResponse({'status': "success", "message" : "RSSエラーメッセージを削除しました。"})
+    except Exception as e:
+        logger.error(f'Exception in delete_rss_error: {e}')
+        return JsonResponse({'status': "error", "message" : "RSSエラーメッセージの削除に失敗しました。", "error_message": str(e)})
 
 @login_required
 @user_passes_test(lambda user: user.is_staff)
