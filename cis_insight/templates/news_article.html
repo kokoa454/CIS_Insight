@@ -202,7 +202,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">日本語</h3>
                         </div>
-                        <div class="prose prose-slate max-w-none">
+                        <div id="content-ja-container" class="prose prose-slate max-w-none" data-is-content-translated="{{ news_article.is_content_translated }}">
                             {% if news_article.is_content_translated %}
                             <p class="text-slate-700 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap">{{ news_article.content_ja }}</p>
                             {% else %}
@@ -223,8 +223,8 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Русский</h3>
                         </div>
-                        <div class="prose prose-slate max-w-none">
-                            {% if news_article.is_content_translated %}
+                        <div id="content-ru-container" class="prose prose-slate max-w-none" data-is-content-added="{{ news_article.is_content_added }}">
+                            {% if news_article.is_content_added %}
                             <p class="text-slate-600 leading-loose text-sm md:text-base font-cis_insight whitespace-pre-wrap">{{ news_article.content_ru }}</p>
                             {% else %}
                             <div id="spinner-ru" class="flex items-center gap-3 text-slate-500 font-medium py-4">

@@ -1,3 +1,5 @@
+import trafilatura
+from news.views import clean_article_content
 import datetime
 import logging
 import random
@@ -48,8 +50,8 @@ def fetch_web_news_articles():
             
             feed_urls = [entry.link for entry in feed.entries if 'link' in entry]
             
-            existing_urls = NewsArticle.objects.filter(url__in = feed_urls).values_list('url', flat = True)
-            existing_urls = set(existing_urls)
+            completed_urls = NewsArticle.objects.filter(url__in = feed_urls, is_active = True).values_list('url', flat = True)
+            completed_urls = set(completed_urls)
 
             try:
                 for idx, entry in enumerate(feed.entries):
@@ -66,26 +68,25 @@ def fetch_web_news_articles():
 
                     url = entry.link
 
-                    if url in processed_urls or url in existing_urls:
+                    if url in processed_urls or url in completed_urls:
                         continue
+
+                    if not is_safe_url(url):
+                        logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {url}')
+                        continue
+
                     processed_urls.add(url)
 
                     title_ru = entry.title
 
-                    try:
-                        topic = pick_up_news_article_topic(title_ru, all_topics, rss)
+                    topic = pick_up_news_article_topic(title_ru, all_topics, rss)
 
-                        if topic is None:
-                            continue
+                    if topic is None:
+                        continue
 
-                        title_ja = translate_title(title_ru, rss)
+                    title_ja = translate_title(title_ru, rss)
 
-                        if title_ja is None:
-                            continue
-                    except Exception as e:
-                        logger.error(f'Error translating topics or title: {e}')
-                        rss.last_error = f'Error translating topics or title: {e}'
-                        rss.save()
+                    if title_ja is None:
                         continue
 
                     if 'published_parsed' in entry:
@@ -103,13 +104,24 @@ def fetch_web_news_articles():
                         image_url = None
                     
                     if image_url is not None:
-                        try:
-                            image = download_image(image_url)
-                        except Exception as e:
-                            logger.error(f'Error downloading image from {image_url}: {e}')
+                        if not is_safe_url(image_url):
+                            logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
                             image = None
+                        else:
+                            try:
+                                image = download_image(image_url)
+                            except Exception as e:
+                                logger.error(f'Error downloading image from {image_url}: {e}')
+                                image = None
                     else:
                         image = None
+
+                    content_ru = get_news_article_content(rss, url)
+
+                    if content_ru is None:
+                        is_content_added = False
+                    else:
+                        is_content_added = True
                     
                     country = rss.country
 
@@ -130,17 +142,36 @@ def fetch_web_news_articles():
                         country = country,
                         image = image,
                         rss = rss,
+                        content_ru = content_ru,
                         is_active = is_active,
                         is_title_added = is_title_added,
                         is_title_translated = is_title_translated,
                         is_topic_picked = is_topic_picked,
+                        is_content_added = is_content_added,
                     )
                     pending_articles.append((news_article, topic))
             finally:
                 if pending_articles:
                     with transaction.atomic():
                         for news_article, topic_list in pending_articles:
-                            if not NewsArticle.objects.filter(url = news_article.url).exists():
+                            existing_article = NewsArticle.objects.filter(url = news_article.url).first()
+                            
+                            if existing_article:
+                                NewsArticle.objects.filter(url = news_article.url).update(
+                                    title_ru = news_article.title_ru,
+                                    title_ja = news_article.title_ja,
+                                    published_at = news_article.published_at,
+                                    country = news_article.country,
+                                    image = news_article.image,
+                                    content_ru = news_article.content_ru,
+                                    is_active = news_article.is_active,
+                                    is_title_added = news_article.is_title_added,
+                                    is_title_translated = news_article.is_title_translated,
+                                    is_topic_picked = news_article.is_topic_picked,
+                                    is_content_added = news_article.is_content_added,
+                                )
+                                existing_article.topic.set(topic_list)
+                            else:
                                 news_article.save()
                                 news_article.topic.set(topic_list)
                 
@@ -159,10 +190,6 @@ def download_image(image_url):
     
     if not (image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://'))):
         logger.warning(f'Invalid image URL: {image_url}')
-        return None
-
-    if not is_safe_url(image_url):
-        logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
         return None
 
     try:
@@ -311,7 +338,31 @@ def pick_up_news_article_topic(title, topics, rss):
             rss.last_error = f"{error.user_message} while picking up topics"
             rss.save()
             continue
+
+def get_news_article_content(rss, url):
+    headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        }
         
+    try:
+        downloaded = requests.get(url, headers = headers)
+        downloaded.raise_for_status()
+        article_content = trafilatura.extract(downloaded.text)
+            
+        if article_content is None or len(article_content) == 0:
+            return None
+            
+        cleaned_article_content = clean_article_content(article_content, rss)
+
+        if cleaned_article_content is None or len(cleaned_article_content) == 0:
+            return None
+
+        return cleaned_article_content
+    except Exception as e:
+        logger.error(f'Exception in get_news_article_content: {e}')
+        return None
+
 def delete_old_news_articles():
     for rss in NewsRss.objects.all():
         day = settings.DISPLAY_DAY_LIMIT
