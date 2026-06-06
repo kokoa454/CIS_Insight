@@ -261,8 +261,15 @@ def rss_settings(request):
         return JsonResponse({'status': "error", "message" : "RSS設定に失敗しました。", "error_message": str(e)})
 
 def test_rss(url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+
+    if not is_safe_url(url):
+        return False
+    
     try:
-        feed = feedparser.parse(url)
+        downloaded = requests.get(url, headers = headers, timeout = 10, stream = True)
+        downloaded.raise_for_status()
+        feed = feedparser.parse(downloaded.text)
 
         if len(feed.entries) == 0:
             return False
