@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import user_passes_test
 import json
 import logging
 import re
@@ -206,12 +207,14 @@ def translate_content(content_ru, rss):
 
 # RSS設定ページ関連
 @login_required
+@user_passes_test(lambda user: user.is_staff)
 def render_rss_settings_page(request):
     countries = CisCountry.objects.all()
     rsses = NewsRss.objects.all()
     return render(request, 'rss_settings.html', {'countries': countries, 'rsses': rsses})
 
 @login_required
+@user_passes_test(lambda user: user.is_staff)
 def rss_settings(request):
     company = request.POST.get('company')
     country = request.POST.get('country')
@@ -271,6 +274,7 @@ def test_rss(url):
     
 
 @login_required
+@user_passes_test(lambda user: user.is_staff)
 def delete_rss(request):
     try:
         data = json.loads(request.body)
@@ -307,6 +311,7 @@ def delete_rss(request):
         return JsonResponse({'status': "error", "message" : "RSS設定の削除に失敗しました。", "error_message": str(e)})
 
 @login_required
+@user_passes_test(lambda user: user.is_staff)
 def deactivate_rss(request):
     try:
         data = json.loads(request.body)
@@ -334,6 +339,7 @@ def deactivate_rss(request):
         return JsonResponse({'status': "error", "message" : "RSS設定を無効化に失敗しました。", "error_message": str(e)})
 
 @login_required
+@user_passes_test(lambda user: user.is_staff)
 def activate_rss(request):
     try:
         data = json.loads(request.body)
