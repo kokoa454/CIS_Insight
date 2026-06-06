@@ -57,6 +57,9 @@ def render_news_article_page(request, pk):
 
     try:
         news_article = NewsArticle.objects.get(pk = pk, is_active = True)
+        
+        user.news_count += 1
+        user.save()
     except ObjectDoesNotExist:
         return render_error_page(request, '404', 'Page not found')
     

@@ -31,7 +31,7 @@
                     </p>
                     <div class="flex justify-between items-center text-[10px] font-bold">
                         <span class="text-slate-400 font-en">READ ARTICLES</span>
-                        <span class="text-red-500">{{ user.news_count }}</span>
+                        <span class="text-slate-500">{{ user.news_count }}</span>
                     </div>
                     <form action="{% url 'api_logout' %}" method="POST" class="pt-2">
                         {% csrf_token %}
@@ -127,7 +127,7 @@
                 </div>
                 <div class="flex justify-between items-center text-tiny text-slate-500 font-bold px-1 border-t border-slate-700/50 pt-2 font-en">
                     <span>READ ARTICLES</span>
-                    <span class="text-red-500">{{ user.news_count }}</span>
+                    <span class="text-slate-500">{{ user.news_count }}</span>
                 </div>
             </div>
         </div>
