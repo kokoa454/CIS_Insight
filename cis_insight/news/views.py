@@ -6,9 +6,11 @@ import feedparser
 import requests
 import trafilatura
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
-from core.settings import (GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2,
-                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
-                           GEMINI_MODEL_6, MAXIMUM_COMPANY_LENGTH)
+from core.settings import (GEMINI_API_KEY_1, GEMINI_API_KEY_2,
+                           GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
+                           GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3,
+                           GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -153,27 +155,29 @@ def clean_article_content(article_content, rss):
     Content: {article_content}
     """
 
-    client = genai.Client(api_key = GEMINI_API_KEY)
-    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6]
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+        client = genai.Client(api_key = api_key)
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
 
-    for model in models:
-        try:
-            response = client.models.generate_content(
-                model = model,
-                contents = prompt,
-            )
+        for model in models:
+            try:
+                response = client.models.generate_content(
+                    model = model,
+                    contents = prompt,
+                )
 
-            return response.text.strip()
-        except Exception as e:
-            error = convert_to_custom_ai_exception(e)
-            if isinstance(error, RateLimitError):
-                logger.warning(f"Rate limit hit for model {model}.")
+                return response.text.strip()
+            except Exception as e:
+                error = convert_to_custom_ai_exception(e)
+                if isinstance(error, RateLimitError):
+                    continue
+
+                logger.error(f"Error for model {model}: {e}")
+                rss.last_error = f"{error.user_message} while cleaning content"
+                rss.save()
                 continue
-
-            logger.error(f"Error for model {model}: {e}")
-            rss.last_error = f"{error.user_message} while cleaning content"
-            rss.save()
-            continue
+                
+    return None
 
 def translate_content(content_ru, rss):
     prompt = f"""
@@ -186,26 +190,29 @@ def translate_content(content_ru, rss):
     Content: {content_ru}
     """
 
-    client = genai.Client(api_key = GEMINI_API_KEY)
-    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6]
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+        client = genai.Client(api_key = api_key)
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
 
-    for model in models:
-        try:
-            response = client.models.generate_content(
-                model = model,
-                contents = prompt,
-            )
-            return response.text.strip()
-        except Exception as e:
-            error = convert_to_custom_ai_exception(e)
-            if isinstance(error, RateLimitError):
-                logger.warning(f"Rate limit hit for model {model}.")
+        for model in models:
+            try:
+                response = client.models.generate_content(
+                    model = model,
+                    contents = prompt,
+                )
+                
+                return response.text.strip()
+            except Exception as e:
+                error = convert_to_custom_ai_exception(e)
+                if isinstance(error, RateLimitError):
+                    continue
+                
+                logger.error(f"Error for model {model}: {e}")
+                rss.last_error = f"{error.user_message} while translating content"
+                rss.save()
                 continue
-            
-            logger.error(f"Error for model {model}: {e}")
-            rss.last_error = f"{error.user_message} while translating content"
-            rss.save()
-            continue
+                
+    return None
 
 # RSS設定ページ関連
 @login_required

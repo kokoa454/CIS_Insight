@@ -218,19 +218,21 @@ DISPLAY_DAY_LIMIT = 365
 
 
 # Gemini settings
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_API_KEY_1 = os.getenv('GEMINI_API_KEY_1')
+GEMINI_API_KEY_2 = os.getenv('GEMINI_API_KEY_2')
+GEMINI_API_KEY_3 = os.getenv('GEMINI_API_KEY_3')
 GEMINI_MODEL_1 = os.getenv('GEMINI_MODEL_1')
 GEMINI_MODEL_2 = os.getenv('GEMINI_MODEL_2')
 GEMINI_MODEL_3 = os.getenv('GEMINI_MODEL_3')
 GEMINI_MODEL_4 = os.getenv('GEMINI_MODEL_4')
 GEMINI_MODEL_5 = os.getenv('GEMINI_MODEL_5')
-GEMINI_MODEL_6 = os.getenv('GEMINI_MODEL_6')
 
 
 # Groq settings
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 GROQ_MODEL_1 = os.getenv('GROQ_MODEL_1')
 GROQ_MODEL_2 = os.getenv('GROQ_MODEL_2')
+GROQ_MODEL_3 = os.getenv('GROQ_MODEL_3')
 
 
 # Logger settings

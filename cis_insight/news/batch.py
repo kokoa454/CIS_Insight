@@ -1,5 +1,3 @@
-import trafilatura
-from news.views import clean_article_content
 import datetime
 import logging
 import random
@@ -11,11 +9,16 @@ from io import BytesIO
 
 import feedparser
 import requests
+import trafilatura
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
+                           DISPLAY_DAY_LIMIT, GEMINI_API_KEY_1,
+                           GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4,
+                           GEMINI_API_KEY_5, GEMINI_MODEL_1, GEMINI_MODEL_2,
+                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3,
                            MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
@@ -23,12 +26,14 @@ from django.db.models import F
 from django.utils import timezone
 from google import genai
 from groq import Groq
+from news.views import clean_article_content
 from PIL import Image
 
 from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
 
+# TODO 記事取得のマルチスレッド化
 # Webサイト用
 def fetch_web_news_articles():
     processed_urls = set()
@@ -279,26 +284,29 @@ def translate_title(title_ru, rss):
     Title: {title_ru}
     """
 
-    client = genai.Client(api_key = settings.GEMINI_API_KEY)
-    models = [settings.GEMINI_MODEL_1, settings.GEMINI_MODEL_2, settings.GEMINI_MODEL_3, settings.GEMINI_MODEL_4, settings.GEMINI_MODEL_5, settings.GEMINI_MODEL_6]
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+        client = genai.Client(api_key = api_key)
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
 
-    for model in models:
-        try:
-            response = client.models.generate_content(
-                model = model,
-                contents = prompt,
-            )
-            return response.text.strip()
-        except Exception as e:
-            error = convert_to_custom_ai_exception(e)
-            if isinstance(error, RateLimitError):
-                logger.warning(f"Rate limit hit for model {model}.")
-                continue
-            
-            logger.error(f"Error for model {model}: {e}")
-            rss.last_error = f"{error.user_message} while translating title"
-            rss.save()
-            continue
+        for model in models:
+            try:
+                response = client.models.generate_content(
+                    model = model,
+                    contents = prompt,
+                )
+                return response.text.strip()
+            except Exception as e:
+                error = convert_to_custom_ai_exception(e)
+                if isinstance(error, RateLimitError):
+                    continue
+                
+                logger.error(f"Error for model {model}: {e}")
+        
+        rss.last_error = f"{error.user_message} while translating title"
+        rss.save()
+        continue
+    
+    return None
 
 def pick_up_news_article_topic(title, topics, rss):
     prompt = f"""
@@ -311,8 +319,8 @@ def pick_up_news_article_topic(title, topics, rss):
     Topics: {', '.join([topic.name_en for topic in topics])}
     """
     
-    client = Groq(api_key = settings.GROQ_API_KEY)
-    models = [settings.GROQ_MODEL_1, settings.GROQ_MODEL_2]
+    client = Groq(api_key = GROQ_API_KEY)
+    models = [GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3]
 
     for model in models:
         try:
@@ -331,13 +339,14 @@ def pick_up_news_article_topic(title, topics, rss):
         except Exception as e:
             error = convert_to_custom_ai_exception(e)
             if isinstance(error, RateLimitError):
-                logger.warning(f"Rate limit hit for model {model}.")
                 continue
             
             logger.error(f"Error for model {model}: {e}")
             rss.last_error = f"{error.user_message} while picking up topics"
             rss.save()
             continue
+    
+    return None
 
 def get_news_article_content(rss, url):
     headers = {
@@ -365,7 +374,7 @@ def get_news_article_content(rss, url):
 
 def delete_old_news_articles():
     for rss in NewsRss.objects.all():
-        day = settings.DISPLAY_DAY_LIMIT
+        day = DISPLAY_DAY_LIMIT
         old_news_articles = NewsArticle.objects.filter(rss = rss, created_at__lt = timezone.now() - timedelta(days = day))
         deleted_count = old_news_articles.count()
 
