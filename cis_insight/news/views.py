@@ -1,24 +1,23 @@
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
 import json
 import logging
 import re
 
 import feedparser
-import newspaper
 import requests
 import trafilatura
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (GEMINI_API_KEY, GEMINI_MODEL_1, GEMINI_MODEL_2,
-                           GEMINI_MODEL_3, MAXIMUM_COMPANY_LENGTH)
+                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GEMINI_MODEL_6, MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 from google import genai
 from news.models import (CisAndNeighborCountry, CisCountry, NewsArticle,
                          NewsRss, Topic)
@@ -74,21 +73,19 @@ def get_news_article_content(request, pk):
             return JsonResponse({'error': 'Article is not active'}, status=403)
         
         if news_article.is_content_added == False:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+            }
+
             try:
-                article = newspaper.Article(news_article.url)
-                article.download()
-                article.parse()
-                article_content = article.text
-                
-                if len(article_content) == 0:
-                    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-                    
-                    if not is_safe_url(news_article.url):
-                        return render_error_page(request, '404', 'Page not found')
-                    
-                    downloaded = requests.get(news_article.url, headers = headers, timeout = 10, stream = True)
-                    downloaded.raise_for_status()
-                    article_content = trafilatura.extract(downloaded.text)
+                if not is_safe_url(news_article.url):
+                    return render_error_page(request, '404', 'Page not found')
+
+                downloaded = requests.get(news_article.url, headers = headers)
+                downloaded.raise_for_status()
+                article_content = trafilatura.extract(downloaded.text)
                 
                 if article_content is None or len(article_content) == 0:
                     return render_error_page(request, '404', 'Page not found')
@@ -158,7 +155,7 @@ def clean_article_content(article_content, rss):
     """
 
     client = genai.Client(api_key = GEMINI_API_KEY)
-    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3]
+    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6]
 
     for model in models:
         try:
@@ -191,7 +188,7 @@ def translate_content(content_ru, rss):
     """
 
     client = genai.Client(api_key = GEMINI_API_KEY)
-    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3]
+    models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6]
 
     for model in models:
         try:

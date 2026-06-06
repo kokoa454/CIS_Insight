@@ -17,6 +17,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 from google import genai
 from groq import Groq
@@ -31,7 +32,7 @@ def fetch_web_news_articles():
     processed_urls = set()
     all_topics = list(Topic.objects.all())
 
-    for rss in NewsRss.objects.filter(is_active = True):
+    for rss in NewsRss.objects.filter(is_active = True).order_by(F('last_fetched_at').asc(nulls_first = True)):
         pending_articles = []
 
         try:
@@ -244,7 +245,7 @@ def translate_title(title_ru, rss):
     """
 
     client = genai.Client(api_key = settings.GEMINI_API_KEY)
-    models = [settings.GEMINI_MODEL_1, settings.GEMINI_MODEL_2, settings.GEMINI_MODEL_3]
+    models = [settings.GEMINI_MODEL_1, settings.GEMINI_MODEL_2, settings.GEMINI_MODEL_3, settings.GEMINI_MODEL_4, settings.GEMINI_MODEL_5, settings.GEMINI_MODEL_6]
 
     for model in models:
         try:

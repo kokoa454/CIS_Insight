@@ -146,6 +146,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
@@ -214,11 +216,15 @@ EMAIL_CHANGE_EXPIRATION_TIME_MINUTES = 30
 EMAIL_CHANGE_DELETION_TIME_MINUTES = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 DISPLAY_DAY_LIMIT = 365
 
+
 # Gemini settings
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_MODEL_1 = os.getenv('GEMINI_MODEL_1')
 GEMINI_MODEL_2 = os.getenv('GEMINI_MODEL_2')
 GEMINI_MODEL_3 = os.getenv('GEMINI_MODEL_3')
+GEMINI_MODEL_4 = os.getenv('GEMINI_MODEL_4')
+GEMINI_MODEL_5 = os.getenv('GEMINI_MODEL_5')
+GEMINI_MODEL_6 = os.getenv('GEMINI_MODEL_6')
 
 
 # Groq settings
