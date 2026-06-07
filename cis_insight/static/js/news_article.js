@@ -26,9 +26,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 if (data.content_ja) {
                     document.getElementById('spinner-ja').classList.add('hidden');
-                    const jaTarget = document.getElementById('content-ja');
-                    jaTarget.innerText = data.content_ja;
-                    jaTarget.classList.remove('hidden');
+                    animateText('content-ja', data.content_ja);
                 } else {
                     showTranslationError();
                 }
@@ -49,9 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 if (data.content_ru) {
                     document.getElementById('spinner-ru').classList.add('hidden');
-                    const ruTarget = document.getElementById('content-ru');
-                    ruTarget.innerText = data.content_ru;
-                    ruTarget.classList.remove('hidden');
+                    animateText('content-ru', data.content_ru);
                 } else {
                     throw new Error('原文データが空です。');
                 }
@@ -72,9 +68,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 if (data.content_ru) {
                     document.getElementById('spinner-ru').classList.add('hidden');
-                    const ruTarget = document.getElementById('content-ru');
-                    ruTarget.innerText = data.content_ru;
-                    ruTarget.classList.remove('hidden');
+                    animateText('content-ru', data.content_ru);
                     return fetch(apiUrl_translated);
                 } else {
                     throw new Error('原文データが空です。');
@@ -91,9 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!data) return;
                 if (data.content_ja) {
                     document.getElementById('spinner-ja').classList.add('hidden');
-                    const jaTarget = document.getElementById('content-ja');
-                    jaTarget.innerText = data.content_ja;
-                    jaTarget.classList.remove('hidden');
+                    animateText('content-ja', data.content_ja);
                 } else {
                     showTranslationError();
                 }
@@ -117,5 +109,30 @@ document.addEventListener("DOMContentLoaded", function() {
     function showOriginalError() {
         const spinnerRu = document.getElementById('spinner-ru');
         if (spinnerRu) spinnerRu.innerHTML = '<span class="text-sm text-red-500 font-normal">原文の取得に失敗しました。再読み込みしてください。</span>';
+    }
+
+    function animateText(targetId, text) {
+    const target = document.getElementById(targetId);
+    target.innerHTML = '';
+    target.classList.remove('hidden');
+    
+    const text_list = text.split('\n\n');
+    text_list.forEach((paragraph) => {
+        if (paragraph.trim() !== '') {
+            target.innerHTML += `<p class="smooth-paragraph-fade">${paragraph}</p>`;
+        }
+    });
+
+    const paragraphs = target.querySelectorAll('.smooth-paragraph-fade');
+    let i = 0;
+    
+    const interval = setInterval(() => {
+        if (i < paragraphs.length) {
+            paragraphs[i].classList.add('is-visible');
+            i++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 500);
     }
 });

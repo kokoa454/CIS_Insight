@@ -253,5 +253,16 @@
     </main>
 </div>
 
+<style>
+.smooth-paragraph-fade {
+    opacity: 0; 
+    transition: opacity 0.8s ease-in-out; 
+    margin-bottom: 1.5em;
+}
+.smooth-paragraph-fade.is-visible {
+    opacity: 1;
+}
+</style>
+
 <script src="{% static 'js/news_article.js' %}"></script>
 {% endblock %}
