@@ -8,15 +8,17 @@ from datetime import timedelta
 from io import BytesIO
 
 import feedparser
+import newspaper
 import requests
 import trafilatura
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            DISPLAY_DAY_LIMIT, GEMINI_API_KEY_1,
-                           GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4,
-                           GEMINI_API_KEY_5, GEMINI_MODEL_1, GEMINI_MODEL_2,
-                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
-                           GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3,
+                           GEMINI_API_KEY_2, GEMINI_API_KEY_3,
+                           GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_MODEL_1,
+                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
+                           GEMINI_MODEL_5, GROQ_API_KEY, GROQ_MODEL_1,
+                           GROQ_MODEL_2, GROQ_MODEL_3,
                            MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
 from django.core.exceptions import ObjectDoesNotExist
@@ -114,12 +116,14 @@ def fetch_web_news_articles():
                             image = None
                         else:
                             try:
-                                image = download_image(image_url)
+                                image = download_image_from_rss(image_url)
                             except Exception as e:
-                                logger.error(f'Error downloading image from {image_url}: {e}')
                                 image = None
                     else:
-                        image = None
+                        try:
+                            image = download_image_from_article(url)
+                        except Exception as e:
+                            image = None
 
                     content_ru = get_news_article_content(rss, url)
 
@@ -162,19 +166,20 @@ def fetch_web_news_articles():
                             existing_article = NewsArticle.objects.filter(url = news_article.url).first()
                             
                             if existing_article:
-                                NewsArticle.objects.filter(url = news_article.url).update(
-                                    title_ru = news_article.title_ru,
-                                    title_ja = news_article.title_ja,
-                                    published_at = news_article.published_at,
-                                    country = news_article.country,
-                                    image = news_article.image,
-                                    content_ru = news_article.content_ru,
-                                    is_active = news_article.is_active,
-                                    is_title_added = news_article.is_title_added,
-                                    is_title_translated = news_article.is_title_translated,
-                                    is_topic_picked = news_article.is_topic_picked,
-                                    is_content_added = news_article.is_content_added,
-                                )
+                                existing_article.title_ru = news_article.title_ru
+                                existing_article.title_ja = news_article.title_ja
+                                existing_article.published_at = news_article.published_at
+                                existing_article.country = news_article.country
+                                existing_article.content_ru = news_article.content_ru
+                                existing_article.is_active = news_article.is_active
+                                existing_article.is_title_added = news_article.is_title_added
+                                existing_article.is_title_translated = news_article.is_title_translated
+                                existing_article.is_topic_picked = news_article.is_topic_picked
+                                existing_article.is_content_added = news_article.is_content_added
+
+                                if news_article.image:
+                                    existing_article.image = news_article.image
+                                existing_article.save()
                                 existing_article.topic.set(topic_list)
                             else:
                                 news_article.save()
@@ -190,22 +195,25 @@ def fetch_web_news_articles():
             rss.last_error = e
             rss.save()
 
-def download_image(image_url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+def download_image_from_rss(image_url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    }
     
     if not (image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://'))):
         logger.warning(f'Invalid image URL: {image_url}')
         return None
 
     try:
-        image_data = requests.get(image_url, timeout = 10, headers = headers, stream = True)
+        image_data = requests.get(image_url, headers = headers, stream = True)
 
-        if image_data.status_code != 200:
+        if image_data is None or image_data.status_code != 200:
             return None
         
-        content_type = image_data.headers.get('Content-Type', '').lower()
+        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
 
-        if content_type not in ALLOWED_IMAGE_TYPE:
+        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
             return None
         
         image_size = int(image_data.headers.get('Content-Length', 0))
@@ -235,12 +243,81 @@ def download_image(image_url):
             logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
             return None
 
-        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
         image = enhance_image(buffer, image_name)
         
         return image
     except Exception as e:
         logger.error(f'Error enhancing image from {image_url}: {e}')
+        return None
+
+def download_image_from_article(url):
+    if not (url is not None and (url.startswith('http://') or url.startswith('https://'))):
+        logger.warning(f'Invalid article URL: {url}')
+        return None
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    }
+
+    try:
+        article = newspaper.Article(url)
+        article.download()
+        article.parse()
+
+        image_url = article.top_image
+
+        if not image_url:
+            return None
+
+        if not is_safe_url(image_url):
+            logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
+            return None
+
+        image_data = requests.get(image_url, headers = headers, stream = True)
+
+        if image_data is None or image_data.status_code != 200:
+            return None
+        
+        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+
+        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+            return None
+        
+        image_size = int(image_data.headers.get('Content-Length', 0))
+
+        if image_size > ALLOWED_IMAGE_SIZE:
+            return None
+
+        buffer = BytesIO()
+        downloaded_size = 0
+        
+        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+            downloaded_size += len(chunk)
+            
+            if downloaded_size > ALLOWED_IMAGE_SIZE:
+                return None
+            
+            buffer.write(chunk)
+        
+        buffer.seek(0)
+
+        try:
+            with Image.open(buffer) as img:
+                img.verify()
+            
+            buffer.seek(0)
+        except Exception as e:
+            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+            return None
+
+        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
+        image = enhance_image(buffer, image_name)
+        
+        return image
+    except Exception as e:
+        logger.warning(f'Error downloading image from article {url}: {e}')
         return None
 
 def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):

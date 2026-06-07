@@ -44,7 +44,7 @@ def render_dashboard_page(request):
     elif len(user_news_referred_country) == 0 and len(user_news_referred_topic) > 0:
         news_articles = NewsArticle.objects.filter(topic__name_en__in = user_news_referred_topic, is_active = True).select_related('country', 'rss').prefetch_related('topic').distinct().order_by('-published_at')[:100]
     else:
-        news_articles = []
+        news_articles = NewsArticle.objects.filter(is_active = True).select_related('country', 'rss').distinct().order_by('-published_at')[:100]
     
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 

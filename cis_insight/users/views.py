@@ -215,11 +215,11 @@ def account_settings(request):
         icon = request.FILES.get('icon')
 
         if icon:
-            if icon.content_type not in ALLOWED_IMAGE_TYPE:
-                return JsonResponse({'status': "error", "message" : "アイコンの種類が不正です (png、jpegまたはwebpのみ)"})
+            if not any(icon.content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+                return JsonResponse({'status': "error", "message" : f"アイコンの種類が不正です ({', '.join(ALLOWED_IMAGE_TYPE)})のみ)"})
 
             if icon.size > ALLOWED_IMAGE_SIZE:
-                return JsonResponse({'status': "error", "message" : "アイコンのサイズが大きすぎます (最大5MB)"})
+                return JsonResponse({'status': "error", "message" : f"アイコンのサイズが大きすぎます (最大{ALLOWED_IMAGE_SIZE // 1000000}MB)"})
 
             try:
                 with Image.open(icon) as img:
