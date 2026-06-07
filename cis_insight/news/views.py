@@ -150,7 +150,7 @@ def clean_article_content(article_content, rss):
     - Remove repetitive titles or image captions.
     - Output ONLY the plain text. 
     - Do not add any extra empty lines or spaces at the beginning or end of the output.
-    - Use a single newline between paragraphs.
+    - Separate each paragraph with a double newline (\n\n).
 
     Content: {article_content}
     """
