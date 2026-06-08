@@ -19,7 +19,7 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
                            GEMINI_MODEL_5, GROQ_API_KEY, GROQ_MODEL_1,
                            GROQ_MODEL_2, GROQ_MODEL_3,
-                           MAXIMUM_IMAGE_SIZE_PIXEL)
+                           MAXIMUM_IMAGE_SIZE_PIXEL, BATCH_SAVE_SIZE)
 from core.utils import is_safe_url
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -38,7 +38,6 @@ logger = logging.getLogger(__name__)
 # TODO 記事取得のマルチスレッド化
 # Webサイト用
 def fetch_web_news_articles():
-    processed_urls = set()
     all_topics = list(Topic.objects.all())
 
     headers = {
@@ -47,18 +46,21 @@ def fetch_web_news_articles():
     }
 
     for rss in NewsRss.objects.filter(is_active = True).order_by(F('last_fetched_at').asc(nulls_first = True)):
+        processed_urls = set()
         pending_articles = []
 
         try:
-            downloaded = requests.get(rss.url, headers=headers)
+            downloaded = requests.get(rss.url, headers = headers)
             downloaded.raise_for_status()
             
             feed = feedparser.parse(downloaded.content)
             
-            feed_urls = [entry.link for entry in feed.entries if 'link' in entry]
-            
-            completed_urls = NewsArticle.objects.filter(url__in = feed_urls, is_active = True).values_list('url', flat = True)
-            completed_urls = set(completed_urls)
+            existing_articles = {
+                a.url: a
+                for a in NewsArticle.objects.filter(url__in = [entry.link for entry in feed.entries if 'link' in entry]).prefetch_related('topic')
+            }
+
+            completed_urls = {url for url, a in existing_articles.items() if a.is_active}
 
             try:
                 for idx, entry in enumerate(feed.entries):
@@ -84,53 +86,64 @@ def fetch_web_news_articles():
 
                     processed_urls.add(url)
 
+                    existing_article = existing_articles.get(url)
+
                     title_ru = entry.title
 
-                    topic = pick_up_news_article_topic(title_ru, all_topics, rss)
+                    if existing_article and existing_article.is_topic_picked:
+                        topic = list(existing_article.topic.all())
+                        topic_changed = False
+                    else:
+                        topic = pick_up_news_article_topic(title_ru, all_topics, rss)
+                        if topic is None:
+                            continue
+                        topic_changed = True
 
-                    if topic is None:
-                        continue
-
-                    title_ja = translate_title(title_ru, rss)
-
-                    if title_ja is None:
-                        continue
+                    if existing_article and existing_article.is_title_translated:
+                        title_ja = existing_article.title_ja
+                    else:
+                        title_ja = translate_title(title_ru, rss)
+                        if title_ja is None:
+                            continue
 
                     if 'published_parsed' in entry:
                         published_at = timezone.make_aware(datetime.datetime.fromtimestamp(time.mktime(entry.published_parsed)), datetime.timezone.utc)
                     else:
                         published_at = None
-                    
-                    if 'enclosures' in entry and len(entry.enclosures) > 0:
-                        image_url = entry.enclosures[0].href
-                    elif 'media_content' in entry and len(entry.media_content) > 0:
-                        image_url = entry.media_content[0]['url']
-                    elif 'media_thumbnail' in entry and len(entry.media_thumbnail) > 0:
-                        image_url = entry.media_thumbnail[0]['url']
+
+                    if existing_article and existing_article.image:
+                        image = None
                     else:
-                        image_url = None
-                    
-                    if image_url is not None:
-                        if not is_safe_url(image_url):
-                            logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
-                            image = None
+                        if 'enclosures' in entry and len(entry.enclosures) > 0:
+                            image_url = entry.enclosures[0].href
+                        elif 'media_content' in entry and len(entry.media_content) > 0:
+                            image_url = entry.media_content[0]['url']
+                        elif 'media_thumbnail' in entry and len(entry.media_thumbnail) > 0:
+                            image_url = entry.media_thumbnail[0]['url']
+                        else:
+                            image_url = None
+                        
+                        if image_url is not None:
+                            if not is_safe_url(image_url):
+                                logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
+                                image = None
+                            else:
+                                try:
+                                    image = download_image_from_rss(image_url)
+                                except Exception as e:
+                                    image = None
                         else:
                             try:
-                                image = download_image_from_rss(image_url)
+                                image = download_image_from_article(url)
                             except Exception as e:
                                 image = None
-                    else:
-                        try:
-                            image = download_image_from_article(url)
-                        except Exception as e:
-                            image = None
 
-                    content_ru = get_news_article_content(rss, url)
-
-                    if content_ru is None:
-                        is_content_added = False
-                    else:
+                    if existing_article and existing_article.is_content_added:
+                        content_ru = existing_article.content_ru
                         is_content_added = True
+                    else:
+                        content_ru = get_news_article_content(rss, url)
+                        is_content_added = content_ru is not None
                     
                     country = rss.country
 
@@ -158,33 +171,64 @@ def fetch_web_news_articles():
                         is_topic_picked = is_topic_picked,
                         is_content_added = is_content_added,
                     )
-                    pending_articles.append((news_article, topic))
+                    pending_articles.append((news_article, topic, existing_article, topic_changed))
+
+                    if len(pending_articles) >= BATCH_SAVE_SIZE:
+                        with transaction.atomic():
+                            for pending_news_article, pending_topic_list, pending_existing_article, pending_topic_changed in pending_articles:
+                                if pending_existing_article:
+                                    pending_existing_article.title_ru = pending_news_article.title_ru
+                                    pending_existing_article.title_ja = pending_news_article.title_ja
+                                    pending_existing_article.published_at = pending_news_article.published_at
+                                    pending_existing_article.country = pending_news_article.country
+                                    pending_existing_article.is_active = pending_news_article.is_active
+                                    pending_existing_article.is_title_added = pending_news_article.is_title_added
+                                    pending_existing_article.is_title_translated = pending_news_article.is_title_translated
+                                    pending_existing_article.is_topic_picked = pending_news_article.is_topic_picked
+
+                                    if not pending_existing_article.is_content_added and pending_news_article.is_content_added:
+                                        pending_existing_article.content_ru = pending_news_article.content_ru
+                                        pending_existing_article.is_content_added = True
+
+                                    if pending_news_article.image:
+                                        pending_existing_article.image = pending_news_article.image
+                                    pending_existing_article.save()
+
+                                    if pending_topic_changed:
+                                        pending_existing_article.topic.set(pending_topic_list)
+                                else:
+                                    pending_news_article.save()
+                                    pending_news_article.topic.set(pending_topic_list)
+
+                        pending_articles = []
             finally:
                 if pending_articles:
                     with transaction.atomic():
-                        for news_article, topic_list in pending_articles:
-                            existing_article = NewsArticle.objects.filter(url = news_article.url).first()
-                            
+                        for news_article, topic_list, existing_article, topic_changed in pending_articles:
                             if existing_article:
                                 existing_article.title_ru = news_article.title_ru
                                 existing_article.title_ja = news_article.title_ja
                                 existing_article.published_at = news_article.published_at
                                 existing_article.country = news_article.country
-                                existing_article.content_ru = news_article.content_ru
                                 existing_article.is_active = news_article.is_active
                                 existing_article.is_title_added = news_article.is_title_added
                                 existing_article.is_title_translated = news_article.is_title_translated
                                 existing_article.is_topic_picked = news_article.is_topic_picked
-                                existing_article.is_content_added = news_article.is_content_added
+
+                                if not existing_article.is_content_added and news_article.is_content_added:
+                                    existing_article.content_ru = news_article.content_ru
+                                    existing_article.is_content_added = True
 
                                 if news_article.image:
                                     existing_article.image = news_article.image
                                 existing_article.save()
-                                existing_article.topic.set(topic_list)
+
+                                if topic_changed:
+                                    existing_article.topic.set(topic_list)
                             else:
                                 news_article.save()
                                 news_article.topic.set(topic_list)
-                
+
                 rss.total_articles = NewsArticle.objects.filter(rss = rss).count()
                 rss.last_fetched_at = timezone.now()
                 rss.save()
@@ -206,47 +250,51 @@ def download_image_from_rss(image_url):
         return None
 
     try:
-        image_data = requests.get(image_url, headers = headers, stream = True)
-
-        if image_data is None or image_data.status_code != 200:
-            return None
-        
-        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
-
-        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
-            return None
-        
-        image_size = int(image_data.headers.get('Content-Length', 0))
-
-        if image_size > ALLOWED_IMAGE_SIZE:
-            return None
-
-        buffer = BytesIO()
-        downloaded_size = 0
-        
-        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
-            downloaded_size += len(chunk)
-            
-            if downloaded_size > ALLOWED_IMAGE_SIZE:
+        with requests.get(image_url, headers = headers, stream = True, timeout=10) as image_data:
+            if image_data is None or image_data.status_code != 200:
                 return None
-            
-            buffer.write(chunk)
-        
-        buffer.seek(0)
 
-        try:
-            with Image.open(buffer) as img:
-                img.verify()
-            
+            content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+
+            if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+                return None
+
+            try:
+                image_size = int(image_data.headers.get('Content-Length') or 0)
+            except Exception:
+                image_size = 0
+
+            if image_size and image_size > ALLOWED_IMAGE_SIZE:
+                return None
+
+            buffer = BytesIO()
+            downloaded_size = 0
+
+            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+                if not chunk:
+                    break
+                downloaded_size += len(chunk)
+
+                if downloaded_size > ALLOWED_IMAGE_SIZE:
+                    return None
+
+                buffer.write(chunk)
+
             buffer.seek(0)
-        except Exception as e:
-            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
-            return None
 
-        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
-        image = enhance_image(buffer, image_name)
-        
-        return image
+            try:
+                with Image.open(buffer) as img:
+                    img.verify()
+
+                buffer.seek(0)
+            except Exception as e:
+                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+                return None
+
+            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
+            image = enhance_image(buffer, image_name)
+
+            return image
     except Exception as e:
         logger.error(f'Error enhancing image from {image_url}: {e}')
         return None
@@ -275,73 +323,79 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        image_data = requests.get(image_url, headers = headers, stream = True)
-
-        if image_data is None or image_data.status_code != 200:
-            return None
-        
-        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
-
-        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
-            return None
-        
-        image_size = int(image_data.headers.get('Content-Length', 0))
-
-        if image_size > ALLOWED_IMAGE_SIZE:
-            return None
-
-        buffer = BytesIO()
-        downloaded_size = 0
-        
-        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
-            downloaded_size += len(chunk)
-            
-            if downloaded_size > ALLOWED_IMAGE_SIZE:
+        with requests.get(image_url, headers = headers, stream = True, timeout=10) as image_data:
+            if image_data is None or image_data.status_code != 200:
                 return None
-            
-            buffer.write(chunk)
-        
-        buffer.seek(0)
 
-        try:
-            with Image.open(buffer) as img:
-                img.verify()
-            
+            content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+
+            if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+                return None
+
+            try:
+                image_size = int(image_data.headers.get('Content-Length') or 0)
+            except Exception:
+                image_size = 0
+
+            if image_size and image_size > ALLOWED_IMAGE_SIZE:
+                return None
+
+            buffer = BytesIO()
+            downloaded_size = 0
+
+            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+                if not chunk:
+                    break
+                downloaded_size += len(chunk)
+
+                if downloaded_size > ALLOWED_IMAGE_SIZE:
+                    return None
+
+                buffer.write(chunk)
+
             buffer.seek(0)
-        except Exception as e:
-            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
-            return None
 
-        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
-        image = enhance_image(buffer, image_name)
-        
-        return image
+            try:
+                with Image.open(buffer) as img:
+                    img.verify()
+
+                buffer.seek(0)
+            except Exception as e:
+                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+                return None
+
+            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
+            image = enhance_image(buffer, image_name)
+
+            return image
     except Exception as e:
         logger.warning(f'Error downloading image from article {url}: {e}')
         return None
 
 def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
-    image = Image.open(image)
-    image = image.convert("RGBA")
+    with Image.open(image) as src_img:
+        img = src_img.convert("RGBA")
 
-    w, h = image.size
+    w, h = img.size
     target_w, target_h = size
 
     scale = max(target_w / w, target_h / h)
     new_w = int(w * scale)
     new_h = int(h * scale)
-    image = image.resize((new_w, new_h), Image.LANCZOS)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
     left = (new_w - target_w) // 2
     top = (new_h - target_h) // 2
     right = left + target_w
     bottom = top + target_h
-    image = image.crop((left, top, right, bottom))
+    img = img.crop((left, top, right, bottom))
 
     buffer = BytesIO()
-    image.save(buffer, format="PNG")
+    img.save(buffer, format="PNG")
     buffer.seek(0)
 
-    return InMemoryUploadedFile(buffer, None, image_name, 'image/png', sys.getsizeof(buffer), None)
+    size_bytes = buffer.getbuffer().nbytes
+
+    return InMemoryUploadedFile(buffer, None, image_name, 'image/png', size_bytes, None)
 
 # Telegram用
 def fetch_telegram_news_articles():
