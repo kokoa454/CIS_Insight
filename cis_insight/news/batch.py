@@ -19,7 +19,7 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
                            GEMINI_MODEL_5, GROQ_API_KEY, GROQ_MODEL_1,
                            GROQ_MODEL_2, GROQ_MODEL_3,
-                           MAXIMUM_IMAGE_SIZE_PIXEL, BATCH_SAVE_SIZE)
+                           MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -35,205 +35,193 @@ from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
 
-# TODO 記事取得のマルチスレッド化
 # Webサイト用
 def fetch_web_news_articles():
     all_topics = list(Topic.objects.all())
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/rss+xml, application/rdf+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1'
+        'User-Agent': 'Mozilla/5.0 ...',
+        'Accept': 'application/rss+xml, ...'
     }
 
-    for rss in NewsRss.objects.filter(is_active = True).order_by(F('last_fetched_at').asc(nulls_first = True)):
+    for rss in NewsRss.objects.filter(is_active=True).order_by(F('last_fetched_at').asc(nulls_first=True)):
         processed_urls = set()
-        pending_articles = []
 
         try:
-            downloaded = requests.get(rss.url, headers = headers)
+            downloaded = requests.get(rss.url, headers=headers)
             downloaded.raise_for_status()
-            
+
             feed = feedparser.parse(downloaded.content)
-            
+
             existing_articles = {
                 a.url: a
-                for a in NewsArticle.objects.filter(url__in = [entry.link for entry in feed.entries if 'link' in entry]).prefetch_related('topic')
+                for a in NewsArticle.objects.filter(
+                    url__in=[entry.link for entry in feed.entries if 'link' in entry]
+                ).prefetch_related('topic')
             }
 
             completed_urls = {url for url, a in existing_articles.items() if a.is_active}
 
-            try:
-                for idx, entry in enumerate(feed.entries):
-                    try:
-                        if idx % 5 == 0:
-                            rss.refresh_from_db()
-                            if rss.is_active == False:
-                                break
-                    except ObjectDoesNotExist:
-                        break
+            for idx, entry in enumerate(feed.entries):
+                try:
+                    if idx % 5 == 0:
+                        rss.refresh_from_db()
+                        if rss.is_active == False:
+                            break
+                except ObjectDoesNotExist:
+                    break
 
-                    if 'link' not in entry or 'title' not in entry:
+                if 'link' not in entry or 'title' not in entry:
+                    continue
+
+                url = entry.link
+
+                if url in processed_urls or url in completed_urls:
+                    continue
+
+                if not is_safe_url(url):
+                    logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {url}')
+                    continue
+
+                processed_urls.add(url)
+
+                existing_article = existing_articles.get(url)
+
+                title_ru = entry.title
+
+                if existing_article and existing_article.is_topic_picked:
+                    topic = list(existing_article.topic.all())
+                    topic_changed = False
+                else:
+                    topic = pick_up_news_article_topic(title_ru, all_topics, rss)
+                    if topic is None:
+                        continue
+                    topic_changed = True
+
+                if existing_article and existing_article.is_title_translated:
+                    title_ja = existing_article.title_ja
+                else:
+                    title_ja = translate_title(title_ru, rss)
+                    if title_ja is None:
                         continue
 
-                    url = entry.link
+                if 'published_parsed' in entry:
+                    published_at = timezone.make_aware(
+                        datetime.datetime.fromtimestamp(time.mktime(entry.published_parsed)),
+                        datetime.timezone.utc
+                    )
+                else:
+                    published_at = None
 
-                    if url in processed_urls or url in completed_urls:
-                        continue
-
-                    if not is_safe_url(url):
-                        logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {url}')
-                        continue
-
-                    processed_urls.add(url)
-
-                    existing_article = existing_articles.get(url)
-
-                    title_ru = entry.title
-
-                    if existing_article and existing_article.is_topic_picked:
-                        topic = list(existing_article.topic.all())
-                        topic_changed = False
+                if existing_article and existing_article.image:
+                    image = None
+                else:
+                    if 'enclosures' in entry and len(entry.enclosures) > 0:
+                        image_url = entry.enclosures[0].href
+                    elif 'media_content' in entry and len(entry.media_content) > 0:
+                        image_url = entry.media_content[0]['url']
+                    elif 'media_thumbnail' in entry and len(entry.media_thumbnail) > 0:
+                        image_url = entry.media_thumbnail[0]['url']
                     else:
-                        topic = pick_up_news_article_topic(title_ru, all_topics, rss)
-                        if topic is None:
-                            continue
-                        topic_changed = True
+                        image_url = None
 
-                    if existing_article and existing_article.is_title_translated:
-                        title_ja = existing_article.title_ja
-                    else:
-                        title_ja = translate_title(title_ru, rss)
-                        if title_ja is None:
-                            continue
-
-                    if 'published_parsed' in entry:
-                        published_at = timezone.make_aware(datetime.datetime.fromtimestamp(time.mktime(entry.published_parsed)), datetime.timezone.utc)
-                    else:
-                        published_at = None
-
-                    if existing_article and existing_article.image:
-                        image = None
-                    else:
-                        if 'enclosures' in entry and len(entry.enclosures) > 0:
-                            image_url = entry.enclosures[0].href
-                        elif 'media_content' in entry and len(entry.media_content) > 0:
-                            image_url = entry.media_content[0]['url']
-                        elif 'media_thumbnail' in entry and len(entry.media_thumbnail) > 0:
-                            image_url = entry.media_thumbnail[0]['url']
-                        else:
-                            image_url = None
-                        
-                        if image_url is not None:
-                            if not is_safe_url(image_url):
-                                logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
-                                image = None
-                            else:
-                                try:
-                                    image = download_image_from_rss(image_url)
-                                except Exception as e:
-                                    image = None
+                    if image_url is not None:
+                        if not is_safe_url(image_url):
+                            logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
+                            image = None
                         else:
                             try:
-                                image = download_image_from_article(url)
+                                image = download_image_from_rss(image_url)
                             except Exception as e:
                                 image = None
-
-                    if existing_article and existing_article.is_content_added:
-                        content_ru = existing_article.content_ru
-                        is_content_added = True
                     else:
-                        content_ru = get_news_article_content(rss, url)
-                        is_content_added = content_ru is not None
-                    
-                    country = rss.country
+                        try:
+                            image = download_image_from_article(url)
+                        except Exception as e:
+                            image = None
 
-                    is_title_added = True if title_ru is not None else False
-                    is_title_translated = True if title_ja is not None else False
-                    is_topic_picked = True if topic is not None else False
+                if existing_article and existing_article.is_content_added:
+                    content_ru = existing_article.content_ru
+                    is_content_added = True
+                else:
+                    content_ru = get_news_article_content(rss, url)
+                    is_content_added = content_ru is not None
 
-                    if is_title_added and is_title_translated and is_topic_picked:
-                        is_active = True
-                    else:
-                        is_active = False
+                country = rss.country
 
-                    news_article = NewsArticle(
-                        url = url,
-                        title_ru = title_ru,
-                        title_ja = title_ja,
-                        published_at = published_at,
-                        country = country,
-                        image = image,
-                        rss = rss,
-                        content_ru = content_ru,
-                        is_active = is_active,
-                        is_title_added = is_title_added,
-                        is_title_translated = is_title_translated,
-                        is_topic_picked = is_topic_picked,
-                        is_content_added = is_content_added,
-                    )
-                    pending_articles.append((news_article, topic, existing_article, topic_changed))
+                is_title_added = True if title_ru is not None else False
+                is_title_translated = True if title_ja is not None else False
+                is_topic_picked = True if topic is not None else False
+                is_active = is_title_added and is_title_translated and is_topic_picked
 
-                    if len(pending_articles) >= BATCH_SAVE_SIZE:
-                        with transaction.atomic():
-                            for pending_news_article, pending_topic_list, pending_existing_article, pending_topic_changed in pending_articles:
-                                if pending_existing_article:
-                                    pending_existing_article.title_ru = pending_news_article.title_ru
-                                    pending_existing_article.title_ja = pending_news_article.title_ja
-                                    pending_existing_article.published_at = pending_news_article.published_at
-                                    pending_existing_article.country = pending_news_article.country
-                                    pending_existing_article.is_active = pending_news_article.is_active
-                                    pending_existing_article.is_title_added = pending_news_article.is_title_added
-                                    pending_existing_article.is_title_translated = pending_news_article.is_title_translated
-                                    pending_existing_article.is_topic_picked = pending_news_article.is_topic_picked
+                article_data ={
+                    "url": url,
+                    "title_ru": title_ru,
+                    "title_ja": title_ja,
+                    "published_at": published_at,
+                    "country": country,
+                    "image": image,
+                    "rss": rss,
+                    "content_ru": content_ru,
+                    "is_active": is_active,
+                    "is_title_added": is_title_added,
+                    "is_title_translated": is_title_translated,
+                    "is_topic_picked": is_topic_picked,
+                    "is_content_added": is_content_added,
+                }
 
-                                    if not pending_existing_article.is_content_added and pending_news_article.is_content_added:
-                                        pending_existing_article.content_ru = pending_news_article.content_ru
-                                        pending_existing_article.is_content_added = True
-
-                                    if pending_news_article.image:
-                                        pending_existing_article.image = pending_news_article.image
-                                    pending_existing_article.save()
-
-                                    if pending_topic_changed:
-                                        pending_existing_article.topic.set(pending_topic_list)
-                                else:
-                                    pending_news_article.save()
-                                    pending_news_article.topic.set(pending_topic_list)
-
-                        pending_articles = []
-            finally:
-                if pending_articles:
+                try:
                     with transaction.atomic():
-                        for news_article, topic_list, existing_article, topic_changed in pending_articles:
-                            if existing_article:
-                                existing_article.title_ru = news_article.title_ru
-                                existing_article.title_ja = news_article.title_ja
-                                existing_article.published_at = news_article.published_at
-                                existing_article.country = news_article.country
-                                existing_article.is_active = news_article.is_active
-                                existing_article.is_title_added = news_article.is_title_added
-                                existing_article.is_title_translated = news_article.is_title_translated
-                                existing_article.is_topic_picked = news_article.is_topic_picked
+                        if existing_article:
+                            existing_article.title_ru = article_data['title_ru']
+                            existing_article.title_ja = article_data['title_ja']
+                            existing_article.published_at = article_data['published_at']
+                            existing_article.country = article_data['country']
+                            existing_article.is_active = article_data['is_active']
+                            existing_article.is_title_added = article_data['is_title_added']
+                            existing_article.is_title_translated = article_data['is_title_translated']
+                            existing_article.is_topic_picked = article_data['is_topic_picked']
 
-                                if not existing_article.is_content_added and news_article.is_content_added:
-                                    existing_article.content_ru = news_article.content_ru
-                                    existing_article.is_content_added = True
+                            if not existing_article.is_content_added and article_data['is_content_added']:
+                                existing_article.content_ru = article_data['content_ru']
+                                existing_article.is_content_added = True
 
-                                if news_article.image:
-                                    existing_article.image = news_article.image
-                                existing_article.save()
+                            if article_data['image']:
+                                existing_article.image = article_data['image']
 
-                                if topic_changed:
-                                    existing_article.topic.set(topic_list)
-                            else:
-                                news_article.save()
-                                news_article.topic.set(topic_list)
+                            existing_article.save()
 
-                rss.total_articles = NewsArticle.objects.filter(rss = rss).count()
-                rss.last_fetched_at = timezone.now()
-                rss.save()
-            
-            time.sleep(2)
+                            if topic_changed:
+                                existing_article.topic.set(topic)
+                        else:
+                            news_article, created = NewsArticle.objects.get_or_create(
+                                url = url,
+                                defaults={
+                                    'title_ru': article_data['title_ru'],
+                                    'title_ja': article_data['title_ja'],
+                                    'published_at': article_data['published_at'],
+                                    'country': article_data['country'],
+                                    'image': article_data['image'],
+                                    'rss': article_data['rss'],
+                                    'content_ru': article_data['content_ru'],
+                                    'is_active': article_data['is_active'],
+                                    'is_title_added': article_data['is_title_added'],
+                                    'is_title_translated': article_data['is_title_translated'],
+                                    'is_topic_picked': article_data['is_topic_picked'],
+                                    'is_content_added': article_data['is_content_added'],
+                                }
+                            )
+                            if created:
+                                news_article.topic.set(topic)
+
+                except Exception as e:
+                    logger.warning(f'Failed to save article {url}: {e}')
+                    continue
+
+            rss.total_articles = NewsArticle.objects.filter(rss=rss).count()
+            rss.last_fetched_at = timezone.now()
+            rss.save()
+
         except Exception as e:
             logger.error(f'Error fetching news articles from {rss.url}: {e}')
             rss.last_error = e
@@ -432,11 +420,10 @@ def translate_title(title_ru, rss):
                     continue
                 
                 logger.error(f"Error for model {model}: {e}")
-        
-        rss.last_error = f"{error.user_message} while translating title"
-        rss.save()
-        continue
-    
+                rss.last_error = f"{error.user_message} while translating title"
+                rss.save()
+                continue
+
     return None
 
 def pick_up_news_article_topic(title, topics, rss):
@@ -501,6 +488,8 @@ def get_news_article_content(rss, url):
         return cleaned_article_content
     except Exception as e:
         logger.error(f'Exception in get_news_article_content: {e}')
+        rss.last_error = f"{e} while getting news article content"
+        rss.save()
         return None
 
 def delete_old_news_articles():
