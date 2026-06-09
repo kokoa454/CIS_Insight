@@ -255,7 +255,6 @@ def account_settings(request):
             user.save()
         return JsonResponse({'status': "success"})
     except Exception as e:
-        print(e)
         logger.error(f'Exception in account_settings: {e}')
         return JsonResponse({'status': "error", "message" : "アカウント設定に失敗しました。"})
 
