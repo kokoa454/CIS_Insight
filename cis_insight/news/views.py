@@ -50,7 +50,6 @@ def render_dashboard_page(request):
 
 # ニュース記事関連
 @login_required
-@never_cache
 def render_news_article_page(request, pk):
     user = request.user
     cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
@@ -59,8 +58,13 @@ def render_news_article_page(request, pk):
     try:
         news_article = NewsArticle.objects.get(pk = pk, is_active = True)
 
-        user.news_count += 1
-        user.save()
+        with transaction.atomic():
+            user.news_count += 1
+            user.save()
+
+        with transaction.atomic():
+            news_article.read_count += 1
+            news_article.save()
     except ObjectDoesNotExist:
         return render_error_page(request, '404', 'Page not found')
     
@@ -135,6 +139,8 @@ def get_news_article_translated_content(request, pk):
                     news_article.save()
             except Exception as e:
                 logger.error(f'Exception in get_news_article_translated_content: {e}')
+                news_article.rss.last_error = f"{e} while translating content"
+                news_article.rss.save()
                 return JsonResponse({'error': 'Database save failed'}, status=500)
 
         return JsonResponse({'content_ja': news_article.content_ja})
