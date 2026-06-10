@@ -11,8 +11,6 @@ from users.batch import (delete_email_change, delete_pre_user,
 
 logger = logging.getLogger(__name__)
 
-# TODO: バッチのインターバル時間を調整する
-
 def start():
     def signal_handler(sig, frame):
         scheduler.shutdown(wait = False)
