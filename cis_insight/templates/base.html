@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja"l>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +8,27 @@
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
-    
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    // fontFamily: {
+                    //     ru: ['"Times New Roman"', 'Times', 'serif'],
+                    //     ja: ['"Noto Sans JP"', '"Hiragino Kaku Gothic ProN"', '"Meiryo"', 'sans-serif'],
+                    //     en: ['"Inter"', 'sans-serif'],
+                    //     cis_insight: ['"Times New Roman"', 'Times', 'serif']
+                    // },
                     fontFamily: {
-                        ru: ['"Times New Roman"', 'Times', 'serif'],
-                        ja: ['"Noto Sans JP"', '"Hiragino Kaku Gothic ProN"', '"Meiryo"', 'sans-serif'],
+                        ja: ['"Noto Sans JP"', 'sans-serif'],
                         en: ['"Inter"', 'sans-serif'],
-                        cis_insight: ['"Times New Roman"', 'Times', 'serif']
+                        ru: ['"Noto Serif"', 'serif'],
+                        cis_insight: ['"Noto Serif"', 'serif']
                     },
                 }
             }
@@ -29,6 +39,12 @@
         html {
             scroll-behavior: smooth;
             scrollbar-gutter: stable;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 
