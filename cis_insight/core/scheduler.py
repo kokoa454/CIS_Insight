@@ -11,6 +11,8 @@ from users.batch import (delete_email_change, delete_pre_user,
 
 logger = logging.getLogger(__name__)
 
+# TODO: バッチのインターバル時間を調整する
+
 def start():
     def signal_handler(sig, frame):
         scheduler.shutdown(wait = False)
@@ -20,14 +22,14 @@ def start():
     scheduler = BackgroundScheduler(daemon = True)
 
     # news
-    scheduler.add_job(fetch_web_news_articles, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(fetch_telegram_news_articles, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(fetch_web_news_articles, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(fetch_telegram_news_articles, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
     scheduler.add_job(delete_old_news_articles, 'interval', days = 1, next_run_time = datetime.now(), coalesce = True)
 
     # users
-    scheduler.add_job(expire_email_change, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(delete_email_change, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(expire_pre_user, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(delete_pre_user, 'interval', minutes = 1, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(expire_email_change, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(delete_email_change, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(expire_pre_user, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(delete_pre_user, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
     
     scheduler.start()

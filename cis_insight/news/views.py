@@ -8,8 +8,11 @@ import trafilatura
 from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
+                           GEMINI_API_KEY_6, GEMINI_API_KEY_7,
+                           GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10,
                            GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3,
                            GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GEMINI_MODEL_6, GEMINI_MODEL_7,
                            MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
@@ -161,9 +164,9 @@ def clean_article_content(article_content, rss):
     Content: {article_content}
     """
 
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
         client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
 
         for model in models:
             try:
@@ -196,9 +199,9 @@ def translate_content(content_ru, rss):
     Content: {content_ru}
     """
 
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
         client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
 
         for model in models:
             try:

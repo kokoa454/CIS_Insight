@@ -15,10 +15,13 @@ from core.exceptions import RateLimitError, convert_to_custom_ai_exception
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            DISPLAY_DAY_LIMIT, GEMINI_API_KEY_1,
                            GEMINI_API_KEY_2, GEMINI_API_KEY_3,
-                           GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_MODEL_1,
-                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
-                           GEMINI_MODEL_5, GROQ_API_KEY, GROQ_MODEL_1,
-                           GROQ_MODEL_2, GROQ_MODEL_3,
+                           GEMINI_API_KEY_4, GEMINI_API_KEY_5,
+                           GEMINI_API_KEY_6, GEMINI_API_KEY_7,
+                           GEMINI_API_KEY_8, GEMINI_API_KEY_9,
+                           GEMINI_API_KEY_10, GEMINI_MODEL_1, GEMINI_MODEL_2,
+                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GEMINI_MODEL_6, GEMINI_MODEL_7, GROQ_API_KEY,
+                           GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3,
                            MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,6 +37,8 @@ from PIL import Image
 from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
+
+# TODO: RateLimitエラーなどのAPI提供側のエラーはエラーとして記録しないようにしたい
 
 # Webサイト用
 def fetch_web_news_articles():
@@ -403,9 +408,9 @@ def translate_title(title_ru, rss):
     Title: {title_ru}
     """
 
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]:
+    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
         client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
 
         for model in models:
             try:
