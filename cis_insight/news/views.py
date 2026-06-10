@@ -5,7 +5,7 @@ import re
 import feedparser
 import requests
 import trafilatura
-from core.exceptions import RateLimitError, convert_to_custom_ai_exception
+from core.exceptions import RateLimitError, ServerError, convert_to_custom_ai_exception
 from core.settings import (GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
                            GEMINI_API_KEY_6, GEMINI_API_KEY_7,
@@ -178,7 +178,7 @@ def clean_article_content(article_content, rss):
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError):
+                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
 
                 logger.error(f"Error for model {model}: {e}")
@@ -213,7 +213,7 @@ def translate_content(content_ru, rss):
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError):
+                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
                 
                 logger.error(f"Error for model {model}: {e}")

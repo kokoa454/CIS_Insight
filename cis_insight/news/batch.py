@@ -11,7 +11,7 @@ import feedparser
 import newspaper
 import requests
 import trafilatura
-from core.exceptions import RateLimitError, convert_to_custom_ai_exception
+from core.exceptions import RateLimitError, ServerError, convert_to_custom_ai_exception
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            DISPLAY_DAY_LIMIT, GEMINI_API_KEY_1,
                            GEMINI_API_KEY_2, GEMINI_API_KEY_3,
@@ -37,8 +37,6 @@ from PIL import Image
 from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
-
-# TODO: RateLimitエラーなどのAPI提供側のエラーはエラーとして記録しないようにしたい
 
 # Webサイト用
 def fetch_web_news_articles():
@@ -220,7 +218,9 @@ def fetch_web_news_articles():
                                 news_article.topic.set(topic)
 
                 except Exception as e:
-                    logger.warning(f'Failed to save article {url}: {e}')
+                    logger.error(f'Failed to save article {url}: {e}')
+                    rss.last_error = str(e)
+                    rss.save()
                     continue
 
             rss.total_articles = NewsArticle.objects.filter(rss=rss).count()
@@ -229,7 +229,7 @@ def fetch_web_news_articles():
 
         except Exception as e:
             logger.error(f'Error fetching news articles from {rss.url}: {e}')
-            rss.last_error = e
+            rss.last_error = str(e)
             rss.save()
 
 def download_image_from_rss(image_url):
@@ -243,7 +243,7 @@ def download_image_from_rss(image_url):
         return None
 
     try:
-        with requests.get(image_url, headers = headers, stream = True, timeout=10) as image_data:
+        with requests.get(image_url, headers = headers, stream = True) as image_data:
             if image_data is None or image_data.status_code != 200:
                 return None
 
@@ -316,7 +316,7 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        with requests.get(image_url, headers = headers, stream = True, timeout=10) as image_data:
+        with requests.get(image_url, headers = headers, stream = True) as image_data:
             if image_data is None or image_data.status_code != 200:
                 return None
 
@@ -421,7 +421,7 @@ def translate_title(title_ru, rss):
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError):
+                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
                 
                 logger.error(f"Error for model {model}: {e}")
@@ -461,7 +461,7 @@ def pick_up_news_article_topic(title, topics, rss):
             return matched_topics
         except Exception as e:
             error = convert_to_custom_ai_exception(e)
-            if isinstance(error, RateLimitError):
+            if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                 continue
             
             logger.error(f"Error for model {model}: {e}")
