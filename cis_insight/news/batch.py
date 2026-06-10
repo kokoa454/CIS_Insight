@@ -284,7 +284,7 @@ def download_image_from_rss(image_url):
                 logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
                 return None
 
-            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
+            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
             image = enhance_image(buffer, image_name)
 
             return image
@@ -357,7 +357,7 @@ def download_image_from_article(url):
                 logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
                 return None
 
-            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.png'
+            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
             image = enhance_image(buffer, image_name)
 
             return image
@@ -383,12 +383,12 @@ def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
     img = img.crop((left, top, right, bottom))
 
     buffer = BytesIO()
-    img.save(buffer, format="PNG")
+    img.save(buffer, format="WEBP")
     buffer.seek(0)
 
     size_bytes = buffer.getbuffer().nbytes
 
-    return InMemoryUploadedFile(buffer, None, image_name, 'image/png', size_bytes, None)
+    return InMemoryUploadedFile(buffer, None, image_name, 'image/webp', size_bytes, None)
 
 # Telegram用
 def fetch_telegram_news_articles():

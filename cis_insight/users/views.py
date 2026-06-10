@@ -234,7 +234,7 @@ def account_settings(request):
                 with transaction.atomic():
                     if user.icon:
                         user.icon.delete(save = False)
-                    new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.png'
+                    new_icon_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 128)) + '.webp'
                     icon = enhance_icon(icon, new_icon_name)
                     user.icon.save(new_icon_name, icon, save = False)
             except Exception as e:
@@ -276,10 +276,10 @@ def enhance_icon(icon, icon_name, size = MAXIMUM_ICON_SIZE_PIXEL):
     icon = icon.crop((left, top, right, bottom))
 
     buffer = BytesIO()
-    icon.save(buffer, format="PNG")
+    icon.save(buffer, format="WEBP")
     buffer.seek(0)
 
-    return InMemoryUploadedFile(buffer, None, icon_name, 'image/png', sys.getsizeof(buffer), None)
+    return InMemoryUploadedFile(buffer, None, icon_name, 'image/webp', sys.getsizeof(buffer), None)
 
 @login_required
 @ratelimit(key = 'ip', rate = '5/m', block = True)
