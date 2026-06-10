@@ -143,6 +143,11 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-2 mb-4">
+                        <span class="text-slate-400 text-xs font-medium">
+                            参照元メディア: {{ news_article.rss.company }}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 mb-4 mt-6 border-t border-slate-300 pt-6">
                         {% for topic in news_article.topic.all %}
                         <span class="px-2 py-1 rounded bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-wider">
                             {{topic.name_ja}}
