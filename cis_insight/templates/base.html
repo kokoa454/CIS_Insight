@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CIS Insight{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+
+    <link rel="manifest" href="/manifest.json" />
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
 
@@ -18,12 +20,6 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    // fontFamily: {
-                    //     ru: ['"Times New Roman"', 'Times', 'serif'],
-                    //     ja: ['"Noto Sans JP"', '"Hiragino Kaku Gothic ProN"', '"Meiryo"', 'sans-serif'],
-                    //     en: ['"Inter"', 'sans-serif'],
-                    //     cis_insight: ['"Times New Roman"', 'Times', 'serif']
-                    // },
                     fontFamily: {
                         ja: ['"Noto Sans JP"', 'sans-serif'],
                         en: ['"Inter"', 'sans-serif'],
@@ -31,6 +27,13 @@
                         cis_insight: ['"Noto Serif"', 'serif']
                     },
                 }
+            }
+        }
+
+        window.onload = () => {
+            'use strict';
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/js/sw.js', {});
             }
         }
     </script>

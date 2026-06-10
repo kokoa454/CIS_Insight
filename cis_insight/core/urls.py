@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 from news import views as news_views
 from users import views as users_views
 
@@ -54,6 +55,8 @@ urlpatterns = [
     path('api/delete_rss_error/', news_views.delete_rss_error, name='api_delete_rss_error'),
     path('api/deactivate_rss/', news_views.deactivate_rss, name='api_deactivate_rss'),
     path('api/activate_rss/', news_views.activate_rss, name='api_activate_rss'),
+    path('manifest.json', TemplateView.as_view(template_name='manifest.json', content_type='application/json'), name='manifest'),
+    path('sw.js', TemplateView.as_view(template_name='sw.js', content_type='application/javascript'), name='sw'),
 ]
 
 handler404 = views.error_404
