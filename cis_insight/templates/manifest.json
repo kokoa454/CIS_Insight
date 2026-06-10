@@ -3,6 +3,7 @@
   "short_name": "CIS Insight",
   "description": "News and Insights from the CIS region",
   "start_url": "/dashboard/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111827",
