@@ -176,7 +176,7 @@ EMAIL_USE_TLS = True
 
 
 # Site settings
-SITE_URL = 'http://localhost:8000'
+SITE_URL = os.getenv('SITE_URL')
 
 
 # Login settings
@@ -310,12 +310,12 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'apscheduler': {
-            'handlers': ['console'],
+            'handlers': ['file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
