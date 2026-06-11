@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 import dotenv
-from django.conf.urls.static import static
 
 
 dotenv.load_dotenv()
@@ -29,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "[IP_ADDRESS]"]
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 
 
 # Application definition
@@ -214,6 +213,8 @@ PRE_USER_EXPIRATION_TIME_MINUTES = 30
 PRE_USER_DELETION_TIME_MINUTES = PRE_USER_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 EMAIL_CHANGE_EXPIRATION_TIME_MINUTES = 30
 EMAIL_CHANGE_DELETION_TIME_MINUTES = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES * 24 # 12hrs
+PASSWORD_RESET_EXPIRATION_TIME_MINUTES = 30
+PASSWORD_RESET_DELETION_TIME_MINUTES = PASSWORD_RESET_EXPIRATION_TIME_MINUTES * 24 # 12hrs
 DISPLAY_DAY_LIMIT = 1
 
 
@@ -290,22 +291,22 @@ LOGGING = {
     },
     'loggers': {
         'core': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'news': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'users': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file'],
             'level': 'INFO',
             'propagate': False,
         },
