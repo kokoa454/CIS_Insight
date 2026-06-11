@@ -3,11 +3,13 @@ from datetime import timedelta
 
 from core.settings import (EMAIL_CHANGE_DELETION_TIME_MINUTES,
                            EMAIL_CHANGE_EXPIRATION_TIME_MINUTES,
+                           PASSWORD_RESET_DELETION_TIME_MINUTES,
+                           PASSWORD_RESET_EXPIRATION_TIME_MINUTES,
                            PRE_USER_DELETION_TIME_MINUTES,
                            PRE_USER_EXPIRATION_TIME_MINUTES)
 from django.utils import timezone
 
-from .models import EmailChange, PreUser
+from .models import EmailChange, PasswordReset, PreUser
 
 logger = logging.getLogger(__name__)
 
@@ -64,3 +66,30 @@ def delete_email_change():
         logger.info(f'Deleted {expired_email_changes.count()} email_changes')
     except Exception as e:
         logger.error(f'Error deleting email_changes: {e}')
+
+# パスワードリセットユーザの有効期限切れ設定
+def expire_password_reset():
+    expired_password_resets = PasswordReset.objects.filter(
+        created_at__lt = timezone.now() - timedelta(minutes = PASSWORD_RESET_EXPIRATION_TIME_MINUTES),
+        is_expired = False
+    )
+
+    for password_reset in expired_password_resets:
+        try:
+            logger.info(f'PasswordReset expired: {password_reset.user.username}')
+            password_reset.is_expired = True
+            password_reset.save()
+        except Exception as e:
+            logger.error(f'Error expiring password_reset {password_reset.user.username}: {e}')
+
+# パスワードリセットユーザの削除
+def delete_password_reset():
+    expired_password_resets = PasswordReset.objects.filter(
+        created_at__lt = timezone.now() - timedelta(minutes = PASSWORD_RESET_DELETION_TIME_MINUTES)
+    )
+    
+    try:
+        expired_password_resets.delete()
+        logger.info(f'Deleted {expired_password_resets.count()} password_resets')
+    except Exception as e:
+        logger.error(f'Error deleting password_resets: {e}')
