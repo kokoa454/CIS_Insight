@@ -175,3 +175,35 @@ class EmailChange(models.Model):
 
     def __str__(self):
         return self.user.username
+
+# パスワードリセット用
+class PasswordReset(models.Model):
+    id = models.AutoField(
+        primary_key = True,
+        verbose_name = 'ID'
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete = models.CASCADE,
+        verbose_name = 'User'
+    )
+    
+    verification_code = models.CharField(
+        max_length = VALIDATION_CODE_LENGTH,
+        unique = True,
+        verbose_name = 'Verification Code'
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add = True,
+        verbose_name = 'Created At'
+    )
+    
+    is_expired = models.BooleanField(
+        default = False,
+        verbose_name = 'Is Expired'
+    )
+
+    def __str__(self):
+        return self.user.username

@@ -1,7 +1,10 @@
 import ipaddress
 import logging
+import secrets
 import socket
 import urllib.parse
+
+from core.settings import VALIDATION_CODE_LENGTH
 
 logger = logging.getLogger(__name__)
 
@@ -31,3 +34,6 @@ def is_safe_url(url):
     except Exception as e:
         logger.error(f"URL safety check failed for {url}: {e}")
         return False
+
+def generate_verification_code():
+    return secrets.token_hex(VALIDATION_CODE_LENGTH // 2) # Convert characters to bytes

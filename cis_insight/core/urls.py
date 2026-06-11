@@ -32,6 +32,10 @@ urlpatterns = [
     # path('api/sign_up/', users_views.sign_up, name='api_sign_up'), 新規ユーザ受付停止
 
     path('api/pre_sign_up/', views.pre_sign_up_error, name='api_pre_sign_up'), # 新規ユーザ受付再開時に削除
+    path('request_password_reset/', views.send_password_reset_email, name='request_password_reset'),
+    path('password_reset/<str:verification_code>/', users_views.render_password_reset_page, name='password_reset'),
+    path('api/reset_password/', users_views.reset_password, name='api_reset_password'),
+    path('password_reset_complete/', users_views.render_password_reset_complete_page, name='password_reset_complete'),
     path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
     path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
     path('news_article/news_article_id=<int:pk>/', news_views.render_news_article_page, name='news_article_page'),

@@ -5,7 +5,62 @@
 
 {% block main %}
 <div class="min-h-dvh bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] bg-white flex flex-col">
-    
+    <div id="password-reset-modal" class="modal-overlay hidden px-4">
+        <div class="absolute inset-0" onclick="closeModal()"></div>
+        <div class="modal-content relative !max-w-md !p-0 overflow-hidden">
+            <div class="p-8">
+                <h3 class="text-subtitle font-ja text-slate-900 mb-2">パスワードリセット</h3>
+                <p class="text-tiny text-slate-500 font-ja mb-6">ご入力いただいたアドレスに、パスワードリセット用リンクをお送りします。</p>
+                <form id="password-reset-form" action="{% url 'request_password_reset' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <input type="email" id="user-email" required placeholder="example@mail.com" class="input-base font-en">
+                    </div>
+                    <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm"></div>
+                    <button type="submit" class="btn-primary w-full py-3.5 text-standard font-ja shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">パスワードリセット用リンクを送信する</button>
+                </form>
+                <button onclick="closeModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-toast" class="fixed bottom-8 left-0 w-full z-[110] hidden pointer-events-none">
+        <div class="flex justify-center px-4">
+            <div class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-slide-up pointer-events-auto">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-tiny font-ja font-medium">メールを送信しました。<br>リンクを確認してください。</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="error-toast" class="fixed bottom-8 left-0 w-full z-[110] hidden transition-all duration-300">
+        <div class="flex justify-center px-4">
+            <div class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-red-500/30 pointer-events-auto">
+                
+                <div class="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+
+                <div class="flex flex-col">
+                    <span class="text-xs font-bold text-red-400 uppercase tracking-wider font-en">Error</span>
+                    <span class="text-sm font-ja font-medium text-slate-200">
+                        <span id="error-message" class="text-xs text-slate-400 font-normal"></span>
+                    </span>
+                </div>
+
+                <button onclick="hideError()" class="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <header class="py-6 sm:py-8 border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6">
         <div class="max-w-7xl mx-auto flex justify-center items-center">
             <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -44,7 +99,7 @@
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
                             <label for="password" class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Password</label>
-                            <a href="#" class="text-tiny text-indigo-500 hover:text-indigo-700 font-ja">パスワードを忘れた場合</a>
+                            <button type="button" id="password-reset-button" onclick="openModal()" class="text-tiny text-indigo-500 hover:text-indigo-700 font-ja">パスワードを忘れた場合</button>
                         </div>
                         <input type="password" id="password" name="password" required placeholder="••••••••"
                             class="input-base w-full font-en focus:border-red-500 py-3 px-4 rounded-lg border border-slate-200 outline-none transition-all">

@@ -2,7 +2,6 @@ import json
 import logging
 import random
 import re
-import secrets
 import string
 import sys
 from io import BytesIO
@@ -12,7 +11,8 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE,
                            EMAIL_HOST_USER, MAXIMUM_DISPLAY_NAME_LENGTH,
                            MAXIMUM_EMAIL_LENGTH, MAXIMUM_ICON_SIZE_PIXEL,
                            MAXIMUM_USERNAME_LENGTH, MINIMUM_PASSWORD_LENGTH,
-                           SITE_URL, VALIDATION_CODE_LENGTH)
+                           SITE_URL)
+from core.utils import generate_verification_code
 from core.views import render_error_page
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as auth_logout
@@ -24,19 +24,18 @@ from django.core.validators import validate_email
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.cache import never_cache
 from django_ratelimit.decorators import ratelimit
 from news.models import CisCountry, Topic
 from PIL import Image
+from users.models import PasswordReset
 
 from .models import EmailChange, PreUser, User
 
 logger = logging.getLogger(__name__)
 
-# 共通
-def generate_verification_code():
-    return secrets.token_hex(VALIDATION_CODE_LENGTH // 2) # Convert characters to bytes
-
 # ユーザ登録ページ関連
+@never_cache
 def render_sign_up_page(request, verification_code):
     try:
         pre_user = PreUser.objects.get(verification_code = verification_code)
@@ -49,6 +48,7 @@ def render_sign_up_page(request, verification_code):
     else:
         return render_error_page(request, '403', 'Forbidden')
 
+@ratelimit(key = 'ip', rate = '10/m', block = True)
 def sign_up(request):
     try:
         email = request.POST.get('email')
@@ -386,3 +386,56 @@ def password_change(request):
     except Exception as e:
         logger.error(f'Exception in password_change: {e}')
         return JsonResponse({'status': "error", "message" : "パスワードの変更に失敗しました。"})
+
+# パスワードリセットページ関連
+@never_cache
+def render_password_reset_page(request, verification_code):
+    try:
+        password_reset = PasswordReset.objects.get(verification_code = verification_code)
+    except PasswordReset.DoesNotExist:
+        return render_error_page(request, '404', 'Page not found')
+
+    if not password_reset.is_expired:
+        user_email = password_reset.user.email
+        return render(request, 'password_reset.html', {'user_email': user_email, 'verification_code': verification_code})
+    else:
+        return render_error_page(request, '403', 'Forbidden')
+
+def reset_password(request):
+    try:
+        data = json.loads(request.body)
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('verification_code')
+        
+        try:
+            password_reset = PasswordReset.objects.get(verification_code = verification_code)
+        except PasswordReset.DoesNotExist:
+            return JsonResponse({'status': "error", "message" : "リンクが不正です。"})
+
+        if password_reset.is_expired:
+            return JsonResponse({'status': "error", "message" : "リンクの有効期限が切れています。"})
+        
+        if len(password) < MINIMUM_PASSWORD_LENGTH:
+            return JsonResponse({'status': "error", "message" : "パスワードは" + str(MINIMUM_PASSWORD_LENGTH) + "文字以上で入力してください。"})
+
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$', password):
+            return JsonResponse({'status': "error", "message" : "パスワードは大小英数字混合で入力してください。"})
+
+        if password != password_confirm:
+            return JsonResponse({'status': "error", "message" : "パスワードが一致しません。"})
+
+        with transaction.atomic():
+            password_reset.user.set_password(password)
+            password_reset.user.save()
+            logger.info(f'PasswordReset {password_reset.user} changed password successfully')
+            password_reset.delete()
+            
+        return JsonResponse({'status': 'success', 'redirect_url': '/password_reset_complete'})
+    except Exception as e:
+        logger.error(f'Exception in reset_password: {e}')
+        return JsonResponse({'status': 'error', 'message': '予期せぬエラーが発生しました。'})
+
+@never_cache
+def render_password_reset_complete_page(request):
+    return render(request, 'password_reset_complete.html')

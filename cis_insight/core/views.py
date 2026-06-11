@@ -1,7 +1,7 @@
 import json
 import logging
-import secrets
 
+from core.utils import generate_verification_code
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.validators import validate_email
@@ -9,11 +9,11 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django_ratelimit.decorators import ratelimit
 from news.models import CisAndNeighborCountry, CisCountry
-from users.models import PreUser, User
+from users.models import PasswordReset, PreUser, User
 
 from .settings import (EMAIL_HOST_USER, LOGO_PATH, MAXIMUM_EMAIL_LENGTH,
-                       PRE_USER_EXPIRATION_TIME_MINUTES, SITE_URL,
-                       VALIDATION_CODE_LENGTH)
+                       PASSWORD_RESET_EXPIRATION_TIME_MINUTES,
+                       PRE_USER_EXPIRATION_TIME_MINUTES, SITE_URL)
 
 logger = logging.getLogger(__name__)
 
@@ -43,18 +43,18 @@ def pre_sign_up(request):
         try:
             validate_email(email)
         except ValidationError:
-            logger.error(f'Invalid email format: {email}')
+            logger.warning(f'Invalid email format: {email}')
             return JsonResponse({'status': 'error', 'message': 'メールアドレスの形式が正しくありません。'})
 
         if len(email) > MAXIMUM_EMAIL_LENGTH:
             return JsonResponse({'status': "error", "message" : "メールアドレスは" + str(MAXIMUM_EMAIL_LENGTH) + "文字以内で入力してください。"})
 
         if PreUser.objects.filter(email = email).exists():
-            logger.error(f'Email already exists in pre_user: {email}')
+            logger.warning(f'Email already exists in pre_user: {email}')
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに仮登録されています。メールボックスを確認してください。もしメールが届かない場合は、30分後に再度お試しください。'})
 
         if User.objects.filter(email = email).exists():
-            logger.error(f'Email already exists in user: {email}')
+            logger.warning(f'Email already exists in user: {email}')
             return JsonResponse({'status': 'error', 'message': 'このメールアドレスはすでに本登録されています。'})
 
         verification_code = generate_verification_code()
@@ -77,9 +77,6 @@ def pre_sign_up(request):
         logger.error(f'Exception in pre_sign_up: {e}')
         return JsonResponse({'status': 'error', 'message': '申し訳ありません。仮登録に失敗しました。時間を空けてから再度お試しください。'})
 
-def generate_verification_code():
-    return secrets.token_hex(VALIDATION_CODE_LENGTH)
-
 def send_verification_email(email, verification_code):
     try:
         subject = "CIS Insight - アカウント登録用リンク"
@@ -89,6 +86,47 @@ def send_verification_email(email, verification_code):
     except Exception as e:
         logger.error(f'Exception in send_verification_email: {e}')
         return False
+
+# パスワードリセット関連
+def send_password_reset_email(request):
+    try:
+        data = json.loads(request.body)
+        email = data.get('email')
+
+        if not email:
+            return JsonResponse({'status': 'error', 'message': 'メールアドレスを入力してください。'})
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            logger.warning(f'Invalid email format: {email}')
+            return JsonResponse({'status': 'error', 'message': 'メールアドレスの形式が正しくありません。'})
+
+        if User.objects.filter(email = email).exists():
+            user = User.objects.get(email = email)
+            verification_code = generate_verification_code()
+
+            password_reset, created = PasswordReset.objects.get_or_create(
+                user = user,
+                defaults = {
+                    'verification_code': verification_code
+                }
+            )
+
+            if created:
+                try:
+                    subject = "CIS Insight - パスワードリセット用リンク"
+                    message = f"CIS Insightをご利用いただきありがとうございます。パスワードリセット用のリンクを送信します。\n\nメールアドレス: {email}\n\n以下のリンクでパスワードリセットを行ってください。\n有効期限は{PASSWORD_RESET_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/password_reset/{verification_code}"
+                    send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
+                    return JsonResponse({'status': 'success'})
+                except Exception as e:
+                    logger.error(f'Exception in send_password_reset_email: {e}')
+                    return JsonResponse({'status': 'error', 'message': '申し訳ありません。パスワードリセット用のメールの送信に失敗しました。時間を空けてから再度お試しください。'})
+        else:
+            return JsonResponse({'status': 'success'})
+    except Exception as e:
+        logger.error(f'Exception in send_password_reset_email: {e}')
+        return JsonResponse({'status': 'error', 'message': '申し訳ありません。パスワードリセット用のメールの送信に失敗しました。時間を空けてから再度お試しください。'})
 
 # エラーページ関連
 def render_error_page(request, error_code, error_message):
