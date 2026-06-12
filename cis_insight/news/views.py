@@ -89,18 +89,18 @@ def get_news_article_content(request, pk):
 
             try:
                 if not is_safe_url(news_article.url):
-                    return render_error_page(request, '404', 'Page not found')
+                    return JsonResponse({'error': 'Invalid URL'}, status=400)
 
                 downloaded = requests.get(news_article.url, headers = headers)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
                 
                 if article_content is None or len(article_content) == 0:
-                    return render_error_page(request, '404', 'Page not found')
+                    return JsonResponse({'error': 'Failed to fetch content'}, status=500)
                 
                 cleaned_article_content = clean_article_content(article_content, news_article.rss)
                 if cleaned_article_content is None or len(cleaned_article_content) == 0:
-                    return render_error_page(request, '500', 'Internal server error')
+                    return JsonResponse({'error': 'Failed to clean content'}, status=500)
                 
                 content_ru = cleaned_article_content
             except Exception as e:
@@ -121,7 +121,7 @@ def get_news_article_content(request, pk):
 
         return JsonResponse({'content_ru': news_article.content_ru})
     except ObjectDoesNotExist:
-        return render_error_page(request, '404', 'Page not found')
+        return JsonResponse({'error': 'Article not found'}, status=404)
 
 @login_required
 def get_news_article_translated_content(request, pk):
@@ -148,7 +148,7 @@ def get_news_article_translated_content(request, pk):
 
         return JsonResponse({'content_ja': news_article.content_ja})
     except ObjectDoesNotExist:
-        return render_error_page(request, '404', 'Page not found')
+        return JsonResponse({'error': 'Article not found'}, status=404)
 
 def clean_article_content(article_content, rss):
     prompt = f"""

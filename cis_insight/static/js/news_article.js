@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     const articleId = container.dataset.articleId;
-    const apiUrl = `/api/news_article_content/news_article_id/${articleId}/`;
-    const apiUrl_translated = `/api/news_article_content_translated/news_article_id/${articleId}/`;
+    const apiUrl = `/api/news_article_content/${articleId}/`;
+    const apiUrl_translated = `/api/news_article_content_translated/${articleId}/`;
 
     const contentRuContainer = document.getElementById('content-ru-container');
     const contentJaContainer = document.getElementById('content-ja-container');
