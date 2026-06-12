@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", function() {
         return; 
     }
     
-    const articleId = container.dataset.articleId;
+    const rawArticleId = container.dataset.articleId;
+    const articleId = rawArticleId.replace(/\D/g, '');
     const apiUrl = `/api/news_article_content/${articleId}/`;
     const apiUrl_translated = `/api/news_article_content_translated/${articleId}/`;
 
