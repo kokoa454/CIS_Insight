@@ -1,3 +1,4 @@
+from PIL import ImageOps
 import json
 import logging
 import random
@@ -260,6 +261,7 @@ def account_settings(request):
 
 def enhance_icon(icon, icon_name, size = MAXIMUM_ICON_SIZE_PIXEL):
     icon = Image.open(icon)
+    icon = ImageOps.exif_transpose(icon)
     icon = icon.convert("RGBA")
 
     w, h = icon.size
