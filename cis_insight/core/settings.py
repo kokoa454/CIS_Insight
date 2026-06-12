@@ -295,27 +295,27 @@ LOGGING = {
     },
     'loggers': {
         'core': {
-            'handlers': ['file', 'error_file'],
+            'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'news': {
-            'handlers': ['file', 'error_file'],
+            'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'users': {
-            'handlers': ['file', 'error_file'],
+            'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
-            'handlers': ['file', 'error_file'],
+            'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'apscheduler': {
-            'handlers': ['file', 'error_file'],
+            'handlers': ['file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
