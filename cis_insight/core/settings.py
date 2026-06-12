@@ -271,16 +271,25 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'maxBytes': 10*1024*1024,
             'backupCount': 10,
             'filename': os.path.join(LOG_DIR, 'app.log'),
             'formatter': 'all',
             'encoding': 'utf-8',
         },
+        'warning_file': {
+            'level': 'WARNING',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'warning.log'),
+            'maxBytes': 10*1024*1024,
+            'backupCount': 10,
+            'encoding': 'utf-8',
+            'formatter': 'all',
+        },
         'error_file': {
             'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'error.log'),
             'maxBytes': 10*1024*1024,
             'backupCount': 10,
@@ -295,27 +304,27 @@ LOGGING = {
     },
     'loggers': {
         'core': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'warning_file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'news': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'warning_file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'users': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'warning_file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'warning_file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'apscheduler': {
-            'handlers': ['file', 'error_file', 'console'],
+            'handlers': ['file', 'warning_file', 'error_file'],
             'level': 'INFO',
             'propagate': False,
         },
