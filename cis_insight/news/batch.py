@@ -50,10 +50,7 @@ def fetch_web_news_articles():
         processed_urls = set()
 
         try:
-            scraper = cloudscraper.create_scraper(
-                delay = 10,
-                browser = {'browser': 'chrome', 'mobile': False}
-            )
+            scraper = cloudscraper.create_scraper(delay = 30)
             downloaded = scraper.get(rss.url)
             downloaded.raise_for_status()
 
@@ -246,10 +243,7 @@ def download_image_from_rss(image_url):
         return None
 
     try:
-        with cloudscraper.create_scraper(
-                delay = 10,
-                browser = {'browser': 'chrome', 'mobile': False}
-            ) as scraper:
+        with cloudscraper.create_scraper(delay = 30) as scraper:
             image_data = scraper.get(image_url)
             image_data.raise_for_status()
 
@@ -325,10 +319,7 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        with cloudscraper.create_scraper(
-            delay = 10,
-            browser = {'browser': 'chrome', 'mobile': False}
-        ) as scraper:
+        with cloudscraper.create_scraper(delay = 30) as scraper:
             image_data = scraper.get(image_url)
             image_data.raise_for_status()
 
@@ -485,10 +476,7 @@ def pick_up_news_article_topic(title, topics, rss):
 
 def get_news_article_content(rss, url):
     try:
-        scraper = cloudscraper.create_scraper(
-            delay = 10,
-            browser = {'browser': 'chrome', 'mobile': False}
-        )
+        scraper = cloudscraper.create_scraper(delay = 30)
         downloaded = scraper.get(url)
         downloaded.raise_for_status()
         article_content = trafilatura.extract(downloaded.text)

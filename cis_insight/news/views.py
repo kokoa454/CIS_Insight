@@ -88,10 +88,7 @@ def get_news_article_content(request, pk):
                 if not is_safe_url(news_article.url):
                     return JsonResponse({'error': 'Invalid URL'}, status=400)
 
-                scraper = cloudscraper.create_scraper(
-                    delay = 10,
-                    browser = {'browser': 'chrome', 'mobile': False}
-                )
+                scraper = cloudscraper.create_scraper(delay = 30)
                 downloaded = scraper.get(news_article.url)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
@@ -284,10 +281,7 @@ def test_rss(url):
         return False
     
     try:
-        scraper = cloudscraper.create_scraper(
-            delay = 10,
-            browser = {'browser': 'chrome', 'mobile': False}
-        )
+        scraper = cloudscraper.create_scraper(delay = 30)
         downloaded = scraper.get(url)
         downloaded.raise_for_status()
         
