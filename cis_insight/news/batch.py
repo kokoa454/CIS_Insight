@@ -2,14 +2,13 @@ import datetime
 import logging
 import random
 import string
-import sys
 import time
 from datetime import timedelta
 from io import BytesIO
 
 import feedparser
 import newspaper
-import requests
+import cloudscraper
 import trafilatura
 from core.exceptions import RateLimitError, ServerError, convert_to_custom_ai_exception
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
@@ -51,7 +50,11 @@ def fetch_web_news_articles():
         processed_urls = set()
 
         try:
-            downloaded = requests.get(rss.url, headers=headers)
+            scraper = cloudscraper.create_scraper(
+                delay = 10,
+                browser = {'browser': 'chrome', 'mobile': False}
+            )
+            downloaded = scraper.get(rss.url)
             downloaded.raise_for_status()
 
             feed = feedparser.parse(downloaded.content)
@@ -243,7 +246,13 @@ def download_image_from_rss(image_url):
         return None
 
     try:
-        with requests.get(image_url, headers = headers, stream = True) as image_data:
+        with cloudscraper.create_scraper(
+                delay = 10,
+                browser = {'browser': 'chrome', 'mobile': False}
+            ) as scraper:
+            image_data = scraper.get(image_url)
+            image_data.raise_for_status()
+
             if image_data is None or image_data.status_code != 200:
                 return None
 
@@ -316,9 +325,12 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        with requests.get(image_url, headers = headers, stream = True) as image_data:
-            if image_data is None or image_data.status_code != 200:
-                return None
+        with cloudscraper.create_scraper(
+            delay = 10,
+            browser = {'browser': 'chrome', 'mobile': False}
+        ) as scraper:
+            image_data = scraper.get(image_url)
+            image_data.raise_for_status()
 
             content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
 
@@ -472,13 +484,12 @@ def pick_up_news_article_topic(title, topics, rss):
     return None
 
 def get_news_article_content(rss, url):
-    headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        }
-        
     try:
-        downloaded = requests.get(url, headers = headers)
+        scraper = cloudscraper.create_scraper(
+            delay = 10,
+            browser = {'browser': 'chrome', 'mobile': False}
+        )
+        downloaded = scraper.get(url)
         downloaded.raise_for_status()
         article_content = trafilatura.extract(downloaded.text)
             

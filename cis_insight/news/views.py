@@ -2,17 +2,18 @@ import json
 import logging
 import re
 
+import cloudscraper
 import feedparser
-import requests
 import trafilatura
-from core.exceptions import RateLimitError, ServerError, convert_to_custom_ai_exception
+from core.exceptions import (RateLimitError, ServerError,
+                             convert_to_custom_ai_exception)
 from core.settings import (GEMINI_API_KEY_1, GEMINI_API_KEY_2,
-                           GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
-                           GEMINI_API_KEY_6, GEMINI_API_KEY_7,
-                           GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10,
-                           GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3,
-                           GEMINI_MODEL_4, GEMINI_MODEL_5,
-                           GEMINI_MODEL_6, GEMINI_MODEL_7,
+                           GEMINI_API_KEY_3, GEMINI_API_KEY_4,
+                           GEMINI_API_KEY_5, GEMINI_API_KEY_6,
+                           GEMINI_API_KEY_7, GEMINI_API_KEY_8,
+                           GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
+                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
+                           GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
                            MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
@@ -82,16 +83,16 @@ def get_news_article_content(request, pk):
             return JsonResponse({'error': 'Article is not active'}, status=403)
         
         if news_article.is_content_added == False:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            }
 
             try:
                 if not is_safe_url(news_article.url):
                     return JsonResponse({'error': 'Invalid URL'}, status=400)
 
-                downloaded = requests.get(news_article.url, headers = headers)
+                scraper = cloudscraper.create_scraper(
+                    delay = 10,
+                    browser = {'browser': 'chrome', 'mobile': False}
+                )
+                downloaded = scraper.get(news_article.url)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
                 
@@ -283,12 +284,11 @@ def test_rss(url):
         return False
     
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/rss+xml, application/rdf+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1'
-        }
-        
-        downloaded = requests.get(url, headers=headers)
+        scraper = cloudscraper.create_scraper(
+            delay = 10,
+            browser = {'browser': 'chrome', 'mobile': False}
+        )
+        downloaded = scraper.get(url)
         downloaded.raise_for_status()
         
         feed = feedparser.parse(downloaded.content)
