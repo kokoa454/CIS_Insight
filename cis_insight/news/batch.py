@@ -6,22 +6,23 @@ import time
 from datetime import timedelta
 from io import BytesIO
 
+import cloudscraper
 import feedparser
 import newspaper
-import cloudscraper
 import trafilatura
-from core.exceptions import RateLimitError, ServerError, convert_to_custom_ai_exception
+from core.exceptions import (RateLimitError, ServerError,
+                             convert_to_custom_ai_exception)
 from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
-                           DISPLAY_DAY_LIMIT, GEMINI_API_KEY_1,
-                           GEMINI_API_KEY_2, GEMINI_API_KEY_3,
-                           GEMINI_API_KEY_4, GEMINI_API_KEY_5,
-                           GEMINI_API_KEY_6, GEMINI_API_KEY_7,
-                           GEMINI_API_KEY_8, GEMINI_API_KEY_9,
-                           GEMINI_API_KEY_10, GEMINI_MODEL_1, GEMINI_MODEL_2,
-                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
-                           GEMINI_MODEL_6, GEMINI_MODEL_7, GROQ_API_KEY,
-                           GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3,
-                           MAXIMUM_IMAGE_SIZE_PIXEL)
+                           DEFAULT_HEADERS, DISPLAY_DAY_LIMIT,
+                           GEMINI_API_KEY_1, GEMINI_API_KEY_2,
+                           GEMINI_API_KEY_3, GEMINI_API_KEY_4,
+                           GEMINI_API_KEY_5, GEMINI_API_KEY_6,
+                           GEMINI_API_KEY_7, GEMINI_API_KEY_8,
+                           GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
+                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
+                           GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
+                           GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2,
+                           GROQ_MODEL_3, MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -37,21 +38,18 @@ from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
 
+
+
 # Webサイト用
 def fetch_web_news_articles():
     all_topics = list(Topic.objects.all())
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 ...',
-        'Accept': 'application/rss+xml, ...'
-    }
 
     for rss in NewsRss.objects.filter(is_active=True).order_by(F('last_fetched_at').asc(nulls_first=True)):
         processed_urls = set()
 
         try:
             scraper = cloudscraper.create_scraper()
-            downloaded = scraper.get(rss.url)
+            downloaded = scraper.get(rss.url, headers = DEFAULT_HEADERS)
             downloaded.raise_for_status()
 
             feed = feedparser.parse(downloaded.content)
@@ -233,18 +231,13 @@ def fetch_web_news_articles():
             rss.save()
 
 def download_image_from_rss(image_url):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    }
-    
     if not (image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://'))):
         logger.warning(f'Invalid image URL: {image_url}')
         return None
 
     try:
         with cloudscraper.create_scraper() as scraper:
-            image_data = scraper.get(image_url)
+            image_data = scraper.get(image_url, headers = DEFAULT_HEADERS)
             image_data.raise_for_status()
 
             if image_data is None or image_data.status_code != 200:
@@ -300,11 +293,6 @@ def download_image_from_article(url):
         logger.warning(f'Invalid article URL: {url}')
         return None
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    }
-
     try:
         article = newspaper.Article(url)
         article.download()
@@ -320,7 +308,7 @@ def download_image_from_article(url):
             return None
 
         with cloudscraper.create_scraper() as scraper:
-            image_data = scraper.get(image_url)
+            image_data = scraper.get(image_url, headers = DEFAULT_HEADERS)
             image_data.raise_for_status()
 
             content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
@@ -477,7 +465,7 @@ def pick_up_news_article_topic(title, topics, rss):
 def get_news_article_content(rss, url):
     try:
         scraper = cloudscraper.create_scraper()
-        downloaded = scraper.get(url)
+        downloaded = scraper.get(url, headers = DEFAULT_HEADERS)
         downloaded.raise_for_status()
         article_content = trafilatura.extract(downloaded.text)
             

@@ -7,7 +7,7 @@ import feedparser
 import trafilatura
 from core.exceptions import (RateLimitError, ServerError,
                              convert_to_custom_ai_exception)
-from core.settings import (GEMINI_API_KEY_1, GEMINI_API_KEY_2,
+from core.settings import (DEFAULT_HEADERS, GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_3, GEMINI_API_KEY_4,
                            GEMINI_API_KEY_5, GEMINI_API_KEY_6,
                            GEMINI_API_KEY_7, GEMINI_API_KEY_8,
@@ -89,7 +89,7 @@ def get_news_article_content(request, pk):
                     return JsonResponse({'error': 'Invalid URL'}, status=400)
 
                 scraper = cloudscraper.create_scraper()
-                downloaded = scraper.get(news_article.url)
+                downloaded = scraper.get(news_article.url, headers = DEFAULT_HEADERS)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
                 
@@ -282,7 +282,7 @@ def test_rss(url):
     
     try:
         scraper = cloudscraper.create_scraper()
-        downloaded = scraper.get(url)
+        downloaded = scraper.get(url, headers = DEFAULT_HEADERS)
         downloaded.raise_for_status()
         
         feed = feedparser.parse(downloaded.content)
