@@ -52,7 +52,7 @@ def render_dashboard_page(request):
     elif user_news_referred_topic:
         filter &= Q(topic__name_en__in = user_news_referred_topic)
     
-    news_articles = NewsArticle.objects.filter(filter).only('title_ru', 'title_ja', 'published_at', 'image', 'country').select_related('country').prefetch_related('topic').order_by('-published_at')[:100]
+    news_articles = NewsArticle.objects.filter(filter).only('title_ru', 'title_ja', 'published_at', 'image', 'country').select_related('country').prefetch_related('topic').order_by('-published_at').distinct()[:100]
     
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
