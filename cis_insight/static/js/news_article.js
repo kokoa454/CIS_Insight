@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
+    const controller = new AbortController();
     const container = document.getElementById('article-container');
     
     if (!container || !container.dataset.articleId) {
@@ -16,8 +17,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const isContentAdded = contentRuContainer.dataset.isContentAdded.toLowerCase() == "true";
     const isContentTranslated = contentJaContainer.dataset.isContentTranslated.toLowerCase() == "true";
 
+    window.addEventListener('beforeunload', () => {
+        controller.abort();
+    });
+
     if(isContentAdded && !isContentTranslated){
-        fetch(apiUrl_translated)
+        fetch(apiUrl_translated, { signal: controller.signal })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('翻訳処理でエラーが発生しました。');
@@ -38,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
     else if(!isContentAdded && isContentTranslated){
-        fetch(apiUrl)
+        fetch(apiUrl, { signal: controller.signal })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('原文取得処理でエラーが発生しました。');
@@ -59,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
     else{
-        fetch(apiUrl)
+        fetch(apiUrl, { signal: controller.signal })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('原文取得処理でエラーが発生しました。');
