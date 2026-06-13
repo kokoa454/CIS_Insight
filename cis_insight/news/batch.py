@@ -6,7 +6,6 @@ import time
 from datetime import timedelta
 from io import BytesIO
 
-import cloudscraper
 import feedparser
 import newspaper
 import trafilatura
@@ -22,8 +21,10 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
                            GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
                            GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2,
-                           GROQ_MODEL_3, MAXIMUM_IMAGE_SIZE_PIXEL)
+                           GROQ_MODEL_3, IMPERSONATE_TARGET,
+                           MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
+from curl_cffi import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
@@ -48,8 +49,7 @@ def fetch_web_news_articles():
         processed_urls = set()
 
         try:
-            scraper = cloudscraper.create_scraper()
-            downloaded = scraper.get(rss.url, headers = DEFAULT_HEADERS)
+            downloaded = requests.get(rss.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
             downloaded.raise_for_status()
 
             feed = feedparser.parse(downloaded.content)
@@ -236,12 +236,11 @@ def download_image_from_rss(image_url):
         return None
 
     try:
-        with cloudscraper.create_scraper() as scraper:
-            image_data = scraper.get(image_url, headers = DEFAULT_HEADERS)
-            image_data.raise_for_status()
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
+        image_data.raise_for_status()
 
-            if image_data is None or image_data.status_code != 200:
-                return None
+        if image_data is None or image_data.status_code != 200:
+            return None
 
             content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
 
@@ -307,51 +306,50 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        with cloudscraper.create_scraper() as scraper:
-            image_data = scraper.get(image_url, headers = DEFAULT_HEADERS)
-            image_data.raise_for_status()
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
+        image_data.raise_for_status()
 
-            content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
 
-            if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+            return None
+
+        try:
+            image_size = int(image_data.headers.get('Content-Length') or 0)
+        except Exception:
+            image_size = 0
+
+        if image_size and image_size > ALLOWED_IMAGE_SIZE:
+            return None
+
+        buffer = BytesIO()
+        downloaded_size = 0
+
+        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+            if not chunk:
+                break
+            downloaded_size += len(chunk)
+
+            if downloaded_size > ALLOWED_IMAGE_SIZE:
                 return None
 
-            try:
-                image_size = int(image_data.headers.get('Content-Length') or 0)
-            except Exception:
-                image_size = 0
+            buffer.write(chunk)
 
-            if image_size and image_size > ALLOWED_IMAGE_SIZE:
-                return None
+        buffer.seek(0)
 
-            buffer = BytesIO()
-            downloaded_size = 0
-
-            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
-                if not chunk:
-                    break
-                downloaded_size += len(chunk)
-
-                if downloaded_size > ALLOWED_IMAGE_SIZE:
-                    return None
-
-                buffer.write(chunk)
+        try:
+            with Image.open(buffer) as img:
+                img.verify()
 
             buffer.seek(0)
+        except Exception as e:
+            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+            return None
 
-            try:
-                with Image.open(buffer) as img:
-                    img.verify()
+        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
+        image = enhance_image(buffer, image_name)
 
-                buffer.seek(0)
-            except Exception as e:
-                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
-                return None
-
-            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
-            image = enhance_image(buffer, image_name)
-
-            return image
+        return image
     except Exception as e:
         logger.warning(f'Error downloading image from article {url}: {e}')
         return None
@@ -464,8 +462,7 @@ def pick_up_news_article_topic(title, topics, rss):
 
 def get_news_article_content(rss, url):
     try:
-        scraper = cloudscraper.create_scraper()
-        downloaded = scraper.get(url, headers = DEFAULT_HEADERS)
+        downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
         downloaded.raise_for_status()
         article_content = trafilatura.extract(downloaded.text)
             

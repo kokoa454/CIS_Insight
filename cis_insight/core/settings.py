@@ -217,7 +217,7 @@ DEFAULT_HEADERS = {
     'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
     'Referer': 'https://www.google.com/'
 }
-
+IMPERSONATE_TARGET = "chrome114"
 
 # Batch settings
 PRE_USER_EXPIRATION_TIME_MINUTES = 30

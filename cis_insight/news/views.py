@@ -2,7 +2,6 @@ import json
 import logging
 import re
 
-import cloudscraper
 import feedparser
 import trafilatura
 from core.exceptions import (RateLimitError, ServerError,
@@ -14,9 +13,10 @@ from core.settings import (DEFAULT_HEADERS, GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
                            GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
-                           MAXIMUM_COMPANY_LENGTH)
+                           IMPERSONATE_TARGET, MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
+from curl_cffi import requests
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -88,8 +88,7 @@ def get_news_article_content(request, pk):
                 if not is_safe_url(news_article.url):
                     return JsonResponse({'error': 'Invalid URL'}, status=400)
 
-                scraper = cloudscraper.create_scraper()
-                downloaded = scraper.get(news_article.url, headers = DEFAULT_HEADERS)
+                downloaded = requests.get(news_article.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
                 
@@ -281,8 +280,7 @@ def test_rss(url):
         return False
     
     try:
-        scraper = cloudscraper.create_scraper()
-        downloaded = scraper.get(url, headers = DEFAULT_HEADERS)
+        downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
         downloaded.raise_for_status()
         
         feed = feedparser.parse(downloaded.content)
