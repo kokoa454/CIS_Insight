@@ -53,3 +53,13 @@ const observer = new IntersectionObserver(async (entries) => {
 });
 
 observer.observe(sentinel);
+
+window.addEventListener('pageshow', () => {
+    fetch('/api/news_count/')
+        .then(res => res.json())
+        .then(data => {
+            document.querySelectorAll('.user_news_count').forEach(element => {
+                element.innerText = data.read_count;
+            });
+        });
+});

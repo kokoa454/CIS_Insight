@@ -38,6 +38,7 @@ urlpatterns = [
     path('password_reset_complete/', users_views.render_password_reset_complete_page, name='password_reset_complete'),
     path('sign_in/', users_views.render_sign_in_page, name='sign_in'),
     path('dashboard/', news_views.render_dashboard_page, name='dashboard'),
+    path('api/news_count/', news_views.get_user_news_count, name='api_news_count'),
     path('includes/news_article_list/', news_views.load_more_news_articles, name='api_load_more_news_articles'),
     path('news_article/<int:pk>/', news_views.render_news_article_page, name='news_article_page'),
     path('api/news_article_content/<int:pk>/', news_views.get_news_article_content, name='api_news_article_content'),

@@ -49,8 +49,11 @@ def get_news_filter(user):
         news_filter &= Q(topic__name_en__in = user_news_referred_topic)
     return news_filter
 
-@login_required
 @never_cache
+def get_user_news_count(request):
+    return JsonResponse({'read_count': request.user.news_count})
+
+@login_required
 def render_dashboard_page(request):
     user = request.user
     cis_countries = cache.get_or_set('cis_neighbor_countries', lambda: list(CisAndNeighborCountry.objects.all()), 3600)
@@ -62,7 +65,6 @@ def render_dashboard_page(request):
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
 @login_required
-@never_cache
 def load_more_news_articles(request):
     time.sleep(0.5)
     page = int(request.GET.get('page', 2))
