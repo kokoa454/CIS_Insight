@@ -40,7 +40,6 @@ from .models import NewsArticle, NewsRss, Topic
 logger = logging.getLogger(__name__)
 
 
-
 # Webサイト用
 def fetch_web_news_articles():
     all_topics = list(Topic.objects.all())

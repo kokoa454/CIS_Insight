@@ -185,7 +185,9 @@
                             <div class="flex-shrink-0 w-full md:w-48 lg:w-56 h-32 md:h-28 lg:h-32 overflow-hidden rounded-lg bg-slate-100">
                                 <img src="{{ article.image.url }}" 
                                     alt="{{ article.title_ja }}" 
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                    decoding="async">
                             </div>
                             {% endif %}
 

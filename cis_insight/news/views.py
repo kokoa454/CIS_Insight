@@ -21,12 +21,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from google import genai
 from news.models import (CisAndNeighborCountry, CisCountry, NewsArticle,
                          NewsRss, Topic)
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,14 +43,16 @@ def render_dashboard_page(request):
     user_news_referred_country = user.news_referred_country
     user_news_referred_topic = user.news_referred_topic
 
-    if len(user_news_referred_country) > 0 and len(user_news_referred_topic) > 0:
-        news_articles = NewsArticle.objects.filter(country__country_code__in = user_news_referred_country, topic__name_en__in = user_news_referred_topic, is_active = True).select_related('country', 'rss').prefetch_related('topic').distinct().order_by('-published_at')[:100]
-    elif len(user_news_referred_country) > 0 and len(user_news_referred_topic) == 0:
-        news_articles = NewsArticle.objects.filter(country__country_code__in = user_news_referred_country, is_active = True).select_related('country', 'rss').distinct().order_by('-published_at')[:100]
-    elif len(user_news_referred_country) == 0 and len(user_news_referred_topic) > 0:
-        news_articles = NewsArticle.objects.filter(topic__name_en__in = user_news_referred_topic, is_active = True).select_related('country', 'rss').prefetch_related('topic').distinct().order_by('-published_at')[:100]
-    else:
-        news_articles = NewsArticle.objects.filter(is_active = True).select_related('country', 'rss').distinct().order_by('-published_at')[:100]
+    filter = Q(is_active = True)
+
+    if user_news_referred_country and user_news_referred_topic:
+        filter &= Q(country__country_code__in = user_news_referred_country, topic__name_en__in = user_news_referred_topic)
+    elif user_news_referred_country:
+        filter &= Q(country__country_code__in = user_news_referred_country)
+    elif user_news_referred_topic:
+        filter &= Q(topic__name_en__in = user_news_referred_topic)
+    
+    news_articles = NewsArticle.objects.filter(filter).only('title_ru', 'title_ja', 'published_at', 'image', 'country').select_related('country').prefetch_related('topic').order_by('-published_at')[:100]
     
     return render(request, 'dashboard.html', {'user': user, 'cis_countries': cis_countries, 'topics': topics, 'news_articles': news_articles})
 
