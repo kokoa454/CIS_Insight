@@ -433,7 +433,7 @@ def reset_password(request):
             logger.info(f'PasswordReset {password_reset.user} changed password successfully')
             password_reset.delete()
             
-        return JsonResponse({'status': 'success', 'redirect_url': '/password_reset_complete'})
+        return JsonResponse({'status': 'success', 'redirect_url': '/password_reset_complete/'})
     except Exception as e:
         logger.error(f'Exception in reset_password: {e}')
         return JsonResponse({'status': 'error', 'message': '予期せぬエラーが発生しました。'})
