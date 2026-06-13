@@ -330,7 +330,7 @@ def pre_email_change(request):
 def send_email_change_email(email, username, display_name, verification_code):
     try:
         subject = "CIS Insight - メールアドレス変更"
-        message = f"下記の内容でメールアドレス変更を受け付けました。\n\nユーザー名: {username}\n表示名: {display_name}\n新しいメールアドレス: {email}\n\n以下のリンクでメールアドレス変更を完了してください。\n有効期限は{EMAIL_CHANGE_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/email_change/{verification_code}"
+        message = f"下記の内容でメールアドレス変更を受け付けました。\n\nユーザー名: {username}\n表示名: {display_name}\n新しいメールアドレス: {email}\n\n以下のリンクでメールアドレス変更を完了してください。\n有効期限は{EMAIL_CHANGE_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/email_change/{verification_code}/"
         send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
         return True
     except Exception as e:
