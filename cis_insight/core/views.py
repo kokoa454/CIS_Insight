@@ -121,12 +121,14 @@ def send_password_reset_email(request):
                     return JsonResponse({'status': 'success'})
                 except Exception as e:
                     logger.error(f'Exception in send_password_reset_email: {e}')
-                    return JsonResponse({'status': 'error', 'message': '申し訳ありません。パスワードリセット用のメールの送信に失敗しました。時間を空けてから再度お試しください。'})
+                    return JsonResponse({'status': 'error', 'message': 'パスワードリセット用のメールの送信に失敗しました。'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'すでにパスワードリセット用のメールが送信されています。'})
         else:
             return JsonResponse({'status': 'success'})
     except Exception as e:
         logger.error(f'Exception in send_password_reset_email: {e}')
-        return JsonResponse({'status': 'error', 'message': '申し訳ありません。パスワードリセット用のメールの送信に失敗しました。時間を空けてから再度お試しください。'})
+        return JsonResponse({'status': 'error', 'message': 'パスワードリセット用のメールの送信に失敗しました。'})
 
 # エラーページ関連
 def render_error_page(request, error_code, error_message):
