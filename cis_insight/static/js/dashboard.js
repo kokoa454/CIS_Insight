@@ -29,7 +29,7 @@ const observer = new IntersectionObserver(async (entries) => {
         
         page++;
         try {
-            const response = await fetch(`/includes/news_article_list/?page=${page}`);
+            const response = await fetch(`/includes/news_article_list/?page=${page}/`);
             const data = await response.json();
             
             if (data.html && data.html.trim() !== "") {

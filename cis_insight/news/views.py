@@ -70,7 +70,6 @@ def load_more_news_articles(request):
     news_filter = get_news_filter(request.user)
     
     news_articles = NewsArticle.objects.filter(news_filter).only('title_ru', 'title_ja', 'published_at', 'image', 'country').select_related('country').prefetch_related('topic').order_by('-published_at').distinct()
-    print(news_articles.count())
     paginator = Paginator(news_articles, 10)
     
     try:
