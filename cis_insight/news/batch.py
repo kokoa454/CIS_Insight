@@ -235,62 +235,69 @@ def download_image_from_rss(image_url):
         logger.warning(f'Invalid image URL: {image_url}')
         return None
 
+    image_data = None
+
     try:
-        with requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True) as image_data:
-            image_data.raise_for_status()
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True)
+        image_data.raise_for_status()
 
-            if image_data is None or image_data.status_code != 200:
+        if image_data is None or image_data.status_code != 200:
+            return None
+
+        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+
+        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+            return None
+
+        try:
+            image_size = int(image_data.headers.get('Content-Length') or 0)
+        except Exception:
+            image_size = 0
+
+        if image_size and image_size > ALLOWED_IMAGE_SIZE:
+            return None
+
+        buffer = BytesIO()
+        downloaded_size = 0
+
+        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+            if not chunk:
+                break
+            downloaded_size += len(chunk)
+
+            if downloaded_size > ALLOWED_IMAGE_SIZE:
                 return None
 
-            content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+            buffer.write(chunk)
 
-            if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
-                return None
+        buffer.seek(0)
 
-            try:
-                image_size = int(image_data.headers.get('Content-Length') or 0)
-            except Exception:
-                image_size = 0
-
-            if image_size and image_size > ALLOWED_IMAGE_SIZE:
-                return None
-
-            buffer = BytesIO()
-            downloaded_size = 0
-
-            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
-                if not chunk:
-                    break
-                downloaded_size += len(chunk)
-
-                if downloaded_size > ALLOWED_IMAGE_SIZE:
-                    return None
-
-                buffer.write(chunk)
+        try:
+            with Image.open(buffer) as img:
+                img.verify()
 
             buffer.seek(0)
+        except Exception as e:
+            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+            return None
 
-            try:
-                with Image.open(buffer) as img:
-                    img.verify()
+        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
+        image = enhance_image(buffer, image_name)
 
-                buffer.seek(0)
-            except Exception as e:
-                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
-                return None
-
-            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
-            image = enhance_image(buffer, image_name)
-
-            return image
+        return image
     except Exception as e:
         logger.error(f'Error enhancing image from {image_url}: {e}')
         return None
+    finally:
+        if image_data is not None:
+            image_data.close()
 
 def download_image_from_article(url):
     if not (url is not None and (url.startswith('http://') or url.startswith('https://'))):
         logger.warning(f'Invalid article URL: {url}')
         return None
+
+    image_data = None
 
     try:
         article = newspaper.Article(url)
@@ -306,53 +313,56 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        with requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True) as image_data:
-            image_data.raise_for_status()
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True)
+        image_data.raise_for_status()
 
-            content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
+        content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
 
-            if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+        if not any(content_type.startswith(t) for t in ALLOWED_IMAGE_TYPE):
+            return None
+
+        try:
+            image_size = int(image_data.headers.get('Content-Length') or 0)
+        except Exception:
+            image_size = 0
+
+        if image_size and image_size > ALLOWED_IMAGE_SIZE:
+            return None
+
+        buffer = BytesIO()
+        downloaded_size = 0
+
+        for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
+            if not chunk:
+                break
+            downloaded_size += len(chunk)
+
+            if downloaded_size > ALLOWED_IMAGE_SIZE:
                 return None
 
-            try:
-                image_size = int(image_data.headers.get('Content-Length') or 0)
-            except Exception:
-                image_size = 0
+            buffer.write(chunk)
 
-            if image_size and image_size > ALLOWED_IMAGE_SIZE:
-                return None
+        buffer.seek(0)
 
-            buffer = BytesIO()
-            downloaded_size = 0
-
-            for chunk in image_data.iter_content(chunk_size = CHUNK_SIZE):
-                if not chunk:
-                    break
-                downloaded_size += len(chunk)
-
-                if downloaded_size > ALLOWED_IMAGE_SIZE:
-                    return None
-
-                buffer.write(chunk)
+        try:
+            with Image.open(buffer) as img:
+                img.verify()
 
             buffer.seek(0)
+        except Exception as e:
+            logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
+            return None
 
-            try:
-                with Image.open(buffer) as img:
-                    img.verify()
+        image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
+        image = enhance_image(buffer, image_name)
 
-                buffer.seek(0)
-            except Exception as e:
-                logger.warning(f'Malicious or corrupt image from {image_url}: {e}')
-                return None
-
-            image_name = ''.join(random.choices(string.ascii_letters + string.digits, k = 64)) + '.webp'
-            image = enhance_image(buffer, image_name)
-
-            return image
+        return image
     except Exception as e:
         logger.warning(f'Error downloading image from article {url}: {e}')
         return None
+    finally:
+        if image_data is not None:
+            image_data.close()
 
 def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
     with Image.open(image) as src_img:
