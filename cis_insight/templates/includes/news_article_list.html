@@ -1,0 +1,50 @@
+{% for article in news_articles %}
+    <a href="{% url 'news_article_page' article.pk %}" class="card block hover:border-red-200 transition-all group relative p-4 mb-4 border border-slate-100 rounded-xl">
+        <div class="flex flex-col md:flex-row gap-4 lg:gap-6">
+            
+            {% if article.image %}
+            <div class="flex-shrink-0 w-full md:w-48 lg:w-56 h-32 md:h-28 lg:h-32 overflow-hidden rounded-lg bg-slate-100 relative">
+                <div class="spinner-box absolute inset-0 flex items-center justify-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                </div>
+                <img src="{{ article.image.url }}" 
+                    alt="{{ article.title_ja }}" 
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    decoding="async"
+                    onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';">
+            </div>
+            {% endif %}
+
+            <div class="flex-grow space-y-2 flex flex-col justify-center">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center gap-1.5">
+                        <span class="fi fi-{{ article.country.country_code|lower }} text-[10px]"></span>
+                        <span class="text-[10px] font-black text-red-600 uppercase tracking-widest">{{ article.country.name }}</span>
+                    </span>
+                    <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        {% for t in article.topic.all %}{{ t.name_ja }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </span>
+                    <span class="text-[10px] text-slate-400 ml-auto font-en">{{ article.published_at|date:"Y.m.d H:i" }}</span>
+                </div>
+                
+                <h3 class="text-base md:text-lg font-bold text-slate-900 group-hover:text-red-600 transition-colors font-ja leading-snug">
+                    {{ article.title_ja }}
+                </h3>
+                
+                <p class="text-xs text-slate-500 font-ru line-clamp-1 italic opacity-70">
+                    {{ article.title_ru }}
+                </p>
+            </div>
+            
+            <div class="hidden md:flex items-center justify-end self-center pl-2">
+                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-red-50 group-hover:text-red-500 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </a>
+{% endfor %}
