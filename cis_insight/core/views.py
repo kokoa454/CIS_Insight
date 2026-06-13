@@ -80,7 +80,7 @@ def pre_sign_up(request):
 def send_verification_email(email, verification_code):
     try:
         subject = "CIS Insight - アカウント登録用リンク"
-        message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は{PRE_USER_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}"
+        message = f"CIS Insightへようこそ。下記の内容で仮登録を受け付けました。\n\nメールアドレス: {email}\n\n以下のリンクで本登録を完了してください。\n有効期限は{PRE_USER_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/sign_up/{verification_code}/"
         send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
         return True
     except Exception as e:
@@ -116,7 +116,7 @@ def send_password_reset_email(request):
             if created:
                 try:
                     subject = "CIS Insight - パスワードリセット用リンク"
-                    message = f"CIS Insightをご利用いただきありがとうございます。パスワードリセット用のリンクを送信します。\n\nメールアドレス: {email}\n\n以下のリンクでパスワードリセットを行ってください。\n有効期限は{PASSWORD_RESET_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/password_reset/{verification_code}"
+                    message = f"CIS Insightをご利用いただきありがとうございます。パスワードリセット用のリンクを送信します。\n\nメールアドレス: {email}\n\n以下のリンクでパスワードリセットを行ってください。\n有効期限は{PASSWORD_RESET_EXPIRATION_TIME_MINUTES}分です。なお、このメールは自動送信のため、返信はできません。\n\n{SITE_URL}/password_reset/{verification_code}/"
                     send_mail(subject, message, EMAIL_HOST_USER, [email], fail_silently=False)
                     return JsonResponse({'status': 'success'})
                 except Exception as e:
