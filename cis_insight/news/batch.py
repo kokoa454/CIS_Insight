@@ -19,7 +19,7 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            GEMINI_API_KEY_7, GEMINI_API_KEY_8,
                            GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
-                           GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
+                           GEMINI_MODEL_5, GEMMA_MODEL_1, GEMMA_MODEL_2,
                            GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2,
                            GROQ_MODEL_3, IMPERSONATE_TARGET,
                            MAXIMUM_IMAGE_SIZE_PIXEL)
@@ -32,7 +32,7 @@ from django.db.models import F
 from django.utils import timezone
 from google import genai
 from groq import Groq
-from news.views import clean_article_content
+from news.views import clean_article_content, output_from_gemini_or_gemma
 from PIL import Image
 
 from .models import NewsArticle, NewsRss, Topic
@@ -405,29 +405,8 @@ def translate_title(title_ru, rss):
 
     Title: {title_ru}
     """
-
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
-        client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
-
-        for model in models:
-            try:
-                response = client.models.generate_content(
-                    model = model,
-                    contents = prompt,
-                )
-                return response.text.strip()
-            except Exception as e:
-                error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
-                    continue
-                
-                logger.error(f"Error for model {model}: {e}")
-                rss.last_error = f"{error.user_message} while translating title"
-                rss.save()
-                continue
-
-    return None
+    
+    return output_from_gemini_or_gemma(prompt, rss)
 
 def pick_up_news_article_topic(title, topics, rss):
     prompt = f"""

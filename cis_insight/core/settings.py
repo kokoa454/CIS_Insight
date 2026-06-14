@@ -245,8 +245,8 @@ GEMINI_MODEL_2 = os.getenv('GEMINI_MODEL_2')
 GEMINI_MODEL_3 = os.getenv('GEMINI_MODEL_3')
 GEMINI_MODEL_4 = os.getenv('GEMINI_MODEL_4')
 GEMINI_MODEL_5 = os.getenv('GEMINI_MODEL_5')
-GEMINI_MODEL_6 = os.getenv('GEMINI_MODEL_6')
-GEMINI_MODEL_7 = os.getenv('GEMINI_MODEL_7')
+GEMMA_MODEL_1 = os.getenv('GEMMA_MODEL_1')
+GEMMA_MODEL_2 = os.getenv('GEMMA_MODEL_2')
 
 
 # Groq settings
@@ -311,27 +311,27 @@ LOGGING = {
     },
     'loggers': {
         'core': {
-            'handlers': ['file', 'warning_file', 'error_file'],
+            'handlers': ['file', 'warning_file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'news': {
-            'handlers': ['file', 'warning_file', 'error_file'],
+            'handlers': ['file', 'warning_file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'users': {
-            'handlers': ['file', 'warning_file', 'error_file'],
+            'handlers': ['file', 'warning_file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
-            'handlers': ['file', 'warning_file', 'error_file'],
+            'handlers': ['file', 'warning_file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },
         'apscheduler': {
-            'handlers': ['file', 'warning_file', 'error_file'],
+            'handlers': ['file', 'warning_file', 'error_file', 'console'],
             'level': 'INFO',
             'propagate': False,
         },

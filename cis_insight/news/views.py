@@ -13,7 +13,7 @@ from core.settings import (DEFAULT_HEADERS, GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_7, GEMINI_API_KEY_8,
                            GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
                            GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
-                           GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7,
+                           GEMINI_MODEL_5, GEMMA_MODEL_1, GEMMA_MODEL_2,
                            IMPERSONATE_TARGET, MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
@@ -191,29 +191,7 @@ def clean_article_content(article_content, rss):
     Content: {article_content}
     """
 
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
-        client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
-
-        for model in models:
-            try:
-                response = client.models.generate_content(
-                    model = model,
-                    contents = prompt,
-                )
-
-                return response.text.strip()
-            except Exception as e:
-                error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
-                    continue
-
-                logger.error(f"Error for model {model}: {e}")
-                rss.last_error = f"{error.user_message} while cleaning content"
-                rss.save()
-                continue
-                
-    return None
+    return output_from_gemini_or_gemma(prompt, rss)
 
 def translate_content(content_ru, rss):
     prompt = f"""
@@ -226,28 +204,54 @@ def translate_content(content_ru, rss):
     Content: {content_ru}
     """
 
-    for api_key in [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]:
-        client = genai.Client(api_key = api_key)
-        models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5, GEMINI_MODEL_6, GEMINI_MODEL_7]
+    return output_from_gemini_or_gemma(prompt, rss)
 
-        for model in models:
+def output_from_gemini_or_gemma(prompt, rss):
+    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]
+    
+    for api_key in api_keys:
+        client = genai.Client(api_key = api_key)
+        gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+        gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+
+        for model in gemini_models:
             try:
                 response = client.models.generate_content(
                     model = model,
                     contents = prompt,
                 )
-                
+
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
                 if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
-                
+
                 logger.error(f"Error for model {model}: {e}")
-                rss.last_error = f"{error.user_message} while translating content"
+                rss.last_error = f"{error.user_message} while outputting from gemini"
                 rss.save()
                 continue
-                
+        
+    for api_key in api_keys:
+        client = genai.Client(api_key = api_key)
+
+        for model in gemma_models:
+            try:
+                response = client.models.generate_content(
+                    model = model,
+                    contents = prompt,
+                )
+
+                return response.text.strip()
+            except Exception as e:
+                error = convert_to_custom_ai_exception(e)
+                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                    continue
+
+                logger.error(f"Error for model {model}: {e}")
+                rss.last_error = f"{error.user_message} while outputting from gemma"
+                rss.save()
+                continue
     return None
 
 # RSS設定ページ関連
