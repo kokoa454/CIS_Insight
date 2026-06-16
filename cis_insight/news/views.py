@@ -118,7 +118,7 @@ def get_news_article_content(request, pk):
                 if not is_safe_url(news_article.url):
                     return JsonResponse({'error': 'Invalid URL'}, status=400)
 
-                downloaded = requests.get(news_article.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
+                downloaded = requests.get(news_article.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, timeout = 30)
                 downloaded.raise_for_status()
                 article_content = trafilatura.extract(downloaded.text)
                 
