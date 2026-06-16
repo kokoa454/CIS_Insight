@@ -48,7 +48,7 @@ def fetch_web_news_articles():
         processed_urls = set()
 
         try:
-            downloaded = requests.get(rss.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
+            downloaded = requests.get(rss.url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, timeout = 30)
             downloaded.raise_for_status()
 
             feed = feedparser.parse(downloaded.content)
@@ -237,7 +237,7 @@ def download_image_from_rss(image_url):
     image_data = None
 
     try:
-        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True)
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True, timeout = 30)
         image_data.raise_for_status()
 
         if image_data is None or image_data.status_code != 200:
@@ -312,7 +312,7 @@ def download_image_from_article(url):
             logger.warning(f'SSRF prevention triggered: Blocked URL pointing to internal IP {image_url}')
             return None
 
-        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True)
+        image_data = requests.get(image_url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, stream = True, timeout = 30)
         image_data.raise_for_status()
 
         content_type = image_data.headers.get('Content-Type', '').lower().split(';')[0].strip()
@@ -450,7 +450,7 @@ def pick_up_news_article_topic(title, topics, rss):
 
 def get_news_article_content(rss, url):
     try:
-        downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET)
+        downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, timeout = 30)
         downloaded.raise_for_status()
         article_content = trafilatura.extract(downloaded.text)
             
