@@ -227,7 +227,7 @@ def output_from_gemini_or_gemma(prompt, rss):
                 if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
 
-                logger.error(f"Error for model {model}: {e}")
+                logger.error(f"Error for model {model}, api key {api_key}: {e}")
                 rss.last_error = f"{error.user_message} while outputting from gemini"
                 rss.save()
                 continue
@@ -248,7 +248,7 @@ def output_from_gemini_or_gemma(prompt, rss):
                 if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                     continue
 
-                logger.error(f"Error for model {model}: {e}")
+                logger.error(f"Error for model {model}, api key {api_key}: {e}")
                 rss.last_error = f"{error.user_message} while outputting from gemma"
                 rss.save()
                 continue
