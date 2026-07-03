@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import random
 import string
@@ -32,7 +33,6 @@ from django.db.models import F
 from django.utils import timezone
 from google import genai
 from groq import Groq
-from news.views import clean_article_content, output_from_gemini_or_gemma
 from PIL import Image
 
 from .models import NewsArticle, NewsRss, Topic
@@ -62,6 +62,8 @@ def fetch_web_news_articles():
 
             completed_urls = {url for url, a in existing_articles.items() if a.is_active}
 
+            pre_processed_articles = []
+
             for idx, entry in enumerate(feed.entries):
                 try:
                     if idx % 5 == 0:
@@ -89,21 +91,9 @@ def fetch_web_news_articles():
 
                 title_ru = entry.title
 
-                if existing_article and existing_article.is_topic_picked:
-                    topic = list(existing_article.topic.all())
-                    topic_changed = False
-                else:
-                    topic = pick_up_news_article_topic(title_ru, all_topics, rss)
-                    if topic is None:
-                        continue
-                    topic_changed = True
-
-                if existing_article and existing_article.is_title_translated:
-                    title_ja = existing_article.title_ja
-                else:
-                    title_ja = translate_title(title_ru, rss)
-                    if title_ja is None:
-                        continue
+                has_topic = existing_article and existing_article.is_topic_picked
+                has_translation = existing_article and existing_article.is_title_translated
+                has_content = existing_article and existing_article.is_content_added
 
                 if 'published_parsed' in entry:
                     published_at = timezone.make_aware(
@@ -140,85 +130,178 @@ def fetch_web_news_articles():
                         except Exception as e:
                             image = None
 
-                if existing_article and existing_article.is_content_added:
-                    content_ru = existing_article.content_ru
-                    is_content_added = True
-                else:
-                    content_ru = get_news_article_content(rss, url)
-                    is_content_added = content_ru is not None
+                raw_content_ru = None
 
-                country = rss.country
+                if not has_content:
+                    time.sleep(1)
 
-                is_title_added = True if title_ru is not None else False
-                is_title_translated = True if title_ja is not None else False
-                is_topic_picked = True if topic is not None else False
-                is_active = is_title_added and is_title_translated and is_topic_picked
+                    try:
+                        doc_downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, timeout = 30)
+                        doc_downloaded.raise_for_status()
+                        extracted_text = trafilatura.extract(doc_downloaded.text)
 
-                article_data ={
+                        if extracted_text and len(extracted_text) > 0:
+                            raw_content_ru = extracted_text
+
+                    except Exception as e:
+                        logger.error(f'Exception while extracting raw content for {url}: {e}')
+
+                pre_processed_articles.append({
+                    "existing_article": existing_article,
                     "url": url,
                     "title_ru": title_ru,
-                    "title_ja": title_ja,
                     "published_at": published_at,
-                    "country": country,
                     "image": image,
-                    "rss": rss,
-                    "content_ru": content_ru,
-                    "is_active": is_active,
-                    "is_title_added": is_title_added,
-                    "is_title_translated": is_title_translated,
-                    "is_topic_picked": is_topic_picked,
-                    "is_content_added": is_content_added,
-                }
+                    "has_topic": has_topic,
+                    "has_translation": has_translation,
+                    "has_content": has_content,
+                    "raw_content_ru": raw_content_ru,
+                    "content_ru": existing_article.content_ru if has_content else None,
+                    "title_ja": existing_article.title_ja if has_translation else None,
+                    "topic": list(existing_article.topic.all()) if has_topic else []
+                })
 
-                try:
-                    with transaction.atomic():
-                        if existing_article:
-                            existing_article.title_ru = article_data['title_ru']
-                            existing_article.title_ja = article_data['title_ja']
-                            existing_article.published_at = article_data['published_at']
-                            existing_article.country = article_data['country']
-                            existing_article.is_active = article_data['is_active']
-                            existing_article.is_title_added = article_data['is_title_added']
-                            existing_article.is_title_translated = article_data['is_title_translated']
-                            existing_article.is_topic_picked = article_data['is_topic_picked']
+            if pre_processed_articles:
+                chunk_size = 10
 
-                            if not existing_article.is_content_added and article_data['is_content_added']:
-                                existing_article.content_ru = article_data['content_ru']
-                                existing_article.is_content_added = True
+                for i in range(0, len(pre_processed_articles), chunk_size):
+                    chunk_items = pre_processed_articles[i:i + chunk_size]
 
-                            if article_data['image']:
-                                existing_article.image = article_data['image']
+                    titles_to_translate = [item["title_ru"] for item in chunk_items if not item["has_translation"]]
+                    titles_to_classify = [item["title_ru"] for item in chunk_items if not item["has_topic"]]
+                    contents_to_clean = {item["url"]: item["raw_content_ru"] for item in chunk_items if not item["has_content"] and item["raw_content_ru"]}
 
-                            existing_article.save()
+                    translated_map = {}
 
-                            if topic_changed:
-                                existing_article.topic.set(topic)
+                    if titles_to_translate or titles_to_classify or contents_to_clean:
+                        time.sleep(random.uniform(2.0, 3.5))
+
+                    if titles_to_translate:
+                        try:
+                            translated_list = translate_titles_batch(titles_to_translate, rss)
+
+                            for orig, trans in zip(titles_to_translate, translated_list):
+                                if trans:
+                                    translated_map[orig] = trans
+                        except Exception as e:
+                            logger.error(f"Batch translation crashed at loop level: {e}")
+
+                    topic_map = {}
+                    if titles_to_classify:
+                        try:
+                            time.sleep(0.5)
+                            topic_map = pick_up_news_articles_topics_batch(titles_to_classify, all_topics, rss)
+                        except Exception as e:
+                            logger.error(f"Batch topic classification crashed at loop level: {e}")
+
+                    cleaned_contents_map = {}
+                    if contents_to_clean:
+                        try:
+                            time.sleep(1.5)
+                            cleaned_contents_map = clean_articles_contents_batch(contents_to_clean, rss)
+                        except Exception as e:
+                            logger.error(f"Batch content cleaning crashed at loop level: {e}")
+
+                    for item in chunk_items:
+                        title_ru = item["title_ru"]
+                        url = item["url"]
+
+                        if not item["has_translation"]:
+                            title_ja = translated_map.get(title_ru)
                         else:
-                            news_article, created = NewsArticle.objects.get_or_create(
-                                url = url,
-                                defaults={
-                                    'title_ru': article_data['title_ru'],
-                                    'title_ja': article_data['title_ja'],
-                                    'published_at': article_data['published_at'],
-                                    'country': article_data['country'],
-                                    'image': article_data['image'],
-                                    'rss': article_data['rss'],
-                                    'content_ru': article_data['content_ru'],
-                                    'is_active': article_data['is_active'],
-                                    'is_title_added': article_data['is_title_added'],
-                                    'is_title_translated': article_data['is_title_translated'],
-                                    'is_topic_picked': article_data['is_topic_picked'],
-                                    'is_content_added': article_data['is_content_added'],
-                                }
-                            )
-                            if created:
-                                news_article.topic.set(topic)
+                            title_ja = item["title_ja"]
 
-                except Exception as e:
-                    logger.error(f'Failed to save article {url}: {e}')
-                    rss.last_error = str(e)
-                    rss.save()
-                    continue
+                        if not item["has_topic"]:
+                            topic = topic_map.get(title_ru, [])
+                            topic_changed = True
+                        else:
+                            topic = item["topic"]
+                            topic_changed = False
+
+                        if not item["has_content"]:
+                            content_ru = cleaned_contents_map.get(url)
+                            is_content_added = content_ru is not None
+                        else:
+                            content_ru = item["content_ru"]
+                            is_content_added = True
+
+                        if title_ja is None or (not item["has_topic"] and not topic):
+                            continue
+
+                        country = rss.country
+                        is_title_added = True if title_ru is not None else False
+                        is_title_translated = True if title_ja is not None else False
+                        is_topic_picked = True if topic else False
+                        is_active = is_title_added and is_title_translated and is_topic_picked
+
+                        article_data = {
+                            "url": url,
+                            "title_ru": title_ru,
+                            "title_ja": title_ja,
+                            "published_at": item["published_at"],
+                            "country": country,
+                            "image": item["image"],
+                            "rss": rss,
+                            "content_ru": content_ru,
+                            "is_active": is_active,
+                            "is_title_added": is_title_added,
+                            "is_title_translated": is_title_translated,
+                            "is_topic_picked": is_topic_picked,
+                            "is_content_added": is_content_added,
+                        }
+
+                        try:
+                            with transaction.atomic():
+                                existing_article = item["existing_article"]
+
+                                if existing_article:
+                                    existing_article.title_ru = article_data['title_ru']
+                                    existing_article.title_ja = article_data['title_ja']
+                                    existing_article.published_at = article_data['published_at']
+                                    existing_article.country = article_data['country']
+                                    existing_article.is_active = article_data['is_active']
+                                    existing_article.is_title_added = article_data['is_title_added']
+                                    existing_article.is_title_translated = article_data['is_title_translated']
+                                    existing_article.is_topic_picked = article_data['is_topic_picked']
+
+                                    if not existing_article.is_content_added and article_data['is_content_added']:
+                                        existing_article.content_ru = article_data['content_ru']
+                                        existing_article.is_content_added = True
+
+                                    if article_data['image']:
+                                        existing_article.image = article_data['image']
+
+                                    existing_article.save()
+
+                                    if topic_changed:
+                                        existing_article.topic.set(topic)
+                                else:
+                                    news_article, created = NewsArticle.objects.get_or_create(
+                                        url = url,
+                                        defaults={
+                                            'title_ru': article_data['title_ru'],
+                                            'title_ja': article_data['title_ja'],
+                                            'published_at': article_data['published_at'],
+                                            'country': article_data['country'],
+                                            'image': article_data['image'],
+                                            'rss': article_data['rss'],
+                                            'content_ru': article_data['content_ru'],
+                                            'is_active': article_data['is_active'],
+                                            'is_title_added': article_data['is_title_added'],
+                                            'is_title_translated': article_data['is_title_translated'],
+                                            'is_topic_picked': article_data['is_topic_picked'],
+                                            'is_content_added': article_data['is_content_added'],
+                                        }
+                                    )
+
+                                    if created:
+                                        news_article.topic.set(topic)
+
+                        except Exception as e:
+                            logger.error(f'Failed to save article {url}: {e}')
+                            rss.last_error = str(e)
+                            rss.save()
+                            continue
 
             rss.total_articles = NewsArticle.objects.filter(rss=rss).count()
             rss.last_fetched_at = timezone.now()
@@ -232,6 +315,7 @@ def fetch_web_news_articles():
 def download_image_from_rss(image_url):
     if not (image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://'))):
         logger.warning(f'Invalid image URL: {image_url}')
+
         return None
 
     image_data = None
@@ -388,86 +472,187 @@ def enhance_image(image, image_name, size = MAXIMUM_IMAGE_SIZE_PIXEL):
 
     return InMemoryUploadedFile(buffer, None, image_name, 'image/webp', size_bytes, None)
 
-# Telegram用
+
 def fetch_telegram_news_articles():
     #TODO テレグラム用の取得を実装
     pass
 
-# 共通
-def translate_title(title_ru, rss):
-    prompt = f"""
-    Translate the following Russian news title into natural Japanese for a news site.
-    - Title should be concise and catchy.
-    - Do not add extra explanations.
-    - Translate all the words into officially correct Japanese.
-    - If media company name or organization name or person name are included in the title, translate them into officially correct Japanese.
-    - Return only the translated title.
+# --- 翻訳一括バッチ処理 (Gemini / Gemma) ---
+def translate_titles_batch(titles_ru_list, rss):
+    if not titles_ru_list:
+        return []
 
-    Title: {title_ru}
-    """
-    
-    return output_from_gemini_or_gemma(prompt, rss)
-
-def pick_up_news_article_topic(title, topics, rss):
     prompt = f"""
-    Classify the following news article title into some of the following topics. 
-    - Do not add any extra explanations.
-    - Return only the topic names separated by commas.
-    
-    Title: {title}
-    
-    Topics: {', '.join([topic.name_en for topic in topics])}
+    Translate the following Russian news titles into natural Japanese for a news site.
+    - Titles should be concise and catchy.
+    - Translate all words, media company names, organizations, or person names into officially correct Japanese.
+    - Return ONLY a valid JSON array of strings containing the translations in the exact same order.
+    - Do not markdown codeblocks, do not add extra text, descriptions or notes.
+
+    Titles:
+    {json.dumps(titles_ru_list, ensure_ascii=False)}
     """
-    
+
+    gemini_keys = [
+        GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
+        GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10
+    ]
+    gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+    gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+    all_models = gemini_models + gemma_models
+
+    for api_key in gemini_keys:
+        if not api_key:
+            continue
+        try:
+            client = genai.Client(api_key=api_key)
+            for model in all_models:
+                if not model:
+                    continue
+                try:
+                    response = client.models.generate_content(model=model, contents=prompt)
+                    res_text = response.text.strip()
+                    if res_text.startswith("```"):
+                        res_text = res_text.split("```")[1]
+                        if res_text.startswith("json"):
+                            res_text = res_text[4:]
+                    
+                    translated_array = json.loads(res_text.strip())
+                    if isinstance(translated_array, list) and len(translated_array) == len(titles_ru_list):
+                        return translated_array
+                except Exception as e:
+                    error = convert_to_custom_ai_exception(e)
+                    if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                        continue
+                    logger.error(f"Translation model {model} failed: {e}")
+                    continue
+        except Exception as e:
+            logger.error(f"Failed initialization or execution with Gemini API Key: {e}")
+            continue
+
+    return [None] * len(titles_ru_list)
+
+# --- トピック選定一括バッチ処理 (Groq) ---
+def pick_up_news_articles_topics_batch(titles_list, topics, rss):
+    if not titles_list:
+        return {}
+
+    topics_dict = {topic.name_en: topic for topic in topics}
+    prompt = f"""
+    Classify the following news article titles into some of the given topics.
+    - Return ONLY a valid JSON object where the key is the exact original title, and the value is a list of matching topic strings from the permitted topics list.
+    - Do not include any extra descriptions, markdown, notes or explanations.
+
+    Permitted Topics: {', '.join([topic.name_en for topic in topics])}
+
+    Titles to classify:
+    {json.dumps(titles_list, ensure_ascii=False)}
+    """
+
     client = Groq(api_key = GROQ_API_KEY)
     models = [GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3]
+    matched_topics_map = {}
 
     for model in models:
+        if not model:
+            continue
         try:
             response = client.chat.completions.create(
                 model = model,
                 messages = [{"role": "system", "content": prompt}],
+                response_format = {"type": "json_object"}
             )
-            suggested_topics = response.choices[0].message.content.split(",")
-            matched_topics = []
+            raw_content = response.choices[0].message.content.strip()
+            classification_results = json.loads(raw_content)
 
-            for suggested_topic in suggested_topics:
-                for topic in topics:
-                    if topic.name_en == suggested_topic.strip():
-                        matched_topics.append(topic)
-            return matched_topics
+            for orig_title, suggested_topics in classification_results.items():
+                if isinstance(suggested_topics, list):
+                    obj_list = []
+                    for t_name in suggested_topics:
+                        cleaned_name = t_name.strip()
+                        if cleaned_name in topics_dict:
+                            obj_list.append(topics_dict[cleaned_name])
+                    matched_topics_map[orig_title] = obj_list
+            
+            return matched_topics_map
         except Exception as e:
             error = convert_to_custom_ai_exception(e)
             if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                 continue
-            
-            logger.error(f"Error for model {model}: {e}")
-            rss.last_error = f"{error.user_message} while picking up topics"
+            logger.error(f"Error for Groq model {model}: {e}")
+            rss.last_error = f"{error.user_message} while picking up topics batch"
             rss.save()
             continue
-    
-    return None
 
-def get_news_article_content(rss, url):
-    try:
-        downloaded = requests.get(url, headers = DEFAULT_HEADERS, impersonate = IMPERSONATE_TARGET, timeout = 30)
-        downloaded.raise_for_status()
-        article_content = trafilatura.extract(downloaded.text)
-            
-        if article_content is None or len(article_content) == 0:
-            return None
-            
-        cleaned_article_content = clean_article_content(article_content, rss)
+    return {}
 
-        if cleaned_article_content is None or len(cleaned_article_content) == 0:
-            return None
+# 本文クレンジング一括バッチ処理 (Gemini / Gemma)
+def clean_articles_contents_batch(contents_dict, rss):
+    if not contents_dict:
+        return {}
 
-        return cleaned_article_content
-    except Exception as e:
-        logger.error(f'Exception in get_news_article_content: {e}')
-        rss.last_error = f"{e} while getting news article content"
-        rss.save()
-        return None
+    prompt = f"""
+    Clean the following Russian news contents.
+    - For each item in the provided JSON object, extract ONLY the core narrative text.
+    - Remove the dateline (e.g., "CITY, Date - Agency Name").
+    - Remove all noise: ads, social media links, navigation menu, phone numbers, emails, and copyright notices.
+    - Remove repetitive titles or image captions.
+    - Separate each paragraph with a double newline (\\n\\n).
+    - Return ONLY a valid JSON object where the key is the exact same URL identifier and the value is the cleaned plain text string.
+    - Do not markdown codeblocks, do not add extra text, descriptions or notes.
+
+    Contents to clean:
+    {json.dumps(contents_dict, ensure_ascii=False)}
+    """
+
+    gemini_keys = [
+        GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
+        GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10
+    ]
+    gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+    gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+    all_models = gemini_models + gemma_models
+
+    for api_key in gemini_keys:
+        if not api_key:
+            continue
+
+        try:
+            client = genai.Client(api_key=api_key)
+
+            for model in all_models:
+
+                if not model:
+                    continue
+
+                try:
+                    response = client.models.generate_content(model=model, contents=prompt)
+                    res_text = response.text.strip()
+
+                    if res_text.startswith("```"):
+                        res_text = res_text.split("```")[1]
+
+                        if res_text.startswith("json"):
+                            res_text = res_text[4:]
+
+                    cleaned_map = json.loads(res_text.strip())
+
+                    if isinstance(cleaned_map, dict):
+                        return cleaned_map
+                except Exception as e:
+                    error = convert_to_custom_ai_exception(e)
+
+                    if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                        continue
+
+                    logger.error(f"Content cleaning model {model} failed: {e}")
+                    continue
+
+        except Exception as e:
+            logger.error(f"Failed initialization or execution with Gemini API Key for cleaning: {e}")
+            continue
+
+    return {}
 
 def delete_old_news_articles():
     for rss in NewsRss.objects.all():
