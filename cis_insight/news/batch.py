@@ -16,14 +16,11 @@ from core.settings import (ALLOWED_IMAGE_SIZE, ALLOWED_IMAGE_TYPE, CHUNK_SIZE,
                            DEFAULT_HEADERS, DISPLAY_DAY_LIMIT,
                            GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_3, GEMINI_API_KEY_4,
-                           GEMINI_API_KEY_5, GEMINI_API_KEY_6,
-                           GEMINI_API_KEY_7, GEMINI_API_KEY_8,
-                           GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
-                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
-                           GEMINI_MODEL_5, GEMMA_MODEL_1, GEMMA_MODEL_2,
-                           GROQ_API_KEY, GROQ_MODEL_1, GROQ_MODEL_2,
-                           GROQ_MODEL_3, IMPERSONATE_TARGET,
-                           MAXIMUM_IMAGE_SIZE_PIXEL)
+                           GEMINI_API_KEY_5, GEMINI_MODEL_1, GEMINI_MODEL_2,
+                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GEMMA_MODEL_1, GEMMA_MODEL_2, GROQ_API_KEY,
+                           GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3,
+                           IMPERSONATE_TARGET, MAXIMUM_IMAGE_SIZE_PIXEL)
 from core.utils import is_safe_url
 from curl_cffi import requests
 from django.core.exceptions import ObjectDoesNotExist
@@ -39,6 +36,20 @@ from .models import NewsArticle, NewsRss, Topic
 
 logger = logging.getLogger(__name__)
 
+# API制限時間の管理用
+COOLDOWN_REGISTRY = {}
+
+def is_cooldown(target_string):
+    now = timezone.now()
+    if target_string in COOLDOWN_REGISTRY:
+        if now < COOLDOWN_REGISTRY[target_string]:
+            return True
+        else:
+            del COOLDOWN_REGISTRY[target_string]  
+    return False
+
+def set_cooldown(target_string, hours = 2):
+    COOLDOWN_REGISTRY[target_string] = timezone.now() + timedelta(hours=hours)
 
 # Webサイト用
 def fetch_web_news_articles():
@@ -493,22 +504,27 @@ def translate_titles_batch(titles_ru_list, rss):
     {json.dumps(titles_ru_list, ensure_ascii=False)}
     """
 
-    gemini_keys = [
-        GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
-        GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10
-    ]
+    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]
     gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
     gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
     all_models = gemini_models + gemma_models
 
-    for api_key in gemini_keys:
+    for api_key in api_keys:
         if not api_key:
             continue
+        
+        if is_cooldown(api_key):
+            continue
+
         try:
             client = genai.Client(api_key=api_key)
             for model in all_models:
                 if not model:
                     continue
+
+                if is_cooldown(model):
+                    continue
+
                 try:
                     response = client.models.generate_content(model=model, contents=prompt)
                     res_text = response.text.strip()
@@ -522,10 +538,20 @@ def translate_titles_batch(titles_ru_list, rss):
                         return translated_array
                 except Exception as e:
                     error = convert_to_custom_ai_exception(e)
-                    if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                    
+                    if isinstance(error, RateLimitError):
+                        logger.warning(f"Rate limit hit for key. Cooldown activated. Error: {e}")
+                        set_cooldown(api_key, hours=2)
+                        break
+                        
+                    if isinstance(error, ServerError):
+                        logger.warning(f"Server error hit for model {model}. Cooldown activated. Error: {e}")
+                        set_cooldown(model, hours=1)
                         continue
+                        
                     logger.error(f"Translation model {model} failed: {e}")
                     continue
+
         except Exception as e:
             logger.error(f"Failed initialization or execution with Gemini API Key: {e}")
             continue
@@ -605,24 +631,26 @@ def clean_articles_contents_batch(contents_dict, rss):
     {json.dumps(contents_dict, ensure_ascii=False)}
     """
 
-    gemini_keys = [
-        GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5,
-        GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10
-    ]
+    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]
     gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
     gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
     all_models = gemini_models + gemma_models
 
-    for api_key in gemini_keys:
+    for api_key in api_keys:
         if not api_key:
+            continue
+
+        if is_cooldown(api_key):
             continue
 
         try:
             client = genai.Client(api_key=api_key)
 
             for model in all_models:
-
                 if not model:
+                    continue
+
+                if is_cooldown(model):
                     continue
 
                 try:
@@ -631,7 +659,6 @@ def clean_articles_contents_batch(contents_dict, rss):
 
                     if res_text.startswith("```"):
                         res_text = res_text.split("```")[1]
-
                         if res_text.startswith("json"):
                             res_text = res_text[4:]
 
@@ -642,7 +669,14 @@ def clean_articles_contents_batch(contents_dict, rss):
                 except Exception as e:
                     error = convert_to_custom_ai_exception(e)
 
-                    if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                    if isinstance(error, RateLimitError):
+                        logger.warning(f"Rate limit hit for key during cleaning. Cooldown activated. Error: {e}")
+                        set_cooldown(api_key, hours=2)
+                        break
+                        
+                    if isinstance(error, ServerError):
+                        logger.warning(f"Server error hit for model {model} during cleaning. Cooldown activated. Error: {e}")
+                        set_cooldown(model, hours=1)
                         continue
 
                     logger.error(f"Content cleaning model {model} failed: {e}")
@@ -654,6 +688,7 @@ def clean_articles_contents_batch(contents_dict, rss):
 
     return {}
 
+# 不要な記事を削除
 def delete_old_news_articles():
     for rss in NewsRss.objects.all():
         day = DISPLAY_DAY_LIMIT

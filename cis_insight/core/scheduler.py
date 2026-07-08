@@ -22,8 +22,8 @@ def start():
 
     # news
     scheduler.add_job(delete_old_news_articles, 'interval', hours = 1, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(fetch_web_news_articles, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
-    scheduler.add_job(fetch_telegram_news_articles, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(fetch_web_news_articles, 'interval', minutes = 10, next_run_time = datetime.now(), coalesce = True)
+    scheduler.add_job(fetch_telegram_news_articles, 'interval', minutes = 10, next_run_time = datetime.now(), coalesce = True)
 
     # users
     scheduler.add_job(expire_email_change, 'interval', minutes = 5, next_run_time = datetime.now(), coalesce = True)

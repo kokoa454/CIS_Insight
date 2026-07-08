@@ -9,12 +9,10 @@ from core.exceptions import (RateLimitError, ServerError,
                              convert_to_custom_ai_exception)
 from core.settings import (DEFAULT_HEADERS, GEMINI_API_KEY_1, GEMINI_API_KEY_2,
                            GEMINI_API_KEY_3, GEMINI_API_KEY_4,
-                           GEMINI_API_KEY_5, GEMINI_API_KEY_6,
-                           GEMINI_API_KEY_7, GEMINI_API_KEY_8,
-                           GEMINI_API_KEY_9, GEMINI_API_KEY_10, GEMINI_MODEL_1,
-                           GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4,
-                           GEMINI_MODEL_5, GEMMA_MODEL_1, GEMMA_MODEL_2,
-                           IMPERSONATE_TARGET, MAXIMUM_COMPANY_LENGTH)
+                           GEMINI_API_KEY_5, GEMINI_MODEL_1, GEMINI_MODEL_2,
+                           GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5,
+                           GEMMA_MODEL_1, GEMMA_MODEL_2, IMPERSONATE_TARGET,
+                           MAXIMUM_COMPANY_LENGTH)
 from core.utils import is_safe_url
 from core.views import render_error_page
 from curl_cffi import requests
@@ -29,6 +27,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.decorators.cache import never_cache
 from google import genai
+from news.batch import is_cooldown
 from news.models import (CisAndNeighborCountry, CisCountry, NewsArticle,
                          NewsRss, Topic)
 
@@ -207,14 +206,20 @@ def translate_content(content_ru, rss):
     return output_from_gemini_or_gemma(prompt, rss)
 
 def output_from_gemini_or_gemma(prompt, rss):
-    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5, GEMINI_API_KEY_6, GEMINI_API_KEY_7, GEMINI_API_KEY_8, GEMINI_API_KEY_9, GEMINI_API_KEY_10]
+    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]
     
     for api_key in api_keys:
+        if is_cooldown(api_key):
+            continue
+        
         client = genai.Client(api_key = api_key)
         gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
         gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
 
         for model in gemini_models:
+            if is_cooldown(model):
+                continue
+
             try:
                 response = client.models.generate_content(
                     model = model,
@@ -233,9 +238,15 @@ def output_from_gemini_or_gemma(prompt, rss):
                 continue
         
     for api_key in api_keys:
+        if is_cooldown(api_key):
+            continue
+            
         client = genai.Client(api_key = api_key)
 
         for model in gemma_models:
+            if is_cooldown(model):
+                continue
+
             try:
                 response = client.models.generate_content(
                     model = model,
