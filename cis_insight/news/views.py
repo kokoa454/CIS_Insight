@@ -27,7 +27,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.decorators.cache import never_cache
 from google import genai
-from news.batch import is_cooldown
+from news.batch import is_cooldown, set_cooldown
 from news.models import (CisAndNeighborCountry, CisCountry, NewsArticle,
                          NewsRss, Topic)
 
@@ -207,62 +207,77 @@ def translate_content(content_ru, rss):
 
 def output_from_gemini_or_gemma(prompt, rss):
     api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]
-    
+    gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+    gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+
     for api_key in api_keys:
-        if is_cooldown(api_key):
+        if not api_key or is_cooldown(api_key):
             continue
         
-        client = genai.Client(api_key = api_key)
-        gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
-        gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+        client = genai.Client(api_key=api_key)
 
         for model in gemini_models:
-            if is_cooldown(model):
+            if not model or is_cooldown(model):
                 continue
 
             try:
                 response = client.models.generate_content(
-                    model = model,
-                    contents = prompt,
+                    model=model,
+                    contents=prompt,
                 )
-
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
-                    continue
+                
+                if isinstance(error, RateLimitError):
+                    logger.warning(f"Rate limit hit for key. Cooldown activated. Error: {e}")
+                    set_cooldown(api_key, hours=2)
+                    break  
+                    
+                if isinstance(error, ServerError):
+                    logger.warning(f"Server error hit for model {model}. Cooldown activated. Error: {e}")
+                    set_cooldown(model, hours=1)
+                    continue  
 
                 logger.error(f"Error for model {model}, api key {api_key}: {e}")
                 rss.last_error = f"{error.user_message} while outputting from gemini"
                 rss.save()
                 continue
-        
+
     for api_key in api_keys:
-        if is_cooldown(api_key):
+        if not api_key or is_cooldown(api_key):
             continue
             
-        client = genai.Client(api_key = api_key)
+        client = genai.Client(api_key=api_key)
 
         for model in gemma_models:
-            if is_cooldown(model):
+            if not model or is_cooldown(model):
                 continue
 
             try:
                 response = client.models.generate_content(
-                    model = model,
-                    contents = prompt,
+                    model=model,
+                    contents=prompt,
                 )
-
                 return response.text.strip()
             except Exception as e:
                 error = convert_to_custom_ai_exception(e)
-                if isinstance(error, RateLimitError) or isinstance(error, ServerError):
+                
+                if isinstance(error, RateLimitError):
+                    logger.warning(f"Rate limit hit for key during Gemma fallback. Cooldown activated. Error: {e}")
+                    set_cooldown(api_key, hours=2)
+                    break
+                    
+                if isinstance(error, ServerError):
+                    logger.warning(f"Server error hit for Gemma model {model}. Cooldown activated. Error: {e}")
+                    set_cooldown(model, hours=1)
                     continue
 
                 logger.error(f"Error for model {model}, api key {api_key}: {e}")
                 rss.last_error = f"{error.user_message} while outputting from gemma"
                 rss.save()
                 continue
+
     return None
 
 # RSS設定ページ関連
