@@ -214,10 +214,10 @@ def output_from_gemini_or_gemma(prompt, rss):
         if not api_key or is_cooldown(api_key):
             continue
         
-        client = genai.Client(api_key=api_key)
+        client = genai.Client(api_key = api_key)
 
         for model in gemini_models:
-            if not model or is_cooldown(model):
+            if not model or is_cooldown(model, api_key):
                 continue
 
             try:
@@ -231,12 +231,12 @@ def output_from_gemini_or_gemma(prompt, rss):
                 
                 if isinstance(error, RateLimitError):
                     logger.warning(f"Rate limit hit for key. Cooldown activated. Error: {e}")
-                    set_cooldown(api_key, hours=2)
+                    set_cooldown(api_key, hours = 2)
                     break  
                     
                 if isinstance(error, ServerError):
                     logger.warning(f"Server error hit for model {model}. Cooldown activated. Error: {e}")
-                    set_cooldown(model, hours=1)
+                    set_cooldown(model, hours = 1, api_key = api_key)
                     continue  
 
                 logger.error(f"Error for model {model}, api key {api_key}: {e}")
@@ -251,7 +251,7 @@ def output_from_gemini_or_gemma(prompt, rss):
         client = genai.Client(api_key=api_key)
 
         for model in gemma_models:
-            if not model or is_cooldown(model):
+            if not model or is_cooldown(model, api_key):
                 continue
 
             try:
@@ -270,7 +270,7 @@ def output_from_gemini_or_gemma(prompt, rss):
                     
                 if isinstance(error, ServerError):
                     logger.warning(f"Server error hit for Gemma model {model}. Cooldown activated. Error: {e}")
-                    set_cooldown(model, hours=1)
+                    set_cooldown(model, hours=1, api_key = api_key)
                     continue
 
                 logger.error(f"Error for model {model}, api key {api_key}: {e}")

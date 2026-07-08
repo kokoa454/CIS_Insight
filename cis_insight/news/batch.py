@@ -39,17 +39,20 @@ logger = logging.getLogger(__name__)
 # API制限時間の管理用
 COOLDOWN_REGISTRY = {}
 
-def is_cooldown(target_string):
+def is_cooldown(target, api_key = None):
+    registry_key = f"{target}_{api_key}" if api_key else target
+
     now = timezone.now()
-    if target_string in COOLDOWN_REGISTRY:
-        if now < COOLDOWN_REGISTRY[target_string]:
+    if registry_key in COOLDOWN_REGISTRY:
+        if now < COOLDOWN_REGISTRY[registry_key]:
             return True
         else:
-            del COOLDOWN_REGISTRY[target_string]  
+            del COOLDOWN_REGISTRY[registry_key]  
     return False
 
-def set_cooldown(target_string, hours = 2):
-    COOLDOWN_REGISTRY[target_string] = timezone.now() + timedelta(hours=hours)
+def set_cooldown(target, hours = 2, api_key = None):
+    registry_key = f"{target}_{api_key}" if api_key else target
+    COOLDOWN_REGISTRY[registry_key] = timezone.now() + timedelta(hours=hours)
 
 # Webサイト用
 def fetch_web_news_articles():
@@ -517,12 +520,12 @@ def translate_titles_batch(titles_ru_list, rss):
             continue
 
         try:
-            client = genai.Client(api_key=api_key)
+            client = genai.Client(api_key = api_key)
             for model in all_models:
                 if not model:
                     continue
 
-                if is_cooldown(model):
+                if is_cooldown(model, api_key):
                     continue
 
                 try:
@@ -541,12 +544,12 @@ def translate_titles_batch(titles_ru_list, rss):
                     
                     if isinstance(error, RateLimitError):
                         logger.warning(f"Rate limit hit for key. Cooldown activated. Error: {e}")
-                        set_cooldown(api_key, hours=2)
+                        set_cooldown(api_key, hours = 2)
                         break
                         
                     if isinstance(error, ServerError):
                         logger.warning(f"Server error hit for model {model}. Cooldown activated. Error: {e}")
-                        set_cooldown(model, hours=1)
+                        set_cooldown(model, hours = 1, api_key = api_key)
                         continue
                         
                     logger.error(f"Translation model {model} failed: {e}")
@@ -650,7 +653,7 @@ def clean_articles_contents_batch(contents_dict, rss):
                 if not model:
                     continue
 
-                if is_cooldown(model):
+                if is_cooldown(model, api_key):
                     continue
 
                 try:
@@ -671,12 +674,12 @@ def clean_articles_contents_batch(contents_dict, rss):
 
                     if isinstance(error, RateLimitError):
                         logger.warning(f"Rate limit hit for key during cleaning. Cooldown activated. Error: {e}")
-                        set_cooldown(api_key, hours=2)
+                        set_cooldown(api_key, hours = 2)
                         break
                         
                     if isinstance(error, ServerError):
                         logger.warning(f"Server error hit for model {model} during cleaning. Cooldown activated. Error: {e}")
-                        set_cooldown(model, hours=1)
+                        set_cooldown(model, hours = 1, api_key = api_key)
                         continue
 
                     logger.error(f"Content cleaning model {model} failed: {e}")
