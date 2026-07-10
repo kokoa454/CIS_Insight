@@ -52,13 +52,13 @@ def is_cooldown(target, api_key = None):
 
 def set_cooldown(target, hours = 2, api_key = None):
     registry_key = f"{target}_{api_key}" if api_key else target
-    COOLDOWN_REGISTRY[registry_key] = timezone.now() + timedelta(hours=hours)
+    COOLDOWN_REGISTRY[registry_key] = timezone.now() + timedelta(hours = hours)
 
 # Webサイト用
 def fetch_web_news_articles():
     all_topics = list(Topic.objects.all())
 
-    for rss in NewsRss.objects.filter(is_active=True).order_by(F('last_fetched_at').asc(nulls_first=True)):
+    for rss in NewsRss.objects.filter(is_active = True).order_by(F('last_fetched_at').asc(nulls_first = True)):
         processed_urls = set()
 
         try:
@@ -70,7 +70,7 @@ def fetch_web_news_articles():
             existing_articles = {
                 a.url: a
                 for a in NewsArticle.objects.filter(
-                    url__in=[entry.link for entry in feed.entries if 'link' in entry]
+                    url__in = [entry.link for entry in feed.entries if 'link' in entry]
                 ).prefetch_related('topic')
             }
 
@@ -185,9 +185,18 @@ def fetch_web_news_articles():
                     titles_to_classify = [item["title_ru"] for item in chunk_items if not item["has_topic"]]
                     contents_to_clean = {item["url"]: item["raw_content_ru"] for item in chunk_items if not item["has_content"] and item["raw_content_ru"]}
 
+                    contents_to_translate = []
+
+                    for item in chunk_items:
+                        ru_text = item["content_ru"] or contents_to_clean.get(item["url"])
+                        has_trans_ja = item["existing_article"] and getattr(item["existing_article"], "is_content_translated", False)
+
+                        if ru_text and ru_text.strip() and not has_trans_ja:
+                            contents_to_translate.append(ru_text)
+
                     translated_map = {}
 
-                    if titles_to_translate or titles_to_classify or contents_to_clean:
+                    if titles_to_translate or titles_to_classify or contents_to_clean or contents_to_translate:
                         time.sleep(random.uniform(2.0, 3.5))
 
                     if titles_to_translate:
@@ -197,24 +206,43 @@ def fetch_web_news_articles():
                             for orig, trans in zip(titles_to_translate, translated_list):
                                 if trans:
                                     translated_map[orig] = trans
+
                         except Exception as e:
                             logger.error(f"Batch translation crashed at loop level: {e}")
 
                     topic_map = {}
+
                     if titles_to_classify:
                         try:
                             time.sleep(0.5)
                             topic_map = pick_up_news_articles_topics_batch(titles_to_classify, all_topics, rss)
+
                         except Exception as e:
                             logger.error(f"Batch topic classification crashed at loop level: {e}")
 
                     cleaned_contents_map = {}
+
                     if contents_to_clean:
                         try:
                             time.sleep(1.5)
                             cleaned_contents_map = clean_articles_contents_batch(contents_to_clean, rss)
+
                         except Exception as e:
                             logger.error(f"Batch content cleaning crashed at loop level: {e}")
+
+                    translated_contents_map = {}
+
+                    if contents_to_translate:
+                        try:
+                            time.sleep(1.5)
+                            translated_content_list = translate_content_batch(contents_to_translate, rss)
+
+                            for orig_ru, trans_ja in zip(contents_to_translate, translated_content_list):
+                                if trans_ja:
+                                    translated_contents_map[orig_ru] = trans_ja
+
+                        except Exception as e:
+                            logger.error(f"Batch content translation crashed at loop level: {e}")
 
                     for item in chunk_items:
                         title_ru = item["title_ru"]
@@ -239,6 +267,15 @@ def fetch_web_news_articles():
                             content_ru = item["content_ru"]
                             is_content_added = True
 
+                        has_trans_ja = item["existing_article"] and getattr(item["existing_article"], "is_content_translated", False)
+
+                        if not has_trans_ja:
+                            content_ja = translated_contents_map.get(content_ru) if content_ru else None
+                            is_content_translated = content_ja is not None
+                        else:
+                            content_ja = item["existing_article"].content_ja
+                            is_content_translated = True
+
                         if title_ja is None or (not item["has_topic"] and not topic):
                             continue
 
@@ -257,11 +294,13 @@ def fetch_web_news_articles():
                             "image": item["image"],
                             "rss": rss,
                             "content_ru": content_ru,
+                            "content_ja": content_ja,
                             "is_active": is_active,
                             "is_title_added": is_title_added,
                             "is_title_translated": is_title_translated,
                             "is_topic_picked": is_topic_picked,
                             "is_content_added": is_content_added,
+                            "is_content_translated": is_content_translated,
                         }
 
                         try:
@@ -282,6 +321,10 @@ def fetch_web_news_articles():
                                         existing_article.content_ru = article_data['content_ru']
                                         existing_article.is_content_added = True
 
+                                    if not getattr(existing_article, 'is_content_translated', False) and article_data['is_content_translated']:
+                                        existing_article.content_ja = article_data['content_ja']
+                                        existing_article.is_content_translated = True
+
                                     if article_data['image']:
                                         existing_article.image = article_data['image']
 
@@ -300,11 +343,13 @@ def fetch_web_news_articles():
                                             'image': article_data['image'],
                                             'rss': article_data['rss'],
                                             'content_ru': article_data['content_ru'],
+                                            'content_ja': article_data['content_ja'],
                                             'is_active': article_data['is_active'],
                                             'is_title_added': article_data['is_title_added'],
                                             'is_title_translated': article_data['is_title_translated'],
                                             'is_topic_picked': article_data['is_topic_picked'],
                                             'is_content_added': article_data['is_content_added'],
+                                            'is_content_translated': article_data['is_content_translated'],
                                         }
                                     )
 
@@ -491,7 +536,77 @@ def fetch_telegram_news_articles():
     #TODO テレグラム用の取得を実装
     pass
 
-# --- 翻訳一括バッチ処理 (Gemini / Gemma) ---
+# --- 記事内容翻訳一括バッチ処理 (Gemini / Gemma) ---
+def translate_content_batch(content_ru_list, rss):
+    if not content_ru_list:
+        return []
+
+    prompt = f"""
+    Translate the following Russian news content into natural Japanese for a news site.
+    - Do not add extra explanations.
+    - Translate all the words into officially correct Japanese(である調).
+    - If media company name or organization name, person name or place name are included in the content, translate them into officially correct Japanese.
+    - Return only the translated content.
+
+    Content:
+    {json.dumps(content_ru_list, ensure_ascii=False)}
+    """
+
+    api_keys = [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4, GEMINI_API_KEY_5]
+    gemini_models = [GEMINI_MODEL_1, GEMINI_MODEL_2, GEMINI_MODEL_3, GEMINI_MODEL_4, GEMINI_MODEL_5]
+    gemma_models = [GEMMA_MODEL_1, GEMMA_MODEL_2]
+    all_models = gemini_models + gemma_models
+
+    for api_key in api_keys:
+        if not api_key:
+            continue
+        
+        if is_cooldown(api_key):
+            continue
+
+        try:
+            client = genai.Client(api_key = api_key)
+            for model in all_models:
+                if not model:
+                    continue
+
+                if is_cooldown(model, api_key):
+                    continue
+
+                try:
+                    response = client.models.generate_content(model=model, contents=prompt)
+                    res_text = response.text.strip()
+                    if res_text.startswith("```"):
+                        res_text = res_text.split("```")[1]
+                        if res_text.startswith("json"):
+                            res_text = res_text[4:]
+                    
+                    translated_array = json.loads(res_text.strip())
+                    if isinstance(translated_array, list) and len(translated_array) == len(content_ru_list):
+                        return translated_array
+                except Exception as e:
+                    error = convert_to_custom_ai_exception(e)
+                    
+                    if isinstance(error, RateLimitError):
+                        logger.warning(f"Rate limit hit for key. Cooldown activated. Error: {e}")
+                        set_cooldown(api_key, hours = 2)
+                        break
+                        
+                    if isinstance(error, ServerError):
+                        logger.warning(f"Server error hit for model {model}. Cooldown activated. Error: {e}")
+                        set_cooldown(model, hours = 1, api_key = api_key)
+                        continue
+                        
+                    logger.error(f"Translation model {model} failed: {e}")
+                    continue
+
+        except Exception as e:
+            logger.error(f"Failed initialization or execution with Gemini API Key: {e}")
+            continue
+
+    return [None] * len(content_ru_list)
+
+# --- 記事タイトル翻訳一括バッチ処理 (Gemini / Gemma) ---
 def translate_titles_batch(titles_ru_list, rss):
     if not titles_ru_list:
         return []
