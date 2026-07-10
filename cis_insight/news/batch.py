@@ -373,12 +373,18 @@ def translate_and_save_articles(pre_processed_items, rss):
             try:
                 with transaction.atomic():
                     if articles_to_create:
-                        created_articles = NewsArticle.objects.bulk_create(articles_to_create)
+                        created_articles = NewsArticle.objects.bulk_create(
+                            articles_to_create, 
+                            ignore_conflicts=True
+                        )
 
-                        for i, (old_obj, topics) in enumerate(m2m_updates):
-                            if old_obj.pk is None:
-                                matched = next(a for a in created_articles if a.url == old_obj.url)
-                                m2m_updates[i] = (matched, topics)
+                        for idx, (article_obj, topics) in enumerate(m2m_updates):
+                            if article_obj.pk is None: 
+                                matched = next((a for a in created_articles if a.url == article_obj.url and a.pk is not None), None)
+                                if matched:
+                                    m2m_updates[idx] = (matched, topics)
+                                else:
+                                    m2m_updates[idx] = (None, [])
 
                     if articles_to_update:
                         fields_to_update = [
@@ -389,7 +395,8 @@ def translate_and_save_articles(pre_processed_items, rss):
                         NewsArticle.objects.bulk_update(articles_to_update, fields=fields_to_update)
 
                     for article_obj, topics in m2m_updates:
-                        article_obj.topic.set(topics)
+                        if article_obj and article_obj.pk is not None:
+                            article_obj.topic.set(topics)
 
                 logger.info(f"Successfully batch saved {len(articles_to_create)} created and {len(articles_to_update)} updated articles.")
 
