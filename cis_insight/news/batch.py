@@ -546,7 +546,8 @@ def translate_content_batch(content_ru_list, rss):
     - Do not add extra explanations.
     - Translate all the words into officially correct Japanese(である調).
     - If media company name or organization name, person name or place name are included in the content, translate them into officially correct Japanese.
-    - Return only the translated content.
+    - Return ONLY a valid JSON array of strings containing the translations in the exact same order.
+    - Do not markdown codeblocks, do not add extra text, descriptions or notes.
 
     Content:
     {json.dumps(content_ru_list, ensure_ascii=False)}
@@ -576,14 +577,22 @@ def translate_content_batch(content_ru_list, rss):
                 try:
                     response = client.models.generate_content(model=model, contents=prompt)
                     res_text = response.text.strip()
+
                     if res_text.startswith("```"):
                         res_text = res_text.split("```")[1]
                         if res_text.startswith("json"):
                             res_text = res_text[4:]
-                    
-                    translated_array = json.loads(res_text.strip())
-                    if isinstance(translated_array, list) and len(translated_array) == len(content_ru_list):
-                        return translated_array
+
+                    try:
+                        translated_array = json.loads(res_text.strip())
+
+                        if isinstance(translated_array, list) and len(translated_array) == len(content_ru_list):
+                            return translated_array
+
+                    except json.JSONDecodeError as je:
+                        logger.error(f"JSON decode failed for model {model}. Raw Response: {res_text[:500]}... Error: {je}")
+                        continue
+
                 except Exception as e:
                     error = convert_to_custom_ai_exception(e)
                     
@@ -646,12 +655,14 @@ def translate_titles_batch(titles_ru_list, rss):
                 try:
                     response = client.models.generate_content(model=model, contents=prompt)
                     res_text = response.text.strip()
+
                     if res_text.startswith("```"):
                         res_text = res_text.split("```")[1]
                         if res_text.startswith("json"):
                             res_text = res_text[4:]
-                    
+
                     translated_array = json.loads(res_text.strip())
+
                     if isinstance(translated_array, list) and len(translated_array) == len(titles_ru_list):
                         return translated_array
                 except Exception as e:
