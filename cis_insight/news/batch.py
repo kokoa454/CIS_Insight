@@ -281,6 +281,10 @@ def translate_and_save_articles(pre_processed_items, rss):
                     sub_chunk = contents_to_translate[sub_i:sub_i + content_chunk_size]
                     translated_content_list = translate_content_batch(sub_chunk, rss)
 
+                    if not translated_content_list:
+                        logger.warning(f"Sub-chunk translation skipped due to model output error. Chunk size: {len(sub_chunk)}")
+                        continue
+
                     for orig_ru, trans_ja in zip(sub_chunk, translated_content_list):
                         if trans_ja:
                             for item in chunk_items:
