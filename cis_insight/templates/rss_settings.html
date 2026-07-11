@@ -268,7 +268,10 @@
             </a> -->
 
             {% if user.is_staff %}
-            <a href="{% url 'rss_settings' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-900/20 transition-all">
+            <div class="hidden md:block pt-4 pb-2 px-4 text-tiny font-bold text-slate-500 uppercase tracking-widest">
+                Admin Settings
+            </div>
+            <a class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-900/20 transition-all">
                 <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                     <path d="M4 11a9 9 0 0 1 9 9"></path>
                     <path d="M4 4a16 16 0 0 1 16 16"></path>
@@ -316,7 +319,7 @@
         </div>
     </aside>
 
-    <main class="flex-grow overflow-y-auto h-dvh p-6 md:p-12 pb-32">
+    <main class="flex-grow overflow-y-auto h-dvh p-6 md:p-12 pb-32 opacity-0 animate-fade-in motion-safe:transform motion-safe:transition-all motion-safe:duration-200 motion-safe:translate-y-2 motion-safe:opacity-100 motion-safe:!translate-y-0">
         <div class="max-w-4xl mx-auto">
             <header class="mb-12">
                 <h1 class="text-2xl font-black text-slate-900 font-en uppercase tracking-tight">RSS Settings</h1>

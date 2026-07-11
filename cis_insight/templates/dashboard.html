@@ -55,7 +55,7 @@
         </div>
         
         <nav class="flex-grow p-2 md:p-4 flex flex-row md:flex-col md:space-y-1 items-center md:items-stretch justify-around md:justify-start">
-            <a href="{% url 'dashboard' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-900/20 transition-all">
+            <a id="nav-home" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-900/20 transition-all">
                 <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>
                 </svg>
@@ -79,12 +79,10 @@
                 <span class="hidden md:inline">アカウント設定</span>
             </a>
 
-            <!-- <a href="{% url 'display_settings' %}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
-                <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                <span class="hidden md:inline">表示設定</span>
-            </a> -->
-
             {% if user.is_staff %}
+            <div class="hidden md:block pt-4 pb-2 px-4 text-tiny font-bold text-slate-500 uppercase tracking-widest">
+                Admin Settings
+            </div>
             <a href="{% url 'rss_settings' %}" class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-4 py-2 md:py-3 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-all group">
                 <svg class="w-5 h-5 text-slate-500 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                     <path d="M4 11a9 9 0 0 1 9 9"></path>
@@ -133,11 +131,16 @@
         </div>
     </aside>
     
-    <main class="flex-grow flex flex-col h-dvh overflow-hidden pb-32">
+    <main class="flex-grow flex flex-col h-dvh overflow-hidden pb-32 relative">
+        
+        <div id="pull-spinner" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 scale-75 bg-white shadow-md border border-slate-200 p-2.5 rounded-full flex items-center justify-center">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
+        </div>
+
         <div class="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
             <div class="max-w-4xl mx-auto space-y-4">
                 {% if news_articles %}
-                <div id="news-container">
+                <div id="news-container" class="opacity-0 animate-fade-in motion-safe:transform motion-safe:transition-all motion-safe:duration-200 motion-safe:translate-y-2 motion-safe:opacity-100 motion-safe:!translate-y-0">
                     {% include 'includes/news_article_list.html' with news_articles=news_articles %}
                 </div>
 
