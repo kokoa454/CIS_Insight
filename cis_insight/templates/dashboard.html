@@ -134,46 +134,6 @@
     </aside>
     
     <main class="flex-grow flex flex-col h-dvh overflow-hidden pb-32">
-        <header class="bg-white border-b border-slate-200 flex flex-col flex-shrink-0 divide-y divide-slate-100">
-            <div class="flex items-center px-8 py-3 gap-6 overflow-x-auto no-scrollbar">
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <h2 class="text-tiny font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Region</h2>
-                    <div class="flex gap-2 items-center">
-                        {% if user.news_referred_country %}
-                            {% for user_referred_country in user.news_referred_country %}
-                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-tiny font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
-                                <span class="fi {% for country in cis_countries %}{% if country.country_code == user_referred_country %} fi-{{country.country_code|lower}}{% endif %}{% endfor %}"></span>
-                            </button>
-                            {% endfor %}
-                        {% else %}
-                            <a href="{% url 'news_settings' %}" class="text-tiny text-slate-400 hover:text-red-500 transition-colors italic">
-                                購読する国を選択 →
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-center px-8 py-3 gap-6 overflow-x-auto no-scrollbar">
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <h2 class="text-tiny font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-2 w-16">Topic</h2>
-                    <div class="flex gap-2 items-center">
-                        {% if user.news_referred_topic %}
-                            {% for user_referred_topic in user.news_referred_topic %}
-                            <button class="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-tiny font-bold hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 whitespace-nowrap">
-                                # {% for topic in topics %}{% if topic.name_en == user_referred_topic %} {{topic.name_ja}}{% endif %}{% endfor %}
-                            </button>
-                            {% endfor %}
-                        {% else %}
-                            <a href="{% url 'news_settings' %}" class="text-tiny text-slate-400 hover:text-red-500 transition-colors italic">
-                                興味のあるトピックを選択 →
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <div class="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
             <div class="max-w-4xl mx-auto space-y-4">
                 {% if news_articles %}
