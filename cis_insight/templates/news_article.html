@@ -189,7 +189,7 @@
                         </div>
                         <div id="content-ru-container" class="prose prose-slate max-w-none" data-is-content-added="{{ news_article.is_content_added }}">
                             {% if news_article.is_content_added %}
-                            <p class="text-slate-600 leading-loose text-sm md:text-base font-ru whitespace-pre-wrap">{{ news_article.content_ru }}</p>
+                            <p class="text-slate-600 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap font-ru">{{ news_article.content_ru }}</p>
                             {% else %}
                             <div id="spinner-ru" class="flex items-center gap-3 text-slate-500 font-medium py-4 font-ja">
                                 <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@
                                 </svg>
                                 <span class="font-ja">原文を取得中...</span>
                             </div>
-                            <p id="content-ru" class="text-slate-600 leading-loose text-sm md:text-base font-ru whitespace-pre-wrap hidden"></p>
+                            <p id="content-ru" class="text-slate-600 leading-loose text-base md:text-lg font-medium whitespace-pre-wrap font-ru hidden"></p>
                             {% endif %}
                         </div>
                     </div>
