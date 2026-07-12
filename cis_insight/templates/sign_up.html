@@ -10,15 +10,16 @@
         <div class="max-w-7xl mx-auto flex justify-center items-center">
             <div class="flex items-center gap-2">
                 <img src="{% static 'img/logo.png' %}" class="w-8 h-8 object-contain" alt="Logo">
-                <span class="text-subtitle tracking-tighter text-slate-900 font-cis_insight">
-                    CIS <span class="text-red-600">Insight</span>
+                <span class="text-subtitle tracking-tighter text-slate-900 font-cis-insight">
+                    CIS <span class="text-red-600 font-cis-insight">Insight</span>
                 </span>
             </div>
         </div>
     </header>
 
     <main class="flex-grow flex items-center justify-center py-12 px-6 sm:py-20">
-        <div class="w-full max-w-[480px] mx-auto"> <div class="card bg-white !p-8 md:!p-12 shadow-2xl shadow-slate-200/50 relative overflow-hidden rounded-2xl border border-slate-100">
+        <div class="w-full max-w-[480px] mx-auto">
+            <div class="card bg-white !p-8 md:!p-12 shadow-2xl shadow-slate-200/50 relative overflow-hidden rounded-2xl border border-slate-100">
                 <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-600 to-indigo-500"></div>
 
                 <div class="stack mb-10 text-center">
@@ -31,7 +32,7 @@
                 <form id="final-signup-form" action="{% url 'api_sign_up' %}" class="space-y-6">
                     {% csrf_token %}
                     
-                    <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm"></div>
+                    <div id="form-error" class="hidden status-error text-center py-3 animate-fade-in rounded-lg bg-red-50 text-red-600 text-sm font-ja font-en font-ru"></div>
 
                     <div class="space-y-2">
                         <label class="text-tiny font-bold text-slate-400 uppercase tracking-widest font-en">Email Address</label>
@@ -39,7 +40,7 @@
                             <input type="email" name="email" value="{{ user_email }}" readonly 
                                 class="input-base w-full bg-slate-50 text-slate-500 cursor-not-allowed border-dashed font-en py-3 px-4 rounded-lg border border-slate-200">
                             <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                                <span class="status-success bg-green-100 text-green-700 py-1 px-2 rounded text-tiny uppercase font-bold tracking-tighter">Verified</span>
+                                <span class="status-success bg-green-100 text-green-700 py-1 px-2 rounded text-tiny uppercase font-bold tracking-tighter font-en">Verified</span>
                             </div>
                         </div>
                     </div>
@@ -73,7 +74,7 @@
 
                     <div class="pt-4">
                         <button type="submit" id="submit-btn" class="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-blue-600 active:scale-95">
-                            <span id="btn-text">登録完了</span>
+                            <span id="btn-text" class="font-ja">登録完了</span>
                             <div id="btn-spinner" class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                             <svg id="btn-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -84,15 +85,15 @@
                 </form>
 
                 <p class="mt-8 text-center text-tiny text-slate-400 font-ja leading-relaxed">
-                    登録することで、<a href="#" class="text-slate-600 underline">利用規約</a>と<a href="#" class="text-slate-600 underline">プライバシーポリシー</a>に同意したことになります。
+                    登録することで、<a href="#" class="text-slate-600 underline font-ja">利用規約</a>と<a href="#" class="text-slate-600 underline font-ja">プライバシーポリシー</a>に同意したことになります。
                 </p>
             </div>
         </div>
     </main>
 
     <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-6 leading-relaxed">
-        &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> 
-        AI-Powered Eurasian Intelligence Platform.
+        &copy; 2026 Inari Goro. <span class="font-cis-insight">CIS Insight</span>. <br class="sm:hidden"> 
+        <span class="font-en">AI-Powered Eurasian Intelligence Platform.</span>
     </footer>
 </div>
 <script src="{% static 'js/sign_up.js' %}"></script>

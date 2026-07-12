@@ -6,10 +6,10 @@
                 <div class="flex items-center gap-2 md:gap-3">
                     <span class="flex items-center gap-1">
                         <span class="fi fi-{{ article.country.country_code|lower }} text-[9px] md:text-[10px]"></span>
-                        <span class="text-[9px] md:text-[10px] font-black text-red-600 uppercase tracking-widest">{{ article.country.name }}</span>
+                        <span class="text-[9px] md:text-[10px] font-black text-red-600 uppercase tracking-widest font-en">{{ article.country.name }}</span>
                     </span>
                     <span class="w-0.5 h-0.5 md:w-1 md:h-1 bg-slate-300 rounded-full"></span>
-                    <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[80px] md:max-w-none">
+                    <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[80px] md:max-w-none font-ja">
                         {% for t in article.topic.all %}{{ t.name_ja }}{% if not forloop.last %}, {% endif %}{% endfor %}
                     </span>
                     <span class="text-[9px] md:text-[10px] text-slate-400 ml-auto font-en">{{ article.published_at|date:"Y.m.d H:i" }}</span>
@@ -32,7 +32,7 @@
                 <img src="{{ article.image.url }}"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
-                    decoding="async"
+                    downloading="async"
                     onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';">
             </div>
             {% endif %}

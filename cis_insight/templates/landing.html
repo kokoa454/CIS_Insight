@@ -70,14 +70,14 @@
                 <div class="p-1 bg-slate-50 rounded-lg group-hover:scale-105 transition-transform">
                     <img src="{% static logo_path %}" class="w-8 h-8 sm:w-12 sm:h-12 object-contain" alt="Logo">
                 </div>
-                <span class="text-subtitle tracking-tighter text-slate-900 font-cis_insight">
-                    CIS <span class="text-red-600">Insight</span>
+                <span class="text-subtitle tracking-tighter text-slate-900 font-cis-insight">
+                    CIS <span class="text-red-600 font-cis-insight">Insight</span>
                 </span>
             </div>
 
             <div class="flex items-center gap-4 sm:gap-8">
                 <a href="{% url 'sign_in' %}" class="text-tiny font-semibold text-slate-600 hover:text-slate-900 transition-colors font-en">Sign In</a>
-                <button onclick="openModal()" class="btn-primary py-2 sm:py-2.5 text-tiny shadow-lg hover:bg-blue-600">Get Started</button>
+                <button onclick="openModal()" class="btn-primary py-2 sm:py-2.5 text-tiny shadow-lg hover:bg-blue-600 font-en">Get Started</button>
             </div>
         </div>
     </header>
@@ -129,8 +129,8 @@
                         </div>
                     </div>
                     <div class="p-4 border-t border-slate-50 bg-slate-50 flex gap-2">
-                        <span class="status-success bg-blue-100 text-blue-700">#Kazakhstan</span>
-                        <span class="status-success bg-green-100 text-green-700">#Technology</span>
+                        <span class="status-success bg-blue-100 text-blue-700 font-en">#Kazakhstan</span>
+                        <span class="status-success bg-green-100 text-green-700 font-en">#Technology</span>
                     </div>
                 </div>
 
@@ -140,11 +140,11 @@
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3 text-slate-700 font-medium font-ja text-standard">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z" /></svg>
-                            <span>AIによる自動翻訳で、膨大な情報を日本語で確認</span>
+                            <span class="font-ja">AIによる自動翻訳で、膨大な情報を日本語で確認</span>
                         </li>
                         <li class="flex items-start gap-3 text-slate-700 font-medium font-ja text-standard">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z" /></svg>
-                            <span>膨大なニュースも、AIが瞬時にジャンル分け</span>
+                            <span class="font-ja">膨大なニュースも、AIが瞬時にジャンル分け</span>
                         </li>
                     </ul>
                 </div>
@@ -203,7 +203,7 @@
 
             <div class="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
                 <div class="lg:col-span-2 bg-slate-50 rounded-3xl p-4 sm:p-8 border border-slate-100 shadow-inner relative overflow-hidden">
-                    <div id="country-tooltip" class="absolute pointer-events-none opacity-0 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-tiny font-bold z-50 shadow-xl border border-white/10">Country Name</div>
+                    <div id="country-tooltip" class="absolute pointer-events-none opacity-0 bg-slate-900/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-tiny font-bold z-50 shadow-xl border border-white/10 font-en">Country Name</div>
 
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="1000 -30 800 400" class="w-full h-auto drop-shadow-2xl">
                         <g id="map-layer">
@@ -224,7 +224,7 @@
                         <button id="btn-{{ country.country_code }}"
                             class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-red-500 hover:bg-red-50 group transition-all">
                             <span class="font-bold text-slate-700 group-hover:text-red-700 font-en text-tiny">{{ country.name }}</span>
-                            <span class="text-tiny font-bold text-slate-400 group-hover:text-red-400">{{ country.country_code }}</span>
+                            <span class="text-tiny font-bold text-slate-400 group-hover:text-red-400 font-en">{{ country.country_code }}</span>
                         </button>
                         {% endfor %}
                     </div>
@@ -251,7 +251,7 @@
                     </div>
                     <div class="flex-1">
                         <h3 class="text-standard font-bold text-slate-800 font-ja mb-1 group-hover:text-blue-600 transition-colors">CIS Insight ベータ版公開</h3>
-                        <p class="text-tiny text-slate-500 font-ja">CIS諸国ニュース対訳Webアプリ「CIS Insight」の提供を開始しました。</p>
+                        <p class="text-tiny text-slate-500 font-ja">CIS諸国ニュース対訳Webアプリ「<span class="font-cis-insight">CIS Insight</span>」の提供を開始しました。</p>
                     </div>
                 </div>
             </div>
@@ -259,7 +259,7 @@
     </section>
 
     <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-tiny font-en px-4 leading-relaxed">
-        &copy; 2026 Inari Goro. CIS Insight. <br class="sm:hidden"> 
+        &copy; 2026 Inari Goro. <span class="font-cis-insight">CIS Insight</span>. <br class="sm:hidden"> 
         AI-Powered Eurasian Intelligence Platform.
     </footer>
 </div>
