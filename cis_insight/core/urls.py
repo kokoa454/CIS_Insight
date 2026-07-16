@@ -27,11 +27,11 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.render_landing_page, name='landing_page'),
-    # path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'), 新規ユーザ受付停止
-    # path('api/pre_sign_up/', views.pre_sign_up, name='api_pre_sign_up'), 新規ユーザ受付停止
-    # path('api/sign_up/', users_views.sign_up, name='api_sign_up'), 新規ユーザ受付停止
+    path('sign_up/<str:verification_code>/', users_views.render_sign_up_page, name='sign_up'),
+    path('api/pre_sign_up/', views.pre_sign_up, name='api_pre_sign_up'),
+    path('api/sign_up/', users_views.sign_up, name='api_sign_up'),
 
-    path('api/pre_sign_up/', views.pre_sign_up_error, name='api_pre_sign_up'), # 新規ユーザ受付再開時に削除
+    # path('api/pre_sign_up/', views.pre_sign_up_error, name='api_pre_sign_up'), # 新規ユーザ受付停止用
     path('request_password_reset/', views.send_password_reset_email, name='request_password_reset'),
     path('password_reset/<str:verification_code>/', users_views.render_password_reset_page, name='password_reset'),
     path('api/reset_password/', users_views.reset_password, name='api_reset_password'),
@@ -61,6 +61,8 @@ urlpatterns = [
     path('api/delete_rss_error/', news_views.delete_rss_error, name='api_delete_rss_error'),
     path('api/deactivate_rss/', news_views.deactivate_rss, name='api_deactivate_rss'),
     path('api/activate_rss/', news_views.activate_rss, name='api_activate_rss'),
+    path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms'),
+    path('privacy/', TemplateView.as_view(template_name='privacy.html'), name='privacy'),
     path('manifest.json', TemplateView.as_view(template_name='manifest.json', content_type='application/json'), name='manifest'),
     path('sw.js', TemplateView.as_view(template_name='sw.js', content_type='application/javascript'), name='sw'),
 ]

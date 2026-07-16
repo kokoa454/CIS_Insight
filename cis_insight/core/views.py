@@ -27,8 +27,9 @@ def render_landing_page(request):
         'cis_countries': cis_countries
     })
 
-def pre_sign_up_error(request):
-    return JsonResponse({'status': 'error', 'message': '新規ユーザ登録は現在受け付けておりません。'})
+# 新規ユーザ受付停止用
+# def pre_sign_up_error(request):
+#     return JsonResponse({'status': 'error', 'message': '新規ユーザ登録は現在受け付けておりません。'})
 
 # ユーザー登録前の仮登録関連
 @ratelimit(key = 'ip', rate = '5/m', block = True)

@@ -85,7 +85,7 @@
                 </form>
 
                 <p class="mt-8 text-center text-tiny text-slate-400 font-ja leading-relaxed">
-                    登録することで、<a href="#" class="text-slate-600 underline font-ja">利用規約</a>と<a href="#" class="text-slate-600 underline font-ja">プライバシーポリシー</a>に同意したことになります。
+                    登録することで、<a href="{% url 'terms' %}" target="_blank" rel="noopener noreferrer" class="text-slate-600 underline font-ja hover:text-slate-900 transition-colors">利用規約</a>と<a href="{% url 'privacy' %}" target="_blank" rel="noopener noreferrer" class="text-slate-600 underline font-ja hover:text-slate-900 transition-colors">プライバシーポリシー</a>に同意したことになります。
                 </p>
             </div>
         </div>
