@@ -136,7 +136,10 @@ def sign_in(request):
         
         if user is None:
             return JsonResponse({'status': "error", "message" : "ユーザー名またはパスワードが正しくありません。"})
-        
+
+        if not user.is_active:
+            return JsonResponse({'status': "error", "message" : "アカウントが有効ではありません。"})
+
         if remember_me == "on":
             request.session.set_expiry(1209600) # 2週間保持
         else:

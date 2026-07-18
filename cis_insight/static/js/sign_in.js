@@ -23,7 +23,7 @@ signInForm.addEventListener('submit', async (e) => {
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     const btnIcon = document.getElementById('btn-icon');
-    const errorMsg = document.getElementById('form-error');
+    const errorMsg = document.getElementById('sign-in-error');
     const passwordInput = document.getElementById('password');
 
     if (usernameInput.value == "") {
