@@ -142,3 +142,23 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 500);
     }
 });
+
+function copyCurrentUrl(buttonElement) {
+    const currentUrl = window.location.href;
+
+    navigator.clipboard.writeText(currentUrl).then(() => {
+        const tooltip = buttonElement.querySelector('.copied-tooltip');
+        
+        if (tooltip) {
+            tooltip.classList.remove('opacity-0');
+            tooltip.classList.add('opacity-100');
+
+            setTimeout(() => {
+                tooltip.classList.remove('opacity-100');
+                tooltip.classList.add('opacity-0');
+            }, 2000);
+        }
+    }).catch(err => {
+        console.error('URLのコピーに失敗しました: ', err);
+    });
+}

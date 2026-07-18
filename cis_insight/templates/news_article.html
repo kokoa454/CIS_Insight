@@ -134,7 +134,7 @@
     <main class="flex-grow flex flex-col h-dvh overflow-hidden pb-32 opacity-0 animate-fade-in motion-safe:transform motion-safe:transition-all motion-safe:duration-200 motion-safe:translate-y-2 motion-safe:opacity-100 motion-safe:!translate-y-0">
         <div class="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
             <div class="max-w-4xl mx-auto space-y-8">
-                <div class="border-b border-slate-100 pb-6">
+                <div class="border-b border-slate-100">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-slate-400 text-xs font-medium font-ja">
                             参照日時: <span class="font-en">{{ news_article.published_at|date:"Y.m.d H:i" }}</span>
@@ -155,7 +155,56 @@
                     <h1 class="text-2xl md:text-3xl font-black text-slate-900 leading-tight mb-4 font-ja">{{ news_article.title_ja }}</h1>
                     <h2 class="text-slate-500 text-md font-medium leading-relaxed italic font-ru">{{ news_article.title_ru }}</h2>
                 </div>
-                
+
+                <div class="flex items-center gap-3 mb-4">
+                    <a href="https://twitter.com/share?url={{ request.build_absolute_uri }}&text={{ news_article.title_ja }}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-sm hover:bg-black hover:-translate-y-0.5 transition-all duration-200"
+                    aria-label="Xでシェア">
+                        <i class="fa-brands fa-x-twitter text-white text-sm fa-fw"></i>
+                    </a>
+
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}&text={{ news_article.title_ja }}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:-translate-y-0.5 transition-all duration-200"
+                    style="background-color: #1877F2;"
+                    aria-label="Facebookでシェア">
+                        <i class="fa-brands fa-facebook-f text-white text-sm fa-fw"></i>
+                    </a>
+
+                    <a href="https://social-plugins.line.me/lineit/share?url={{ request.build_absolute_uri }}&text={{ news_article.title_ja }}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:-translate-y-0.5 transition-all duration-200"
+                    style="background-color: #06C755;"
+                    aria-label="LINEで送る">
+                        <i class="fa-brands fa-line text-white text-base fa-fw"></i>
+                    </a>
+
+                    <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ news_article.title_ja }}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:-translate-y-0.5 transition-all duration-200"
+                    style="background-color: #26A5E4;"
+                    aria-label="Telegramでシェア">
+                        <i class="fa-brands fa-telegram text-white text-base fa-fw"></i>
+                    </a>
+
+                    <a href="https://api.whatsapp.com/send?text={{ news_article.title_ja }}%20{{ request.build_absolute_uri }}" 
+                    target="_blank" rel="noopener noreferrer" 
+                    class="w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:-translate-y-0.5 transition-all duration-200"
+                    style="background-color: #25D366;"
+                    aria-label="WhatsAppで共有">
+                        <i class="fa-brands fa-whatsapp text-white text-base fa-fw"></i>
+                    </a>
+
+                    <button onclick="copyCurrentUrl(this)" 
+                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200/60 shadow-sm hover:bg-slate-200 hover:-translate-y-0.5 transition-all duration-200 relative group"
+                            aria-label="記事のURLをコピー">
+                        <i class="fas fa-link text-slate-600 text-xs fa-fw"></i>
+                        <span class="font-ja copied-tooltip absolute bottom-full left-1/2 -translate-x-1/2 -mb-14 px-3 py-1.5 text-sm font-medium tracking-wider text-slate-200 bg-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] pointer-events-none transition-all duration-300 scale-95 origin-bottom z-50 opacity-0 whitespace-nowrap"
+                            style="width: max-content; display: block;">URLをコピーしました</span>
+                    </button>
+                </div>
+
                 {% if news_article.image %}
                 <img src="{{ news_article.image.url }}" alt="{{ news_article.title_ja }}" class="w-full h-auto rounded-lg shadow-sm">
                 {% endif %}
