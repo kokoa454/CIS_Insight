@@ -289,6 +289,75 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
+// アカウント削除関連
+const accountDeleteBtn = document.getElementById("account_delete");
+const accountDeleteModal = document.getElementById("account-delete-modal");
+
+function openAccountDeleteModal() {
+    accountDeleteModal.classList.remove("hidden");
+    accountDeleteModal.classList.add("flex");
+}
+
+function closeAccountDeleteModal() {
+    accountDeleteModal.classList.add("hidden");
+    accountDeleteModal.classList.remove("flex");
+}
+
+accountDeleteBtn.addEventListener("click", () => {
+    openAccountDeleteModal();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeAccountDeleteModal();
+    }
+});
+
+const accountDeleteForm = document.getElementById("account-delete-form");
+const confirmAccountDeleteBtn = document.getElementById("confirm-account-delete");
+
+accountDeleteForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const password = document.getElementById("delete-confirm-password-input").value;
+
+    confirmAccountDeleteBtn.disabled = true;
+    confirmAccountDeleteBtn.innerText = "削除中...";
+
+    const csrfToken = document.cookie.split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+
+    try {
+        const response = await fetch(accountDeleteForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({password: password})
+        })
+
+        const data = await response.json();
+        if (data.status === "success") {
+            showSuccess("アカウントを削除しました。今後ともよろしくお願いいたします。ご登録ありがとうございました。");
+            closeAccountDeleteModal();
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 2000);
+        } else {
+            console.log(data.error_message);
+            showError(data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        showError('申し訳ありません。アカウントの削除に失敗しました。時間を空けてから再度お試しください。');
+    }
+
+    confirmAccountDeleteBtn.disabled = false;
+    confirmAccountDeleteBtn.innerText = "アカウントを完全に削除";
+});
+
 function showSuccess(msg){
     const successToast = document.getElementById("success-toast");
     const successMessage = document.getElementById("success-message");

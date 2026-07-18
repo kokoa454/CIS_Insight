@@ -136,6 +136,41 @@
     </div>
 </div>
 
+<div id="account-delete-modal" class="modal-overlay hidden px-4 z-[100]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeAccountDeleteModal()"></div>
+    <div class="modal-content relative !max-w-md !p-0 overflow-hidden shadow-2xl border border-red-500/10">
+        <div class="p-8">
+            <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mb-4 ring-8 ring-red-50">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            
+            <h3 class="text-subtitle font-ja text-slate-900 mb-2 font-bold">アカウントを削除しますか？</h3>
+            <p class="text-tiny text-slate-500 font-ja mb-6 leading-relaxed">
+                アカウントを削除すると、これまでの閲覧データや設定など、すべての情報が完全に消去され、元に戻すことはできません。
+            </p>
+            
+            <form id="account-delete-form" method="post" action="{% url 'api_account_delete' %}">
+                {% csrf_token %}
+                <div class="flex flex-col gap-3">
+                    <label for="delete_confirm_password" class="text-tiny font-bold text-red-600 uppercase tracking-widest font-ja">現在のパスワード</label>
+                    <input type="password" name="password" id="delete-confirm-password-input" required placeholder="現在のパスワードを入力" class="input-base border-red-200 focus:border-red-500 focus:ring-red-500/20 font-en mb-2">
+                </div>
+                
+                <div class="flex flex-col gap-3 mt-6">
+                    <button type="submit" id="confirm-account-delete" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white text-standard font-ja font-bold rounded-xl shadow-lg shadow-red-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-95">
+                        アカウントを完全に削除
+                    </button>
+                    <button type="button" onclick="closeAccountDeleteModal()" class="mt-4 w-full text-tiny text-slate-400 font-ja hover:text-slate-600 transition-colors">
+                        キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div id="success-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] hidden pointer-events-none">
     <div class="flex justify-center px-4">
         <div class="bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 animate-slide-up pointer-events-auto">
@@ -419,6 +454,29 @@
                         </div>
                     </div>
                     <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </section>
+
+            <section class="bg-white rounded-3xl p-6 md:p-8 border border-red-200 shadow-sm mt-8 ring-1 ring-red-500/5">
+                <div class="flex items-center gap-3 border-l-4 border-red-600 pl-4 mb-6">
+                    <h2 class="text-sm font-black text-red-600 uppercase tracking-widest font-en">Delete Account</h2>
+                </div>
+
+                <button id="account_delete" onclick="openAccountDeleteModal()" class="w-full flex items-center justify-between p-4 rounded-2xl border border-red-100 hover:bg-red-50/50 transition-colors group">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-red-50 rounded-xl group-hover:bg-white transition-colors">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-bold text-red-600 font-ja">アカウントの削除（退会）</p>
+                            <p class="text-tiny text-slate-500 font-ja">アカウントを完全に削除します。この操作は取り消せません。</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-red-300 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>

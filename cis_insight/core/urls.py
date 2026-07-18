@@ -56,6 +56,7 @@ urlpatterns = [
     path('api/account_settings/', users_views.account_settings, name='api_account_settings'),
     path('api/pre_email_change/', users_views.pre_email_change, name='api_pre_email_change'),
     path('api/password_change/', users_views.password_change, name='api_password_change'),
+    path('api/account_delete/', users_views.account_delete, name='api_account_delete'),
     path('api/rss_settings/', news_views.rss_settings, name='api_rss_settings'),
     path('api/delete_rss/', news_views.delete_rss, name='api_delete_rss'),
     path('api/delete_rss_error/', news_views.delete_rss_error, name='api_delete_rss_error'),

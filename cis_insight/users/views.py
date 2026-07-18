@@ -441,3 +441,29 @@ def reset_password(request):
 @never_cache
 def render_password_reset_complete_page(request):
     return render(request, 'password_reset_complete.html')
+
+@login_required
+def account_delete(request):
+    try:
+        data = json.loads(request.body)
+        password = data.get('password')
+        
+        if not password:
+            return JsonResponse({'status': "error", "message" : "パスワードを入力してください。"})
+        
+        user = request.user
+        
+        if not user.check_password(password):
+            return JsonResponse({'status': "error", "message" : "パスワードが正しくありません。"})
+        
+        with transaction.atomic():
+            user.delete()
+            logger.info(f'User {user} deleted successfully')
+
+        auth_logout(request)
+
+        return JsonResponse({'status': 'success', 'redirect_url': '/'})
+    except Exception as e:
+        logger.error(f'Exception in account_delete: {e}')
+        return JsonResponse({'status': 'error', 'message': '予期せぬエラーが発生しました。'})
+        
