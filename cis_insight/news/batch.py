@@ -62,13 +62,22 @@ def fetch_web_news_articles():
 
     for rss in active_rss_list:
         try:
-            pre_processed_items = fetch_and_create_base_articles(rss, all_topics)
+            valid_entries = fetch_and_filter_feed_entries(rss)
 
-            if not pre_processed_items:
+            if not valid_entries:
                 continue
 
-            extract_and_clean_contents(pre_processed_items, rss)
-            translate_and_save_articles(pre_processed_items, rss)
+            chunk_size = 10
+            for i in range(0, len(valid_entries), chunk_size):
+                chunk_entries = valid_entries[i:i + chunk_size]
+
+                chunk_items = initialize_chunk_articles(chunk_entries, rss)
+                if not chunk_items:
+                    continue
+
+                translate_and_classify_chunk(chunk_items, rss, all_topics)
+                extract_and_clean_contents_chunk(chunk_items, rss)
+                translate_and_save_articles_chunk(chunk_items, rss)
 
             rss.total_articles = NewsArticle.objects.filter(rss=rss).count()
             rss.last_fetched_at = timezone.now()
@@ -76,13 +85,10 @@ def fetch_web_news_articles():
 
         except Exception as e:
             logger.error(f'Error processing RSS {rss.url}: {e}')
-            rss.last_error = str(e)
-            rss.last_error_at = timezone.now()
-            rss.save()
 
-def fetch_and_create_base_articles(rss, all_topics):
+def fetch_and_filter_feed_entries(rss):
     processed_urls = set()
-    pre_processed_articles = []
+    valid_entries = []
 
     try:
         downloaded = requests.get(rss.url, headers=DEFAULT_HEADERS, impersonate=IMPERSONATE_TARGET, timeout=30)
@@ -98,7 +104,6 @@ def fetch_and_create_base_articles(rss, all_topics):
 
     existing_articles = {
         a.url: a
-
         for a in NewsArticle.objects.filter(
             url__in=[entry.link for entry in feed.entries if 'link' in entry]
         ).prefetch_related('topic')
@@ -109,11 +114,9 @@ def fetch_and_create_base_articles(rss, all_topics):
         if idx % 5 == 0:
             try:
                 rss.refresh_from_db()
-
                 if not rss.is_active:
                     logger.info(f"RSS {rss.url} became inactive during processing. Aborting.")
                     return []
-
             except ObjectDoesNotExist:
                 return []
 
@@ -130,7 +133,22 @@ def fetch_and_create_base_articles(rss, all_topics):
             continue
 
         processed_urls.add(url)
-        existing_article = existing_articles.get(url)
+        
+        valid_entries.append({
+            "url": url,
+            "entry": entry,
+            "existing_article": existing_articles.get(url)
+        })
+
+    return valid_entries
+
+def initialize_chunk_articles(chunk_entries, rss):
+    chunk_items = []
+    
+    for item in chunk_entries:
+        url = item["url"]
+        entry = item["entry"]
+        existing_article = item["existing_article"]
         title_ru = entry.title
 
         has_topic = existing_article and existing_article.is_topic_picked
@@ -146,10 +164,8 @@ def fetch_and_create_base_articles(rss, all_topics):
             published_at = None
 
         image = None
-
         if not (existing_article and existing_article.image):
             image_url = None
-
             if 'enclosures' in entry and len(entry.enclosures) > 0:
                 image_url = entry.enclosures[0].href
             elif 'media_content' in entry and len(entry.media_content) > 0:
@@ -163,17 +179,15 @@ def fetch_and_create_base_articles(rss, all_topics):
                 else:
                     try:
                         image = download_image_from_rss(image_url)
-
                     except Exception:
                         image = None
             else:
                 try:
                     image = download_image_from_article(url)
-
                 except Exception:
                     image = None
 
-        pre_processed_articles.append({
+        chunk_items.append({
             "existing_article": existing_article,
             "url": url,
             "title_ru": title_ru,
@@ -187,229 +201,225 @@ def fetch_and_create_base_articles(rss, all_topics):
             "title_ja": existing_article.title_ja if has_translation else None,
             "topic": list(existing_article.topic.all()) if has_topic else []
         })
+        
+    return chunk_items
 
-    if pre_processed_articles:
-        chunk_size = 10
+def translate_and_classify_chunk(chunk_items, rss, all_topics):
+    titles_to_translate = [item["title_ru"] for item in chunk_items if not item["has_translation"]]
+    titles_to_classify = [item["title_ru"] for item in chunk_items if not item["has_topic"]]
 
-        for i in range(0, len(pre_processed_articles), chunk_size):
-            chunk_items = pre_processed_articles[i:i + chunk_size]
+    if titles_to_translate or titles_to_classify:
+        time.sleep(random.uniform(2.0, 3.5))
 
-            titles_to_translate = [item["title_ru"] for item in chunk_items if not item["has_translation"]]
-            titles_to_classify = [item["title_ru"] for item in chunk_items if not item["has_topic"]]
+    if titles_to_translate:
+        try:
+            translated_list = translate_titles_batch(titles_to_translate, rss)
+            translated_map = {orig: trans for orig, trans in zip(titles_to_translate, translated_list) if trans}
 
-            if titles_to_translate or titles_to_classify:
-                time.sleep(random.uniform(2.0, 3.5))
+            for item in chunk_items:
+                if not item["has_translation"] and item["title_ru"] in translated_map:
+                    item["title_ja"] = translated_map[item["title_ru"]]
 
-            if titles_to_translate:
-                try:
-                    translated_list = translate_titles_batch(titles_to_translate, rss)
-                    translated_map = {orig: trans for orig, trans in zip(titles_to_translate, translated_list) if trans}
+        except Exception as e:
+            logger.error(f"Batch title translation crashed: {e}")
 
-                    for item in chunk_items:
-                        if not item["has_translation"] and item["title_ru"] in translated_map:
-                            item["title_ja"] = translated_map[item["title_ru"]]
+    if titles_to_classify:
+        try:
+            time.sleep(0.5)
+            topic_map = pick_up_news_articles_topics_batch(titles_to_classify, all_topics, rss)
 
-                except Exception as e:
-                    logger.error(f"Batch title translation crashed: {e}")
+            for item in chunk_items:
+                if not item["has_topic"] and item["title_ru"] in topic_map:
+                    item["topic"] = topic_map[item["title_ru"]]
 
-            if titles_to_classify:
-                try:
-                    time.sleep(0.5)
-                    topic_map = pick_up_news_articles_topics_batch(titles_to_classify, all_topics, rss)
+        except Exception as e:
+            logger.error(f"Batch topic classification crashed: {e}")
 
-                    for item in chunk_items:
-                        if not item["has_topic"] and item["title_ru"] in topic_map:
-                            item["topic"] = topic_map[item["title_ru"]]
+def extract_and_clean_contents_chunk(chunk_items, rss):
+    contents_to_clean = {}
 
-                except Exception as e:
-                    logger.error(f"Batch topic classification crashed: {e}")
+    for item in chunk_items:
+        if item["has_content"]:
+            continue
 
-    return pre_processed_articles
+        time.sleep(1)
 
-def extract_and_clean_contents(pre_processed_items, rss):
-    chunk_size = 10
+        try:
+            doc_downloaded = requests.get(item["url"], headers=DEFAULT_HEADERS, impersonate=IMPERSONATE_TARGET, timeout=30)
+            doc_downloaded.raise_for_status()
+            extracted_text = trafilatura.extract(doc_downloaded.text)
 
-    for i in range(0, len(pre_processed_items), chunk_size):
-        chunk_items = pre_processed_items[i:i + chunk_size]
-        contents_to_clean = {}
+            if extracted_text:
+                contents_to_clean[item["url"]] = extracted_text
+        except Exception as e:
+            logger.error(f'Exception while extracting raw content for {item["url"]}: {e}')
 
-        for item in chunk_items:
-            if item["has_content"]:
-                continue
+    if contents_to_clean:
+        try:
+            time.sleep(1.5)
+            cleaned_contents_map = clean_articles_contents_batch(contents_to_clean, rss)
 
-            time.sleep(1)
+            for item in chunk_items:
+                if not item["has_content"] and item["url"] in cleaned_contents_map:
+                    item["content_ru"] = cleaned_contents_map[item["url"]]
+        except Exception as e:
+            logger.error(f"Batch content cleaning crashed: {e}")
 
-            try:
-                doc_downloaded = requests.get(item["url"], headers=DEFAULT_HEADERS, impersonate=IMPERSONATE_TARGET, timeout=30)
-                doc_downloaded.raise_for_status()
-                extracted_text = trafilatura.extract(doc_downloaded.text)
+def translate_and_save_articles_chunk(chunk_items, rss):
+    contents_to_translate = []
 
-                if extracted_text:
-                    contents_to_clean[item["url"]] = extracted_text
-            except Exception as e:
-                logger.error(f'Exception while extracting raw content for {item["url"]}: {e}')
+    for item in chunk_items:
+        ru_text = item["content_ru"]
+        has_trans_ja = item["existing_article"] and getattr(item["existing_article"], "is_content_translated", False)
 
-        if contents_to_clean:
-            try:
-                time.sleep(1.5)
-                cleaned_contents_map = clean_articles_contents_batch(contents_to_clean, rss)
+        if ru_text and ru_text.strip() and not has_trans_ja:
+            contents_to_translate.append(ru_text)
 
-                for item in chunk_items:
-                    if not item["has_content"] and item["url"] in cleaned_contents_map:
-                        item["content_ru"] = cleaned_contents_map[item["url"]]
-            except Exception as e:
-                logger.error(f"Batch content cleaning crashed: {e}")
+    translated_contents_map = {}
 
-def translate_and_save_articles(pre_processed_items, rss):
-    chunk_size = 10
+    if contents_to_translate:
+        try:
+            time.sleep(1.5)
+            content_chunk_size = 3
 
-    for i in range(0, len(pre_processed_items), chunk_size):
-        chunk_items = pre_processed_items[i:i + chunk_size]
-        contents_to_translate = []
+            for sub_i in range(0, len(contents_to_translate), content_chunk_size):
+                sub_chunk = contents_to_translate[sub_i:sub_i + content_chunk_size]
+                translated_content_list = translate_content_batch(sub_chunk, rss)
 
-        for item in chunk_items:
-            ru_text = item["content_ru"]
-            has_trans_ja = item["existing_article"] and getattr(item["existing_article"], "is_content_translated", False)
+                if not translated_content_list:
+                    logger.warning(f"Sub-chunk translation skipped due to model output error. Chunk size: {len(sub_chunk)}")
+                    continue
 
-            if ru_text and ru_text.strip() and not has_trans_ja:
-                contents_to_translate.append(ru_text)
+                for orig_ru, trans_ja in zip(sub_chunk, translated_content_list):
+                    if trans_ja:
+                        for item in chunk_items:
+                            item_ru = item["content_ru"]
 
-        translated_contents_map = {}
+                            if item_ru and item_ru.strip() == orig_ru.strip():
+                                translated_contents_map[item["url"]] = trans_ja
+                                break
+                time.sleep(1.0)
 
-        if contents_to_translate:
-            try:
-                time.sleep(1.5)
-                content_chunk_size = 3
+        except Exception as e:
+            logger.error(f"Batch content translation crashed: {e}")
 
-                for sub_i in range(0, len(contents_to_translate), content_chunk_size):
-                    sub_chunk = contents_to_translate[sub_i:sub_i + content_chunk_size]
-                    translated_content_list = translate_content_batch(sub_chunk, rss)
+    articles_to_create = []
+    articles_to_update = []
+    m2m_updates = []
 
-                    if not translated_content_list:
-                        logger.warning(f"Sub-chunk translation skipped due to model output error. Chunk size: {len(sub_chunk)}")
-                        continue
+    for item in chunk_items:
+        url = item["url"]
+        existing_article = item["existing_article"]
+        title_ru = item["title_ru"]
+        title_ja = existing_article.title_ja if item["has_translation"] else item.get("title_ja")
+        topic = item["topic"]
+        topic_changed = not item["has_topic"]
+        content_ru = item["content_ru"]
+        is_content_added = bool(content_ru and str(content_ru).strip())
 
-                    for orig_ru, trans_ja in zip(sub_chunk, translated_content_list):
-                        if trans_ja:
-                            for item in chunk_items:
-                                item_ru = item["content_ru"]
+        has_trans_ja = existing_article and getattr(existing_article, "is_content_translated", False)
+        content_ja = existing_article.content_ja if has_trans_ja else translated_contents_map.get(url)
+        is_content_translated = bool(content_ja and str(content_ja).strip())
 
-                                if item_ru and item_ru.strip() == orig_ru.strip():
-                                    translated_contents_map[item["url"]] = trans_ja
-                                    break
-                    time.sleep(1.0)
+        if title_ja is None and not existing_article:
+            continue
 
-            except Exception as e:
-                logger.error(f"Batch content translation crashed: {e}")
+        if not item["has_topic"] and not topic:
+            continue
 
-        articles_to_create = []
-        articles_to_update = []
-        m2m_updates = []
+        is_title_added = bool(title_ru and str(title_ru).strip())
+        is_title_translated = bool(title_ja and str(title_ja).strip())
+        is_topic_picked = bool(topic)
+        is_active = is_title_added and is_title_translated and is_topic_picked
 
-        for item in chunk_items:
-            url = item["url"]
-            existing_article = item["existing_article"]
-            title_ru = item["title_ru"]
-            title_ja = existing_article.title_ja if item["has_translation"] else item.get("title_ja")
-            topic = item["topic"]
-            topic_changed = not item["has_topic"]
-            content_ru = item["content_ru"]
-            is_content_added = bool(content_ru and str(content_ru).strip())
+        if existing_article:
+            if title_ru: existing_article.title_ru = title_ru
+            if title_ja: existing_article.title_ja = title_ja
+            existing_article.published_at = item["published_at"]
+            existing_article.country = rss.country
+            existing_article.is_active = is_active
+            existing_article.is_title_added = is_title_added
+            existing_article.is_title_translated = is_title_translated
+            existing_article.is_topic_picked = is_topic_picked
 
-            has_trans_ja = existing_article and getattr(existing_article, "is_content_translated", False)
-            content_ja = existing_article.content_ja if has_trans_ja else translated_contents_map.get(url)
-            is_content_translated = bool(content_ja and str(content_ja).strip())
+            if not existing_article.is_content_added and is_content_added:
+                existing_article.content_ru = content_ru
+                existing_article.is_content_added = True
 
-            if title_ja is None and not existing_article:
-                continue
+            if not getattr(existing_article, 'is_content_translated', False) and is_content_translated:
+                existing_article.content_ja = content_ja
+                existing_article.is_content_translated = True
 
-            if not item["has_topic"] and not topic:
-                continue
+            if item["image"]:
+                existing_article.image = item["image"]
 
-            is_title_added = bool(title_ru and str(title_ru).strip())
-            is_title_translated = bool(title_ja and str(title_ja).strip())
-            is_topic_picked = bool(topic)
-            is_active = is_title_added and is_title_translated and is_topic_picked
+            articles_to_update.append(existing_article)
 
-            if existing_article:
-                if title_ru: existing_article.title_ru = title_ru
-                if title_ja: existing_article.title_ja = title_ja
-                existing_article.published_at = item["published_at"]
-                existing_article.country = rss.country
-                existing_article.is_active = is_active
-                existing_article.is_title_added = is_title_added
-                existing_article.is_title_translated = is_title_translated
-                existing_article.is_topic_picked = is_topic_picked
+            if topic_changed:
+                m2m_updates.append((existing_article, topic))
+        else:
+            new_article = NewsArticle(
+                url=url,
+                title_ru=title_ru,
+                title_ja=title_ja,
+                published_at=item["published_at"],
+                country=rss.country,
+                image=item["image"],
+                rss=rss,
+                content_ru=content_ru,
+                content_ja=content_ja,
+                is_active=is_active,
+                is_title_added=is_title_added,
+                is_title_translated=is_title_translated,
+                is_topic_picked=is_topic_picked,
+                is_content_added=is_content_added,
+                is_content_translated=is_content_translated,
+            )
+            articles_to_create.append(new_article)
+            m2m_updates.append((new_article, topic))
 
-                if not existing_article.is_content_added and is_content_added:
-                    existing_article.content_ru = content_ru
-                    existing_article.is_content_added = True
+    if articles_to_create or articles_to_update:
+        try:
+            with transaction.atomic():
+                if articles_to_create:
+                    created_articles = NewsArticle.objects.bulk_create(
+                        articles_to_create, 
+                        ignore_conflicts=True
+                    )
 
-                if not getattr(existing_article, 'is_content_translated', False) and is_content_translated:
-                    existing_article.content_ja = content_ja
-                    existing_article.is_content_translated = True
+                    for idx, (article_obj, topics) in enumerate(m2m_updates):
+                        if article_obj.pk is None: 
+                            matched = next((a for a in created_articles if a.url == article_obj.url and a.pk is not None), None)
+                            if matched:
+                                m2m_updates[idx] = (matched, topics)
+                            else:
+                                m2m_updates[idx] = (None, [])
 
-                if item["image"]:
-                    existing_article.image = item["image"]
+                if articles_to_update:
+                    fields_to_update = [
+                        'title_ru', 'title_ja', 'published_at', 'country', 'image',
+                        'is_active', 'is_title_added', 'is_title_translated', 'is_topic_picked',
+                        'content_ru', 'is_content_added', 'content_ja', 'is_content_translated'
+                    ]
+                    NewsArticle.objects.bulk_update(articles_to_update, fields=fields_to_update)
 
-                articles_to_update.append(existing_article)
+                for article_obj, topics in m2m_updates:
+                    if article_obj and article_obj.pk is not None:
+                        article_obj.topic.set(topics)
 
-                if topic_changed:
-                    m2m_updates.append((existing_article, topic))
-            else:
-                new_article = NewsArticle(
-                    url=url,
-                    title_ru=title_ru,
-                    title_ja=title_ja,
-                    published_at=item["published_at"],
-                    country=rss.country,
-                    image=item["image"],
-                    rss=rss,
-                    content_ru=content_ru,
-                    content_ja=content_ja,
-                    is_active=is_active,
-                    is_title_added=is_title_added,
-                    is_title_translated=is_title_translated,
-                    is_topic_picked=is_topic_picked,
-                    is_content_added=is_content_added,
-                    is_content_translated=is_content_translated,
-                )
-                articles_to_create.append(new_article)
-                m2m_updates.append((new_article, topic))
+                rss.total_articles = NewsArticle.objects.filter(rss = rss).count()
+                rss.last_fetched_at = timezone.now()
+                rss.save(update_fields = ['total_articles', 'last_fetched_at'])
 
-        if articles_to_create or articles_to_update:
-            try:
-                with transaction.atomic():
-                    if articles_to_create:
-                        created_articles = NewsArticle.objects.bulk_create(
-                            articles_to_create, 
-                            ignore_conflicts=True
-                        )
+            logger.info(f"Successfully batch saved {len(articles_to_create)} created and {len(articles_to_update)} updated articles.")
 
-                        for idx, (article_obj, topics) in enumerate(m2m_updates):
-                            if article_obj.pk is None: 
-                                matched = next((a for a in created_articles if a.url == article_obj.url and a.pk is not None), None)
-                                if matched:
-                                    m2m_updates[idx] = (matched, topics)
-                                else:
-                                    m2m_updates[idx] = (None, [])
+        except Exception as e:
+            logger.error(f'Failed to commit batch save for chunk: {e}')
 
-                    if articles_to_update:
-                        fields_to_update = [
-                            'title_ru', 'title_ja', 'published_at', 'country', 'image',
-                            'is_active', 'is_title_added', 'is_title_translated', 'is_topic_picked',
-                            'content_ru', 'is_content_added', 'content_ja', 'is_content_translated'
-                        ]
-                        NewsArticle.objects.bulk_update(articles_to_update, fields=fields_to_update)
-
-                    for article_obj, topics in m2m_updates:
-                        if article_obj and article_obj.pk is not None:
-                            article_obj.topic.set(topics)
-
-                logger.info(f"Successfully batch saved {len(articles_to_create)} created and {len(articles_to_update)} updated articles.")
-
-            except Exception as e:
-                logger.error(f'Failed to commit batch save for chunk: {e}')
+            rss.total_articles = NewsArticle.objects.filter(rss = rss).count()
+            rss.last_error = str(e)
+            rss.last_error_at = timezone.now()
+            rss.save()
 
 def download_image_from_rss(image_url):
     if not (image_url is not None and (image_url.startswith('http://') or image_url.startswith('https://'))):
@@ -583,12 +593,13 @@ def translate_content_batch(content_ru_list, rss):
 
     prompt = f"""
     Translate the following Russian news content into natural Japanese for a news site.
+    - The input is a JSON array containing {len(content_ru_list)} items.
+    - The output MUST be a JSON array containing EXACTLY {len(content_ru_list)} items, in the exact same order.
     - For each item in the provided JSON array, translate the ENTIRE text completely without omitting any parts or summarizing.
     - Translate all the words into officially correct Japanese (である調).
     - If media company name, organization name, person name, or place name are included, translate them into officially correct Japanese.
     - Separate each paragraph with a double newline (\\n\\n).
-    - Return ONLY a valid JSON array of strings containing the translated text in the EXACT same order as the input.
-    - Do not include markdown codeblocks, do not add extra text, descriptions, or notes.
+    - Return ONLY a valid JSON array of strings. Do not include markdown codeblocks, do not add extra text, descriptions, or notes.
 
     Content:
     {json.dumps(content_ru_list, ensure_ascii=False)}
@@ -625,7 +636,9 @@ def translate_content_batch(content_ru_list, rss):
                         if isinstance(translated_array, list) and len(translated_array) == len(content_ru_list):
                             return translated_array
                         else:
-                            logger.warning(f"Model {model} returned list size mismatch or unexpected format.")
+                            got_type = type(translated_array).__name__
+                            got_len = len(translated_array) if isinstance(translated_array, list) else 'N/A'
+                            logger.warning(f"Model {model} returned unexpected format: type={got_type}, len={got_len}, expected_len={len(content_ru_list)}")
 
                     except json.JSONDecodeError as je:
                         logger.error(f"JSON decode failed for model {model}. Error: {je}")
@@ -661,6 +674,8 @@ def translate_titles_batch(titles_ru_list, rss):
     prompt = f"""
     Translate the following Russian news titles into natural Japanese for a news site.
     - Titles should be concise and catchy.
+    - The input is a JSON array containing {len(titles_ru_list)} items.
+    - The output MUST be a JSON array containing EXACTLY {len(titles_ru_list)} items, in the exact same order.
     - Translate all words, media company names, organizations, or person names into officially correct Japanese.
     - Return ONLY a valid JSON array of strings containing the translations in the exact same order.
     - Do not markdown codeblocks, do not add extra text, descriptions or notes.
@@ -734,6 +749,8 @@ def pick_up_news_articles_topics_batch(titles_list, topics, rss):
     prompt = f"""
     Classify the following news article titles into some of the given topics.
     - Return ONLY a valid JSON object where the key is the exact original title, and the value is a list of matching topic strings from the permitted topics list.
+    - The input is a JSON array containing {len(titles_list)} items.
+    - The output MUST be a JSON object containing EXACTLY {len(titles_list)} keys, in the exact same order.
     - Do not include any extra descriptions, markdown, notes or explanations.
 
     Permitted Topics: {', '.join([topic.name_en for topic in topics])}
@@ -785,6 +802,8 @@ def clean_articles_contents_batch(contents_dict, rss):
     prompt = f"""
     Clean the following Russian news contents.
     - For each item in the provided JSON object, extract ONLY the core narrative text.
+    - The input is a JSON object containing {len(contents_dict)} items.
+    - The output MUST be a JSON object containing EXACTLY {len(contents_dict)} keys, in the exact same order.
     - Remove the dateline (e.g., "CITY, Date - Agency Name").
     - Remove all noise: ads, social media links, navigation menu, phone numbers, emails, and copyright notices.
     - Remove repetitive titles or image captions.
