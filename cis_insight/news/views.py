@@ -401,7 +401,8 @@ def delete_rss_error(request):
         
         with transaction.atomic():
             rss.last_error = None
-            rss.save()
+            rss.last_error_at = None
+            rss.save(update_fields=['last_error', 'last_error_at'])
         return JsonResponse({'status': "success", "message" : "RSSエラーメッセージを削除しました。"})
     except Exception as e:
         logger.error(f'Exception in delete_rss_error: {e}')

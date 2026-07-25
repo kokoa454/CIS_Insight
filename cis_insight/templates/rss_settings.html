@@ -412,22 +412,22 @@
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="bg-slate-50 p-4 rounded-xl">
                                 <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1 font-en">Last Fetched</p>
-                                <p class="text-slate-700 font-en">{{ rss.last_fetched_at|default:"-" }}</p>
+                                <p class="text-slate-700 font-small font-en">{{ rss.last_fetched_at|default:"-" }}</p>
                             </div>
 
                             <div class="bg-slate-50 p-4 rounded-xl">
                                 <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1 font-en">Articles Imported</p>
-                                <p class="text-slate-700 font-en">{{ rss.total_articles }}</p>
+                                <p class="text-slate-700 font-small font-en">{{ rss.total_articles }}</p>
                             </div>
 
                             <div class="p-4 rounded-xl">
                                 <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1 font-en">Last Error</p>
-                                <p class="text-red-500 font-en text-xs break-all font-ja font-ru">{{ rss.last_error|default:"-" }}</p>
+                                <p class="text-red-500 break-all font-small font-en">{{ rss.last_error|default:"-" }}</p>
                             </div>
 
                             <div class="p-4 rounded-xl">
                                 <p class="text-tiny font-black text-slate-400 uppercase tracking-widest mb-1 font-en">Last Error At</p>
-                                <p class="text-red-500 font-en text-xs break-all font-ja font-ru">{{ rss.last_error_at|default:"-" }}</p>
+                                <p class="text-red-500 break-all font-small font-en">{{ rss.last_error_at|default:"-" }}</p>
                             </div>
                         </div>
 
