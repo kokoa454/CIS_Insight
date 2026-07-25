@@ -77,6 +77,7 @@ def fetch_web_news_articles():
         except Exception as e:
             logger.error(f'Error processing RSS {rss.url}: {e}')
             rss.last_error = str(e)
+            rss.last_error_at = timezone.now()
             rss.save()
 
 def fetch_and_create_base_articles(rss, all_topics):
@@ -90,6 +91,9 @@ def fetch_and_create_base_articles(rss, all_topics):
 
     except Exception as e:
         logger.error(f'Error fetching RSS feed from {rss.url}: {e}')
+        rss.last_error = str(e)
+        rss.last_error_at = timezone.now()
+        rss.save()
         return []
 
     existing_articles = {
@@ -310,11 +314,11 @@ def translate_and_save_articles(pre_processed_items, rss):
             topic = item["topic"]
             topic_changed = not item["has_topic"]
             content_ru = item["content_ru"]
-            is_content_added = content_ru is not None
+            is_content_added = bool(content_ru and str(content_ru).strip())
 
             has_trans_ja = existing_article and getattr(existing_article, "is_content_translated", False)
             content_ja = existing_article.content_ja if has_trans_ja else translated_contents_map.get(url)
-            is_content_translated = content_ja is not None
+            is_content_translated = bool(content_ja and str(content_ja).strip())
 
             if title_ja is None and not existing_article:
                 continue
@@ -322,8 +326,8 @@ def translate_and_save_articles(pre_processed_items, rss):
             if not item["has_topic"] and not topic:
                 continue
 
-            is_title_added = title_ru is not None
-            is_title_translated = title_ja is not None
+            is_title_added = bool(title_ru and str(title_ru).strip())
+            is_title_translated = bool(title_ja and str(title_ja).strip())
             is_topic_picked = bool(topic)
             is_active = is_title_added and is_title_translated and is_topic_picked
 
@@ -769,8 +773,6 @@ def pick_up_news_articles_topics_batch(titles_list, topics, rss):
             if isinstance(error, RateLimitError) or isinstance(error, ServerError):
                 continue
             logger.error(f"Error for Groq model {model}: {e}")
-            rss.last_error = f"{error.user_message} while picking up topics batch"
-            rss.save()
             continue
 
     return {}
@@ -870,6 +872,7 @@ def delete_old_news_articles():
         except Exception as e:
             logger.error(f'Error deleting old news articles from {rss.company}: {e}')
             rss.last_error = 'Error deleting old news articles'
+            rss.last_error_at = timezone.now()
             rss.save()
             continue
 

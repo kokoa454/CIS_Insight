@@ -142,6 +142,12 @@ class NewsRss(models.Model):
         blank = True
     )
 
+    last_error_at = models.DateTimeField(
+        verbose_name = 'Last Error At',
+        null = True,
+        blank = True
+    )
+
     def __str__(self):
         return self.company
 
