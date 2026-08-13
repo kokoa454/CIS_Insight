@@ -1,3 +1,4 @@
+from django.db import close_old_connections
 import datetime
 import json
 import logging
@@ -56,6 +57,8 @@ def set_cooldown(target, hours = 2, api_key = None):
 
 # Webサイト用
 def fetch_web_news_articles():
+    close_old_connections()
+
     all_topics = list(Topic.objects.all())
 
     active_rss_list = NewsRss.objects.filter(is_active=True).order_by(F('last_fetched_at').asc(nulls_first=True))
@@ -85,6 +88,8 @@ def fetch_web_news_articles():
 
         except Exception as e:
             logger.error(f'Error processing RSS {rss.url}: {e}')
+        finally:
+            close_old_connections()
 
 def fetch_and_filter_feed_entries(rss):
     processed_urls = set()
