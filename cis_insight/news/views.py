@@ -309,9 +309,6 @@ def rss_settings(request):
         return JsonResponse({'status': "error", "message" : "国名が不正に入力されています。"})
     else:
         country = CisCountry.objects.get(country_code = country)
-
-    if is_active not in ["on", "off"]:
-        return JsonResponse({'status': "error", "message" : "有効/無効の値が不正に入力されています。"})
     
     if is_active == "on":
         is_active = True
