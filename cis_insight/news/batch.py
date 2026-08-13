@@ -387,18 +387,24 @@ def translate_and_save_articles_chunk(chunk_items, rss):
         try:
             with transaction.atomic():
                 if articles_to_create:
-                    created_articles = NewsArticle.objects.bulk_create(
-                        articles_to_create, 
+                    created_urls = [a.url for a in articles_to_create]
+
+                    NewsArticle.objects.bulk_create(
+                        articles_to_create,
                         ignore_conflicts=True
                     )
 
+                    # ignore_conflicts=True の場合、bulk_create の返り値には pk がセットされないため、
+                    # URL で再取得して実際に作成された(または既存の)レコードの pk を確定させる
+                    created_by_url = {
+                        a.url: a
+                        for a in NewsArticle.objects.filter(url__in=created_urls)
+                    }
+
                     for idx, (article_obj, topics) in enumerate(m2m_updates):
-                        if article_obj.pk is None: 
-                            matched = next((a for a in created_articles if a.url == article_obj.url and a.pk is not None), None)
-                            if matched:
-                                m2m_updates[idx] = (matched, topics)
-                            else:
-                                m2m_updates[idx] = (None, [])
+                        if article_obj.pk is None:
+                            matched = created_by_url.get(article_obj.url)
+                            m2m_updates[idx] = (matched, topics) if matched else (None, [])
 
                 if articles_to_update:
                     fields_to_update = [
@@ -753,43 +759,60 @@ def pick_up_news_articles_topics_batch(titles_list, topics, rss):
     topics_dict = {topic.name_en: topic for topic in topics}
     prompt = f"""
     Classify the following news article titles into some of the given topics.
-    - Return ONLY a valid JSON object where the key is the exact original title, and the value is a list of matching topic strings from the permitted topics list.
-    - The input is a JSON array containing {len(titles_list)} items.
-    - The output MUST be a JSON object containing EXACTLY {len(titles_list)} keys, in the exact same order.
+    - The input is a JSON array containing {len(titles_list)} items (indexed 0 to {len(titles_list) - 1}).
+    - Return ONLY a valid JSON object with a single key "results".
+    - "results" MUST be a JSON array containing EXACTLY {len(titles_list)} items, in the exact same order as the input titles below (the item at index i corresponds to the input title at index i).
+    - Each item in "results" MUST be a list of matching topic strings taken ONLY from the permitted topics list. Use an empty list [] if no topic matches.
+    - Do NOT echo, repeat, or include the original titles anywhere in the output.
     - Do not include any extra descriptions, markdown, notes or explanations.
 
     Permitted Topics: {', '.join([topic.name_en for topic in topics])}
 
-    Titles to classify:
+    Titles to classify (in order):
     {json.dumps(titles_list, ensure_ascii=False)}
     """
 
-    client = Groq(api_key = GROQ_API_KEY)
+    client = Groq(api_key=GROQ_API_KEY)
     models = [GROQ_MODEL_1, GROQ_MODEL_2, GROQ_MODEL_3]
-    matched_topics_map = {}
 
     for model in models:
         if not model:
             continue
         try:
             response = client.chat.completions.create(
-                model = model,
-                messages = [{"role": "system", "content": prompt}],
-                response_format = {"type": "json_object"}
+                model=model,
+                messages=[{"role": "system", "content": prompt}],
+                response_format={"type": "json_object"}
             )
             raw_content = response.choices[0].message.content.strip()
-            classification_results = json.loads(raw_content)
+            parsed = json.loads(raw_content)
 
-            for orig_title, suggested_topics in classification_results.items():
+            results = parsed.get("results") if isinstance(parsed, dict) else None
+
+            if not isinstance(results, list) or len(results) != len(titles_list):
+                logger.warning(
+                    f"Model {model} returned unexpected topic classification format "
+                    f"(expected {len(titles_list)} results): {raw_content[:200]}"
+                )
+                continue
+
+            matched_topics_map = {}
+
+            for title, suggested_topics in zip(titles_list, results):
+                obj_list = []
+
                 if isinstance(suggested_topics, list):
-                    obj_list = []
                     for t_name in suggested_topics:
+                        if not isinstance(t_name, str):
+                            continue
                         cleaned_name = t_name.strip()
                         if cleaned_name in topics_dict:
                             obj_list.append(topics_dict[cleaned_name])
-                    matched_topics_map[orig_title] = obj_list
-            
+
+                matched_topics_map[title] = obj_list
+
             return matched_topics_map
+
         except Exception as e:
             error = convert_to_custom_ai_exception(e)
             if isinstance(error, RateLimitError) or isinstance(error, ServerError):
