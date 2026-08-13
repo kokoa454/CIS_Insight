@@ -879,6 +879,8 @@ def clean_articles_contents_batch(contents_dict, rss):
 
 # 不要な記事を削除
 def delete_old_news_articles():
+    close_old_connections()
+
     for rss in NewsRss.objects.all():
         day = DISPLAY_DAY_LIMIT
         old_news_articles = NewsArticle.objects.filter(rss = rss, created_at__lt = timezone.now() - timedelta(days = day))
@@ -899,5 +901,7 @@ def delete_old_news_articles():
             rss.last_error_at = timezone.now()
             rss.save()
             continue
+        finally:
+            close_old_connections()
 
         logger.info(f"Deleted {deleted_count} old news articles from {rss.company}.")

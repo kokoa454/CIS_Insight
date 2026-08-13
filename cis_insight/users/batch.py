@@ -1,3 +1,4 @@
+from django.db import close_old_connections
 import logging
 from datetime import timedelta
 
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 # 仮登録ユーザーの有効期限切れ設定
 def expire_pre_user():
+    close_old_connections()
+
     expired_pre_users = PreUser.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = PRE_USER_EXPIRATION_TIME_MINUTES),
         is_expired = False
@@ -30,6 +33,8 @@ def expire_pre_user():
 
 # 仮登録ユーザーの削除
 def delete_pre_user():
+    close_old_connections()
+
     expired_pre_users = PreUser.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = PRE_USER_DELETION_TIME_MINUTES)
     )
@@ -42,6 +47,8 @@ def delete_pre_user():
 
 # メール変更ユーザの有効期限切れ設定
 def expire_email_change():
+    close_old_connections()
+
     expired_email_changes = EmailChange.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = EMAIL_CHANGE_EXPIRATION_TIME_MINUTES),
         is_expired = False
@@ -57,6 +64,8 @@ def expire_email_change():
 
 # メール変更ユーザの削除
 def delete_email_change():
+    close_old_connections()
+
     expired_email_changes = EmailChange.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = EMAIL_CHANGE_DELETION_TIME_MINUTES)
     )
@@ -69,6 +78,8 @@ def delete_email_change():
 
 # パスワードリセットユーザの有効期限切れ設定
 def expire_password_reset():
+    close_old_connections()
+
     expired_password_resets = PasswordReset.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = PASSWORD_RESET_EXPIRATION_TIME_MINUTES),
         is_expired = False
@@ -84,6 +95,8 @@ def expire_password_reset():
 
 # パスワードリセットユーザの削除
 def delete_password_reset():
+    close_old_connections()
+
     expired_password_resets = PasswordReset.objects.filter(
         created_at__lt = timezone.now() - timedelta(minutes = PASSWORD_RESET_DELETION_TIME_MINUTES)
     )
